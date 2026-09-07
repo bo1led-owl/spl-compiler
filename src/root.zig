@@ -1,7 +1,5 @@
-const std = @import("std");
-
-pub const Lexer = @import("Lexer.zig");
+pub const lex = @import("lex.zig");
 
 test {
-    _ = Lexer;
+    _ = lex;
 }
