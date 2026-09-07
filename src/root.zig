@@ -1,2 +1,7 @@
 const std = @import("std");
-const Io = std.Io;
+
+pub const Lexer = @import("Lexer.zig");
+
+test {
+    _ = Lexer;
+}

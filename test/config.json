@@ -5,28 +5,28 @@
   "out_dir": "{root}/test/build",
   "stages": {
     "lexer": {
-      "cmd": ["{root}/build/bin/splc", "-g", "{grammar}", "-t", "{tokens_in}", "{input}"],
+      "cmd": ["{root}/build/bin/splc", "-t", "{tokens_in}", "{input}"],
       "out": "{tokens_out}",
       "preprocess": [
         {"type": "json", "keep": ["kind", "line", "column"]}
       ]
     },
     "parser": {
-      "cmd": ["{root}/build/bin/splc", "-g", "{grammar}", "-a", "{ast_in}", "{input}"],
+      "cmd": ["{root}/build/bin/splc", "-a", "{ast_in}", "{input}"],
       "out": "{ast_out}",
       "preprocess": [
         {"type": "json", "keep": ["kind"]}
       ]
     },
     "llvm": {
-      "cmd": ["{root}/build/bin/splc", "-g", "{grammar}", "-o", "{llvm_out}", "{input}"],
+      "cmd": ["{root}/build/bin/splc", "-o", "{llvm_out}", "{input}"],
       "out": "{llvm_out}",
       "preprocess": [
         {"type": "llvm"}
       ]
     },
     "compile": {
-      "cmd": ["{root}/build/bin/splc", "-g", "{grammar}", "-o", "{exe}", "{input}"]
+      "cmd": ["{root}/build/bin/splc", "-o", "{exe}", "{input}"]
     },
     "run": {
       "cmd": ["{exe}"],
