@@ -216,7 +216,7 @@ pub const Lexer = struct {
 
             if (peekedChar == c) {
                 defer _ = self.getChar();
-                return Token{ .offset = self.offset, .kind = kind };
+                return self.mkToken(kind);
             }
         }
 
@@ -235,11 +235,11 @@ pub const Lexer = struct {
         if (peekedChar == '0') {
             const next_char_opt = self.peekCharAhead(1);
             if (next_char_opt != null and std.ascii.isDigit(next_char_opt.?)) {
-                return Token{ .kind = .err_number_has_leading_zero, .offset = self.offset };
+                return self.mkToken(.err_number_has_leading_zero);
             }
         }
 
-        return Token{ .kind = .number, .offset = self.offset };
+        return self.mkToken(.number);
     }
 
     fn identifiersAndKeywords(self: *Self) ?Token {
