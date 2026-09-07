@@ -28,7 +28,7 @@ jobs:
           mirror: https://pkg.hexops.org/zig 
 
       - name: Build your compiler
-        run: zig build --release=fast -p build/
+        run: zig build --release=fast
 
       - name: Run tests for grammar ${{ matrix.grammar }}
         run: python3 test/run_tests.py test --grammar ${{ matrix.grammar }} --no-build
