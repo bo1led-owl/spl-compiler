@@ -24,6 +24,8 @@ jobs:
       - uses: mlugg/setup-zig@v2
         with:
           version: 0.16.0
+          # the first mirror that worked, hardcoded to reduce workflow time
+          mirror: https://pkg.hexops.org/zig 
 
       - name: Build your compiler
         run: zig build --release=fast -p build/
