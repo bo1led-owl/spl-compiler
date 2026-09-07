@@ -5,6 +5,9 @@ fn isIdentifierChar(c: u8) bool {
 }
 
 pub const Token = struct {
+    kind: Kind,
+    offset: u32,
+
     pub const Kind = enum(u8) {
         eof,
         err_invalid_character,
@@ -24,9 +27,6 @@ pub const Token = struct {
         lparen,
         rparen,
     };
-
-    kind: Kind,
-    offset: u32,
 };
 
 pub const TokenList = std.MultiArrayList(Token);
