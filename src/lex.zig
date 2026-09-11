@@ -26,34 +26,57 @@ pub const Token = struct {
         slash,
         lparen,
         rparen,
+
+        pub fn toString(self: Kind) []const u8 {
+            return switch (self) {
+                .eof => "EOF",
+                .err_invalid_character => "invalid character",
+                .err_number_has_leading_zero => "number has leading zero",
+                .err_unterminated_multiline_comment => "unterminated multiline comment",
+                .number => "a number",
+                .ident => "an identifier",
+                .kw_val => "`val`",
+                .kw_var => "`var`",
+                .kw_return => "`return`",
+                .semi => "`;`",
+                .assign => "`=`",
+                .plus => "`+`",
+                .minus => "`-`",
+                .asterisk => "`*`",
+                .slash => "`/`",
+                .lparen => "`(`",
+                .rparen => "`)`",
+            };
+        }
     };
 };
 
 pub const TokenList = std.MultiArrayList(Token);
 
-pub const Span = struct { begin: u32, end: u32 };
 pub const Location = struct { line: u32, column: u32 };
 
 pub fn tokenLen(source: []const u8, token: Token) u32 {
     return switch (token.kind) {
+        .eof => 0,
         .semi, .assign, .plus, .minus, .asterisk, .slash, .lparen, .rparen => 1,
         .kw_val, .kw_var => 3,
         .kw_return => 6,
         .err_invalid_character => 1,
-        .err_unterminated_multiline_comment => source.len - token.offset,
+        .err_unterminated_multiline_comment => @as(u32, @intCast(source.len)) - token.offset,
         .number, .err_number_has_leading_zero => lenMatching(source[token.offset..], std.ascii.isDigit),
         .ident => lenMatching(source[token.offset..], isIdentifierChar),
     };
 }
 
-pub fn tokenSpan(source: []const u8, token: Token) Span {
-    return .{
-        .begin = token.offset,
-        .end = token.offset + tokenLen(source, token),
-    };
+pub fn tokenLiteral(source: []const u8, token: Token) []const u8 {
+    return source[token.offset..(token.offset + tokenLen(source, token))];
 }
 
-pub fn lineColumnFromOffset(source: []const u8, offset: u32) Location {
+pub fn lineIndexFromOffset(source: []const u8, offset: u32) u32 {
+    return @intCast(std.mem.countScalar(u8, source[0..offset], '\n'));
+}
+
+pub fn locationFromOffset(source: []const u8, offset: u32) Location {
     var loc: Location = .{ .line = 1, .column = 1 };
 
     for (0..offset) |i| {
