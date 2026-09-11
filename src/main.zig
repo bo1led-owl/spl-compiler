@@ -58,10 +58,6 @@ pub fn main(init: std.process.Init.Minimal) u8 {
         error_bundle.renderToStderr(io, null, source) catch {};
     }
 
-    // var stdout_writer = Io.File.stdout().writer(io, &stdout_buffer);
-    // try stdout_writer.interface.print("Hello spl!\n", .{});
-    // try stdout_writer.flush();
-
     return 0;
 }
 
