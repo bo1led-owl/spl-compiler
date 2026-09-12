@@ -25,6 +25,24 @@ pub fn main(init: std.process.Init.Minimal) u8 {
 }
 
 fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: Args) u8 {
+    var stdout_writer = std.Io.File.stdout().writer(io, &stdout_buffer);
+
+    if (args.help) {
+        stdout_writer.interface.writeAll(
+            \\Usage: splc [options...] <filename>
+            \\
+            \\Arguments:
+            \\  filename - path to the source file
+            \\
+            \\Options:
+            \\  -h, --help                  - print this message and exit
+            \\  -t DUMP, --tokens-dump=DUMP - dump tokens as JSON into DUMP
+            \\  -a DUMP, --ast-dump=DUMP    - dump AST as JSON into DUMP
+        ++ "\n") catch return 1;
+        stdout_writer.flush() catch return 1;
+        return 0;
+    }
+
     const source = readFile(io, gpa, args.path) catch |err| {
         std.log.err("failed to read source file: {s}", .{@errorName(err)});
         return 1;
