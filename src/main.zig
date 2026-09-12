@@ -1,6 +1,4 @@
 const std = @import("std");
-
-const Args = @import("driver/Args.zig");
 const spl = @import("spl");
 
 var stdout_buffer: [4096]u8 align(std.heap.page_size_min) = undefined;
@@ -16,7 +14,7 @@ pub fn main(init: std.process.Init.Minimal) u8 {
     defer io_impl.deinit();
     const io = io_impl.io();
 
-    const args = Args.parse(init.args) catch |err| {
+    const args = spl.cli.Args.parse(init.args) catch |err| {
         std.log.err("{s}", .{@errorName(err)});
         return 2;
     };
@@ -24,21 +22,11 @@ pub fn main(init: std.process.Init.Minimal) u8 {
     return mainArgs(io, gpa, args);
 }
 
-fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: Args) u8 {
+fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: spl.cli.Args) u8 {
     var stdout_writer = std.Io.File.stdout().writer(io, &stdout_buffer);
 
     if (args.help) {
-        stdout_writer.interface.writeAll(
-            \\Usage: splc [options...] <filename>
-            \\
-            \\Arguments:
-            \\  filename - path to the source file
-            \\
-            \\Options:
-            \\  -h, --help                  - print this message and exit
-            \\  -t DUMP, --tokens-dump=DUMP - dump tokens as JSON into DUMP
-            \\  -a DUMP, --ast-dump=DUMP    - dump AST as JSON into DUMP
-        ++ "\n") catch return 1;
+        stdout_writer.interface.writeAll(spl.cli.help_msg) catch return 1;
         stdout_writer.flush() catch return 1;
         return 0;
     }
