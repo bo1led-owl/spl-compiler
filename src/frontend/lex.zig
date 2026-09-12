@@ -114,6 +114,27 @@ pub const Lexer = struct {
         return result;
     }
 
+    pub fn next(self: *Self) Token {
+        if (self.skipCommentsAndWhitespace()) |token| {
+            std.debug.assert(token.kind == .err_invalid_character or
+                token.kind == .err_number_has_leading_zero or
+                token.kind == .err_unterminated_multiline_comment);
+            return token;
+        }
+
+        if (self.reachedEof()) {
+            return self.mkToken(.eof);
+        }
+
+        return self.singleCharTokens() orelse
+            self.numbers() orelse
+            self.identifiersAndKeywords() orelse
+            blk: {
+                defer _ = self.getChar();
+                break :blk self.mkToken(.err_invalid_character);
+            };
+    }
+
     fn mkToken(self: Self, kind: Token.Kind) Token {
         return .{ .kind = kind, .offset = self.offset };
     }
@@ -155,25 +176,6 @@ pub const Lexer = struct {
 
     fn skipWhile(self: *Self, comptime pred: fn (u8) bool) void {
         self.offset += lenMatching(self.source[self.offset..], pred);
-    }
-
-    fn next(self: *Self) Token {
-        if (self.skipCommentsAndWhitespace()) |token| {
-            // error tokens only
-            return token;
-        }
-
-        if (self.reachedEof()) {
-            return self.mkToken(.eof);
-        }
-
-        return self.singleCharTokens() orelse
-            self.numbers() orelse
-            self.identifiersAndKeywords() orelse
-            blk: {
-                defer _ = self.getChar();
-                break :blk self.mkToken(.err_invalid_character);
-            };
     }
 
     fn skipCommentsAndWhitespace(self: *Self) ?Token {
