@@ -144,11 +144,11 @@ pub const Lexer = struct {
     }
 
     fn peekChar(self: Self) ?u8 {
-        return self.get(self.offset);
+        return self.charAt(self.offset);
     }
 
     fn peekCharAhead(self: Self, offset: u32) ?u8 {
-        return self.get(self.offset + offset);
+        return self.charAt(self.offset + offset);
     }
 
     fn peekChars(self: Self, size: u32) []const u8 {
@@ -161,7 +161,7 @@ pub const Lexer = struct {
         return self.peekChar();
     }
 
-    fn get(self: Self, offset: u32) ?u8 {
+    fn charAt(self: Self, offset: u32) ?u8 {
         if (offset >= self.source.len) {
             return null;
         }
