@@ -1,8 +1,8 @@
 const std = @import("std");
-
 const Self = @This();
 
-pub const TokenIndex = u32;
+const Token = @import("lex.zig").Token;
+
 pub const NodeList = std.MultiArrayList(Node);
 
 nodes: NodeList,
@@ -30,7 +30,7 @@ pub const Node = struct {
     // everything as closely as possible to minimize memory footprint
 
     kind: Kind,
-    token: TokenIndex,
+    token: Token.Index,
 
     /// a generalized union used based on the `kind` of the node
     data: Data = undefined,
@@ -78,7 +78,6 @@ pub const Node = struct {
         opt_node: OptIndex,
     };
 };
-
 
 pub fn deinit(self: *Self, gpa: std.mem.Allocator) void {
     self.nodes.deinit(gpa);

@@ -31,13 +31,13 @@ fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: spl.cli.Args) u8 {
         return 0;
     }
 
-    const source = readFile(io, gpa, args.path) catch |err| {
+    const source: spl.frontend.Source = .{ .text = readFile(io, gpa, args.path) catch |err| {
         std.log.err("failed to read source file: {s}", .{@errorName(err)});
         return 1;
-    };
-    defer gpa.free(source);
+    } };
+    defer gpa.free(source.text);
 
-    var lexer = spl.frontend.Lexer.init(source);
+    var lexer = spl.frontend.Lexer.init(source.text);
     var tokens = lexer.run(gpa) catch |err| {
         std.log.err("failed to tokenize: {s}", .{@errorName(err)});
         return 1;
@@ -49,8 +49,8 @@ fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: spl.cli.Args) u8 {
             std.log.err("failed to dump tokens: {s}", .{@errorName(err)});
     }
 
-    var error_bundle: spl.frontend.ErrorBundle = .init(gpa);
-    defer error_bundle.deinit();
+    var error_bundle: spl.frontend.ErrorBundle = .empty;
+    defer error_bundle.deinit(gpa);
 
     var parser = spl.frontend.Parser.init(gpa, source, tokens, &error_bundle);
     var ast = parser.parse() catch |err| {
@@ -64,8 +64,14 @@ fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: spl.cli.Args) u8 {
             std.log.err("failed to dump AST: {s}", .{@errorName(err)});
     }
 
+    var sema = spl.frontend.Sema.init(gpa, source, tokens, ast, &error_bundle);
+    sema.visitNode(.root) catch |err| {
+        std.log.err("failed to run semantic analysis: {s}", .{@errorName(err)});
+        return 1;
+    };
+
     if (error_bundle.nonEmpty()) {
-        error_bundle.renderToStderr(io, null, source) catch {};
+        error_bundle.renderToStderr(io, source.text, null) catch {};
     }
 
     return 0;
@@ -92,7 +98,12 @@ fn readFile(io: std.Io, gpa: std.mem.Allocator, path: []const u8) ![]u8 {
     return result;
 }
 
-fn dumpTokens(io: std.Io, source: []const u8, tokens: spl.frontend.lex.TokenList, path: []const u8) !void {
+fn dumpTokens(
+    io: std.Io,
+    source: spl.frontend.Source,
+    tokens: spl.frontend.lex.TokenList,
+    path: []const u8,
+) !void {
     const dump_file = try std.Io.Dir.cwd().createFile(io, path, .{});
     defer dump_file.close(io);
 
@@ -132,7 +143,7 @@ fn dumpTokens(io: std.Io, source: []const u8, tokens: spl.frontend.lex.TokenList
             else => null,
         };
 
-        const loc = spl.frontend.lex.locationFromOffset(source, token.offset);
+        const loc = source.locationFromOffset(token.offset);
 
         try jws.beginObject();
 
@@ -159,7 +170,7 @@ fn dumpTokens(io: std.Io, source: []const u8, tokens: spl.frontend.lex.TokenList
 
 fn dumpAst(
     io: std.Io,
-    source: []const u8,
+    source: spl.frontend.Source,
     tokens: spl.frontend.lex.TokenList,
     ast: spl.frontend.Ast,
     path: []const u8,
@@ -175,7 +186,7 @@ fn dumpAst(
 
 fn dumpAstNode(
     jws: *std.json.Stringify,
-    source: []const u8,
+    source: spl.frontend.Source,
     tokens: spl.frontend.lex.TokenList,
     ast: spl.frontend.Ast,
     node_idx: spl.frontend.Ast.Node.Index,
@@ -214,19 +225,19 @@ fn dumpAstNode(
             try jws.write(tokens.items(.kind)[node.token] == .kw_var);
 
             try jws.objectField("name");
-            try jws.write(spl.frontend.lex.tokenLiteral(source, tokens.get(node.token + 1)));
+            try jws.write(source.tokenLiteral(tokens.get(node.token + 1)));
 
             try jws.objectField("value");
             try dumpAstNode(jws, source, tokens, ast, node.data.node);
         },
         .name_ref => {
             try jws.objectField("name");
-            try jws.write(spl.frontend.lex.tokenLiteral(source, tokens.get(node.token)));
+            try jws.write(source.tokenLiteral(tokens.get(node.token)));
         },
         .number => {
             try jws.objectField("value");
             try jws.beginWriteRaw();
-            try jws.writer.writeAll(spl.frontend.lex.tokenLiteral(source, tokens.get(node.token)));
+            try jws.writer.writeAll(source.tokenLiteral(tokens.get(node.token)));
             jws.endWriteRaw();
         },
         .@"return" => {

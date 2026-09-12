@@ -1,40 +1,28 @@
 const std = @import("std");
 
-const lex = @import("lex.zig");
-
 const Self = @This();
+
+const lex = @import("lex.zig");
+const Source = @import("Source.zig");
 
 pub const ReportError = std.Io.Writer.Error || std.mem.Allocator.Error;
 
-pub const SourceSpan = struct {
-    begin: u32,
-    end: u32,
-
-    pub fn len(self: SourceSpan) u32 {
-        return self.end - self.begin;
-    }
-};
-
 pub const ErrorDetails = struct {
     msg_start: u32, // no `msg_end` because messages are null-terminated
-    span: SourceSpan,
+    span: Source.Span,
 };
 
-gpa: std.mem.Allocator,
 errors: std.ArrayList(ErrorDetails),
 msg_storage: std.ArrayList(u8),
 
-pub fn init(gpa: std.mem.Allocator) Self {
-    return .{
-        .gpa = gpa,
-        .errors = .empty,
-        .msg_storage = .empty,
-    };
-}
+pub const empty: Self = .{
+    .errors = .empty,
+    .msg_storage = .empty,
+};
 
-pub fn deinit(self: *Self) void {
-    self.errors.deinit(self.gpa);
-    self.msg_storage.deinit(self.gpa);
+pub fn deinit(self: *Self, gpa: std.mem.Allocator) void {
+    self.errors.deinit(gpa);
+    self.msg_storage.deinit(gpa);
     self.* = undefined;
 }
 
@@ -42,12 +30,18 @@ pub fn nonEmpty(self: Self) bool {
     return self.errors.items.len > 0;
 }
 
-pub fn report(self: *Self, span: SourceSpan, comptime fmt: []const u8, args: anytype) ReportError!void {
+pub fn report(
+    self: *Self,
+    gpa: std.mem.Allocator,
+    span: Source.Span,
+    comptime fmt: []const u8,
+    args: anytype,
+) ReportError!void {
     const msg_start = self.msg_storage.items.len;
-    try self.msg_storage.print(self.gpa, fmt, args);
-    try self.msg_storage.append(self.gpa, 0);
+    try self.msg_storage.print(gpa, fmt, args);
+    try self.msg_storage.append(gpa, 0);
 
-    try self.errors.append(self.gpa, .{
+    try self.errors.append(gpa, .{
         .msg_start = @intCast(msg_start),
         .span = span,
     });
@@ -56,14 +50,14 @@ pub fn report(self: *Self, span: SourceSpan, comptime fmt: []const u8, args: any
 pub fn renderToStderr(
     self: Self,
     io: std.Io,
-    terminal_mode: ?std.Io.Terminal.Mode,
     source: []const u8,
+    terminal_mode: ?std.Io.Terminal.Mode,
 ) !void {
     var buffer: [256]u8 = undefined;
     const stderr = try std.Io.lockStderr(io, &buffer, terminal_mode);
     defer std.Io.unlockStderr(io);
 
-    self.renderToTerminal(stderr.terminal(), source) catch |err| switch (err) {
+    self.renderToTerminal(source, stderr.terminal()) catch |err| switch (err) {
         error.WriteFailed => return stderr.file_writer.err.?,
         else => |e| return e,
     };
@@ -73,7 +67,7 @@ fn getNullTerminatedMsg(self: Self, err: ErrorDetails) [:0]const u8 {
     return @ptrCast(self.msg_storage.items[err.msg_start..]);
 }
 
-pub fn renderToTerminal(self: Self, terminal: std.Io.Terminal, source: []const u8) !void {
+pub fn renderToTerminal(self: Self, source: []const u8, terminal: std.Io.Terminal) !void {
     for (self.errors.items) |err| {
         try terminal.setColor(.bold);
         try terminal.writer.print(
@@ -114,7 +108,7 @@ fn findLineStart(source: []const u8, start: u32) u32 {
     return result;
 }
 
-fn renderRelevant(terminal: std.Io.Terminal, source: []const u8, span: SourceSpan) !void {
+fn renderRelevant(terminal: std.Io.Terminal, source: []const u8, span: Source.Span) !void {
     const output_start: usize = findLineStart(source, span.begin);
     const output_end = std.mem.findScalarPos(u8, source, span.end, '\n') orelse source.len;
 

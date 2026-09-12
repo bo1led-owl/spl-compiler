@@ -4,7 +4,11 @@ fn isIdentifierChar(c: u8) bool {
     return std.ascii.isAlphanumeric(c) or c == '_';
 }
 
+pub const TokenList = std.MultiArrayList(Token);
+
 pub const Token = struct {
+    pub const Index = u32;
+
     kind: Kind,
     offset: u32,
 
@@ -51,10 +55,6 @@ pub const Token = struct {
     };
 };
 
-pub const TokenList = std.MultiArrayList(Token);
-
-pub const Location = struct { line: u32, column: u32 };
-
 pub fn tokenLen(source: []const u8, token: Token) u32 {
     return switch (token.kind) {
         .eof => 0,
@@ -74,21 +74,6 @@ pub fn tokenLiteral(source: []const u8, token: Token) []const u8 {
 
 pub fn lineIndexFromOffset(source: []const u8, offset: u32) u32 {
     return @intCast(std.mem.countScalar(u8, source[0..offset], '\n'));
-}
-
-pub fn locationFromOffset(source: []const u8, offset: u32) Location {
-    var loc: Location = .{ .line = 1, .column = 1 };
-
-    for (0..offset) |i| {
-        if (source[i] == '\n') {
-            loc.line += 1;
-            loc.column = 1;
-        } else {
-            loc.column += 1;
-        }
-    }
-
-    return loc;
 }
 
 fn lenMatching(source: []const u8, comptime pred: fn (u8) bool) u32 {
@@ -221,29 +206,22 @@ pub const Lexer = struct {
     }
 
     fn singleCharTokens(self: *Self) ?Token {
-        const tokens = &.{
-            .{ ';', .semi },
-            .{ '=', .assign },
-            .{ '+', .plus },
-            .{ '-', .minus },
-            .{ '*', .asterisk },
-            .{ '/', .slash },
-            .{ '(', .lparen },
-            .{ ')', .rparen },
-        };
-
         const peekedChar = self.peekChar().?;
 
-        inline for (tokens) |case| {
-            const c, const kind = case;
+        const kind: Token.Kind = switch (peekedChar) {
+            ';' => .semi,
+            '=' => .assign,
+            '+' => .plus,
+            '-' => .minus,
+            '*' => .asterisk,
+            '/' => .slash,
+            '(' => .lparen,
+            ')' => .rparen,
+            else => return null,
+        };
 
-            if (peekedChar == c) {
-                defer _ = self.getChar();
-                return self.mkToken(kind);
-            }
-        }
-
-        return null;
+        defer _ = self.getChar();
+        return self.mkToken(kind);
     }
 
     fn numbers(self: *Self) ?Token {
@@ -266,11 +244,11 @@ pub const Lexer = struct {
     }
 
     fn identifiersAndKeywords(self: *Self) ?Token {
-        const keywords = &.{
+        const keywords = std.StaticStringMap(Token.Kind).initComptime(&.{
             .{ "val", .kw_val },
             .{ "var", .kw_var },
             .{ "return", .kw_return },
-        };
+        });
 
         const peekedChar = self.peekChar().?;
 
@@ -282,12 +260,8 @@ pub const Lexer = struct {
         self.skipWhile(isIdentifierChar);
 
         const identifier = self.source[start..self.offset];
-        inline for (keywords) |case| {
-            const kw, const kind = case;
-
-            if (std.mem.eql(u8, kw, identifier)) {
-                return Token{ .kind = kind, .offset = start };
-            }
+        if (keywords.get(identifier)) |kind| {
+            return Token{ .kind = kind, .offset = start };
         }
 
         return Token{ .kind = .ident, .offset = start };

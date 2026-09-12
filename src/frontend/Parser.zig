@@ -9,31 +9,30 @@ const std = @import("std");
 // `parse*` methods return null if parsing failed and no tokens were consumed and error if parsing failed and at least a token was consumed
 // `expect*` methods return error if parsing failed, token consumption does not matter
 
-const lex = @import("lex.zig");
-const Ast = @import("Ast.zig");
-const ErrorBundle = @import("ErrorBundle.zig");
-
 const Self = @This();
 
-const Token = lex.Token;
-const TokenIndex = Ast.TokenIndex;
+const lex = @import("lex.zig");
+const Ast = @import("Ast.zig");
+const Source = @import("Source.zig");
+const ErrorBundle = @import("ErrorBundle.zig");
 
+const Token = lex.Token;
 const Node = Ast.Node;
 
 pub const Error = error{ParseError};
 
 gpa: std.mem.Allocator,
-source: []const u8,
+source: Source,
 errors: *ErrorBundle,
 
-token_idx: TokenIndex,
+token_idx: Token.Index,
 tokens: lex.TokenList,
 
 nodes: Ast.NodeList,
 scratch: std.ArrayList(Node.Index),
 extras: std.ArrayList(u32),
 
-pub fn init(gpa: std.mem.Allocator, source: []const u8, tokens: lex.TokenList, errors: *ErrorBundle) Self {
+pub fn init(gpa: std.mem.Allocator, source: Source, tokens: lex.TokenList, errors: *ErrorBundle) Self {
     return .{
         .gpa = gpa,
         .source = source,
@@ -100,11 +99,11 @@ fn addNode(self: *Self, node: Node) !Node.Index {
     return @enumFromInt(result);
 }
 
-fn tokenKind(self: Self, idx: TokenIndex) Token.Kind {
+fn tokenKind(self: Self, idx: Token.Index) Token.Kind {
     return self.tokens.items(.kind)[idx];
 }
 
-fn eatToken(self: *Self, kind: Token.Kind) ?TokenIndex {
+fn eatToken(self: *Self, kind: Token.Kind) ?Token.Index {
     if (self.tokenKind(self.token_idx) == kind) {
         return self.nextToken();
     }
@@ -112,7 +111,7 @@ fn eatToken(self: *Self, kind: Token.Kind) ?TokenIndex {
     return null;
 }
 
-fn nextToken(self: *Self) TokenIndex {
+fn nextToken(self: *Self) Token.Index {
     defer self.token_idx += 1;
     return self.token_idx;
 }
@@ -151,7 +150,8 @@ inline fn formatExpectedList(comptime list: anytype) []const u8 {
 fn report(self: *Self, comptime fmt: []const u8, args: anytype) ErrorBundle.ReportError!void {
     const cur_token = self.tokens.get(self.token_idx);
     try self.errors.report(
-        .{ .begin = cur_token.offset, .end = cur_token.offset + lex.tokenLen(self.source, cur_token) },
+        self.gpa,
+        .{ .begin = cur_token.offset, .end = cur_token.offset + self.source.tokenLen(cur_token) },
         fmt,
         args,
     );
@@ -180,7 +180,7 @@ fn failWithUnexpected(self: *Self, actual: Token.Kind, comptime expected: anytyp
     return Error.ParseError;
 }
 
-fn expectToken(self: *Self, comptime kind: Token.Kind) !TokenIndex {
+fn expectToken(self: *Self, comptime kind: Token.Kind) !Token.Index {
     if (self.tokenKind(self.token_idx) != kind) {
         return self.failWithUnexpected(self.tokenKind(self.token_idx), .{kind});
     }
@@ -301,7 +301,7 @@ const Associativity = enum {
     right,
 };
 
-fn peekBinaryOp(self: Self) ?struct { token: TokenIndex, precedence: u32, associativity: Associativity } {
+fn peekBinaryOp(self: Self) ?struct { token: Token.Index, precedence: u32, associativity: Associativity } {
     const kind = self.tokenKind(self.token_idx);
 
     const prec: u32, const assoc: Associativity = switch (kind) {
@@ -354,7 +354,7 @@ fn expectTerm(self: *Self) !Node.Index {
         );
 }
 
-fn eatUnaryOp(self: *Self) ?TokenIndex {
+fn eatUnaryOp(self: *Self) ?Token.Index {
     return self.eatToken(.minus);
 }
 
