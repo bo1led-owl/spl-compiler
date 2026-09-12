@@ -47,10 +47,7 @@ pub fn init(gpa: std.mem.Allocator, source: []const u8, tokens: lex.TokenList, e
 }
 
 pub fn parse(self: *Self) (std.mem.Allocator.Error || std.Io.Writer.Error)!Ast {
-    if (self.tokens.len == 1) {
-        std.debug.assert(self.tokenKind(0) == .eof);
-        return .{ .nodes = self.nodes, .extra_data = &.{} };
-    }
+    std.debug.assert(self.tokens.len > 0);
 
     defer self.scratch.deinit(self.gpa);
 
@@ -219,14 +216,12 @@ fn skipUntil(self: *Self, kind: Token.Kind) bool {
 }
 
 fn skipUntilAny(self: *Self, kinds: []const Token.Kind) Token.Kind {
-    const idx_opt = std.mem.findAnyPos(
+    if (std.mem.findAnyPos(
         Token.Kind,
         self.tokens.items(.kind),
         self.token_idx,
         kinds,
-    );
-
-    if (idx_opt) |idx| {
+    )) |idx| {
         self.token_idx = @intCast(idx);
         return self.tokenKind(self.token_idx);
     } else {

@@ -21,13 +21,17 @@ pub fn main(init: std.process.Init.Minimal) u8 {
         return 2;
     };
 
+    return mainArgs(io, gpa, args);
+}
+
+fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: Args) u8 {
     const source = readFile(io, gpa, args.path) catch |err| {
         std.log.err("failed to read source file: {s}", .{@errorName(err)});
         return 1;
     };
     defer gpa.free(source);
 
-    var lexer = spl.lex.Lexer.init(source);
+    var lexer = spl.frontend.Lexer.init(source);
     var tokens = lexer.run(gpa) catch |err| {
         std.log.err("failed to tokenize: {s}", .{@errorName(err)});
         return 1;
@@ -39,10 +43,10 @@ pub fn main(init: std.process.Init.Minimal) u8 {
             std.log.err("failed to dump tokens: {s}", .{@errorName(err)});
     }
 
-    var error_bundle: spl.ErrorBundle = .init(gpa);
+    var error_bundle: spl.frontend.ErrorBundle = .init(gpa);
     defer error_bundle.deinit();
 
-    var parser = spl.Parser.init(gpa, source, tokens, &error_bundle);
+    var parser = spl.frontend.Parser.init(gpa, source, tokens, &error_bundle);
     var ast = parser.parse() catch |err| {
         std.log.err("failed to parse: {s}", .{@errorName(err)});
         return 1;
@@ -82,7 +86,7 @@ fn readFile(io: std.Io, gpa: std.mem.Allocator, path: []const u8) ![]u8 {
     return result;
 }
 
-fn dumpTokens(io: std.Io, source: []const u8, tokens: spl.lex.TokenList, path: []const u8) !void {
+fn dumpTokens(io: std.Io, source: []const u8, tokens: spl.frontend.lex.TokenList, path: []const u8) !void {
     const dump_file = try std.Io.Dir.cwd().createFile(io, path, .{});
     defer dump_file.close(io);
 
@@ -122,7 +126,7 @@ fn dumpTokens(io: std.Io, source: []const u8, tokens: spl.lex.TokenList, path: [
             else => null,
         };
 
-        const loc = spl.lex.locationFromOffset(source, token.offset);
+        const loc = spl.frontend.lex.locationFromOffset(source, token.offset);
 
         try jws.beginObject();
 
@@ -150,8 +154,8 @@ fn dumpTokens(io: std.Io, source: []const u8, tokens: spl.lex.TokenList, path: [
 fn dumpAst(
     io: std.Io,
     source: []const u8,
-    tokens: spl.lex.TokenList,
-    ast: spl.Ast,
+    tokens: spl.frontend.lex.TokenList,
+    ast: spl.frontend.Ast,
     path: []const u8,
 ) !void {
     const dump_file = try std.Io.Dir.cwd().createFile(io, path, .{});
@@ -166,9 +170,9 @@ fn dumpAst(
 fn dumpAstNode(
     jws: *std.json.Stringify,
     source: []const u8,
-    tokens: spl.lex.TokenList,
-    ast: spl.Ast,
-    node_idx: spl.Ast.Node.Index,
+    tokens: spl.frontend.lex.TokenList,
+    ast: spl.frontend.Ast,
+    node_idx: spl.frontend.Ast.Node.Index,
 ) !void {
     const node = ast.nodes.get(@intFromEnum(node_idx));
 
@@ -204,19 +208,19 @@ fn dumpAstNode(
             try jws.write(tokens.items(.kind)[node.token] == .kw_var);
 
             try jws.objectField("name");
-            try jws.write(spl.lex.tokenLiteral(source, tokens.get(node.token + 1)));
+            try jws.write(spl.frontend.lex.tokenLiteral(source, tokens.get(node.token + 1)));
 
             try jws.objectField("value");
             try dumpAstNode(jws, source, tokens, ast, node.data.node);
         },
         .name_ref => {
             try jws.objectField("name");
-            try jws.write(spl.lex.tokenLiteral(source, tokens.get(node.token)));
+            try jws.write(spl.frontend.lex.tokenLiteral(source, tokens.get(node.token)));
         },
         .number => {
             try jws.objectField("value");
             try jws.beginWriteRaw();
-            try jws.writer.writeAll(spl.lex.tokenLiteral(source, tokens.get(node.token)));
+            try jws.writer.writeAll(spl.frontend.lex.tokenLiteral(source, tokens.get(node.token)));
             jws.endWriteRaw();
         },
         .@"return" => {

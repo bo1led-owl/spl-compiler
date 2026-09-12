@@ -1,10 +1,5 @@
-pub const lex = @import("lex.zig");
-pub const ErrorBundle = @import("ErrorBundle.zig");
-pub const Ast = @import("Ast.zig");
-pub const Parser = @import("Parser.zig");
+pub const frontend = @import("frontend.zig");
 
 test {
-    _ = lex;
-    _ = Ast;
-    _ = Parser;
+    _ = frontend;
 }
