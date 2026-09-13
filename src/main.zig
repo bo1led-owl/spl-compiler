@@ -44,6 +44,11 @@ fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: spl.cli.Args) u8 {
     };
     defer tokens.deinit(gpa);
 
+    if (args.tokens_dump_path) |dump_path| {
+        dumpTokens(io, source, tokens, dump_path) catch |err|
+            std.log.err("failed to dump tokens: {s}", .{@errorName(err)});
+    }
+
     if (args.last_stage == .lexer) {
         if (std.mem.findAny(
             spl.frontend.lex.Token.Kind,
@@ -59,11 +64,6 @@ fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: spl.cli.Args) u8 {
         }
 
         return 0;
-    }
-
-    if (args.tokens_dump_path) |dump_path| {
-        dumpTokens(io, source, tokens, dump_path) catch |err|
-            std.log.err("failed to dump tokens: {s}", .{@errorName(err)});
     }
 
     var error_bundle: spl.frontend.ErrorBundle = .empty;
