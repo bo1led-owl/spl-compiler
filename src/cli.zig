@@ -7,22 +7,32 @@ pub const help_msg =
     \\  filename - path to the source file
     \\
     \\Options:
-    \\  -h, --help                  - print this message and exit
-    \\  -t DUMP, --tokens-dump=DUMP - dump tokens as JSON into DUMP
-    \\  -a DUMP, --ast-dump=DUMP    - dump AST as JSON into DUMP
+    \\  -h, --help                                  - print this message and exit
+    \\  -t DUMP, --tokens-dump=DUMP                 - dump tokens as JSON into DUMP
+    \\  -a DUMP, --ast-dump=DUMP                    - dump AST as JSON into DUMP
+    \\  --last-stage={lexer, parser, llvm, codegen} - limit the compiler pipeline to specified stage
 ++ "\n";
 
 pub const Args = struct {
+    pub const Stage = enum(u8) {
+        lexer = 0,
+        parser = 1,
+        llvm = 2,
+        codegen = 3,
+    };
+
     pub const ParseError = error{
         TooFewArguments,
         TooManyArguments,
         UnknownOption,
         MissingOptionValue,
+        UnknownStage,
     };
 
     path: []const u8,
     tokens_dump_path: ?[]const u8 = null,
     ast_dump_path: ?[]const u8 = null,
+    last_stage: Stage = .codegen,
     help: bool = false,
 
     pub fn parse(args: std.process.Args) ParseError!Args {
@@ -31,8 +41,18 @@ pub const Args = struct {
         var path: ?[]const u8 = null;
         var tokens_dump_path: ?[]const u8 = null;
         var ast_dump_path: ?[]const u8 = null;
+        var last_stage = Stage.codegen;
 
         var next_opt: ?Next = null;
+
+        const stages = std.StaticStringMap(Stage).initComptime(comptime init: {
+            // iterate over all variants of the enum and make pairs like `("foo", .foo)`
+            var res: []const struct { []const u8, Stage } = &.{};
+            for (@typeInfo(Stage).@"enum".fields) |field| {
+                res = res ++ .{.{ field.name, @as(Stage, @enumFromInt(field.value)) }};
+            }
+            break :init res;
+        });
 
         var iter = args.iterate();
         _ = iter.next(); // skip program name
@@ -48,6 +68,9 @@ pub const Args = struct {
                 next_opt = .ast_dump;
             } else if (std.mem.startsWith(u8, arg, "--ast-dump=")) {
                 ast_dump_path = arg[("--ast-dump=".len)..];
+            } else if (std.mem.startsWith(u8, arg, "--last-stage=")) {
+                last_stage = stages.get(arg["--last-stage=".len..]) orelse
+                    return ParseError.UnknownStage;
             } else if (std.mem.startsWith(u8, arg, "-")) {
                 return ParseError.UnknownOption;
             } else if (next_opt) |next| {
@@ -74,6 +97,7 @@ pub const Args = struct {
             .path = path.?,
             .tokens_dump_path = tokens_dump_path,
             .ast_dump_path = ast_dump_path,
+            .last_stage = last_stage,
         };
     }
 };

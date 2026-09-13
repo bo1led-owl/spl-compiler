@@ -44,6 +44,23 @@ fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: spl.cli.Args) u8 {
     };
     defer tokens.deinit(gpa);
 
+    if (args.last_stage == .lexer) {
+        if (std.mem.findAny(
+            spl.frontend.lex.Token.Kind,
+            tokens.items(.kind),
+            &.{
+                .err_invalid_character,
+                .err_number_has_leading_zero,
+                .err_unterminated_multiline_comment,
+            },
+        ) != null) {
+            std.log.err("tokenizing error not reported due to stage limit", .{});
+            return 1;
+        }
+
+        return 0;
+    }
+
     if (args.tokens_dump_path) |dump_path| {
         dumpTokens(io, source, tokens, dump_path) catch |err|
             std.log.err("failed to dump tokens: {s}", .{@errorName(err)});
@@ -62,6 +79,15 @@ fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: spl.cli.Args) u8 {
     if (args.ast_dump_path) |dump_path| {
         dumpAst(io, source, tokens, ast, dump_path) catch |err|
             std.log.err("failed to dump AST: {s}", .{@errorName(err)});
+    }
+
+    if (args.last_stage == .parser) {
+        if (error_bundle.nonEmpty()) {
+            error_bundle.sort();
+            error_bundle.renderToStderr(io, source.text, null) catch {};
+            return 1;
+        }
+        return 0;
     }
 
     var sema = spl.frontend.Sema.init(gpa, source, tokens, ast, &error_bundle);
