@@ -30,6 +30,17 @@ pub fn nonEmpty(self: Self) bool {
     return self.errors.items.len > 0;
 }
 
+pub fn sort(self: *Self) void {
+    std.mem.sort(ErrorDetails, self.errors.items, {}, struct {
+        fn cmp(_: void, lhs: ErrorDetails, rhs: ErrorDetails) bool {
+            if (lhs.span.begin != rhs.span.begin) {
+                return lhs.span.begin < rhs.span.begin;
+            }
+            return lhs.span.end < rhs.span.end;
+        }
+    }.cmp);
+}
+
 pub fn report(
     self: *Self,
     gpa: std.mem.Allocator,
@@ -63,7 +74,7 @@ pub fn renderToStderr(
     };
 }
 
-fn getNullTerminatedMsg(self: Self, err: ErrorDetails) [:0]const u8 {
+fn getNullTerminatedMsg(self: Self, err: ErrorDetails) [*:0]const u8 {
     return @ptrCast(self.msg_storage.items[err.msg_start..]);
 }
 
@@ -110,10 +121,9 @@ fn findLineStart(source: []const u8, start: u32) u32 {
 
 fn renderRelevant(terminal: std.Io.Terminal, source: []const u8, span: Source.Span) !void {
     const output_start: usize = findLineStart(source, span.begin);
-    const output_end = std.mem.findScalarPos(u8, source, span.end, '\n') orelse source.len;
 
     var line_start = output_start;
-    while (line_start < output_end) {
+    while (line_start <= span.end) {
         const line_end = std.mem.findScalarPos(u8, source, line_start, '\n') orelse source.len;
         defer line_start = line_end + 1;
 
@@ -141,7 +151,7 @@ fn renderRelevant(terminal: std.Io.Terminal, source: []const u8, span: Source.Sp
 
         const last_line = line_end >= span.end;
 
-        const tildas = if (span.len() > 1)
+        const tildas = if (span.len() > 1 and highlight_end != highlight_start)
             highlight_end - highlight_start - @intFromBool(printed_caret) - @intFromBool(last_line)
         else
             0;

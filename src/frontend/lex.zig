@@ -73,7 +73,7 @@ pub fn tokenLiteral(source: []const u8, token: Token) []const u8 {
 }
 
 pub fn lineIndexFromOffset(source: []const u8, offset: u32) u32 {
-    return @intCast(std.mem.countScalar(u8, source[0..offset], '\n'));
+    return @intCast(std.mem.countScalar(u8, source[0..@min(offset, source.len)], '\n'));
 }
 
 fn lenMatching(source: []const u8, comptime pred: fn (u8) bool) u32 {

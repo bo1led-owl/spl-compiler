@@ -71,7 +71,9 @@ fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: spl.cli.Args) u8 {
     };
 
     if (error_bundle.nonEmpty()) {
+        error_bundle.sort();
         error_bundle.renderToStderr(io, source.text, null) catch {};
+        return 1;
     }
 
     return 0;
