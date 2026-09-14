@@ -90,9 +90,15 @@ fn visitNode(self: *Self, node_idx: Ast.Node.Index) (std.mem.Allocator.Error || 
             return .{ .is_assignable = true };
         },
         .number => {
-            // TODO:
-            // size check
-            // how to handle negative literals?
+            const token = self.tokens.get(node.token);
+
+            const value = std.fmt.parseUnsigned(u64, self.source.tokenLiteral(token), 10) catch
+                std.math.maxInt(u64); // greater than both |minInt(i64)| and maxInt(i64)
+
+            if (value > std.math.maxInt(i64)) {
+                const span = self.source.spanByToken(token);
+                try self.report(span, "integer literal out of range", .{});
+            }
 
             return .{};
         },
