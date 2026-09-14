@@ -31,15 +31,29 @@ pub fn init(
     };
 }
 
-pub fn visitNode(self: *Self, node_idx: Ast.Node.Index) (std.mem.Allocator.Error || ErrorBundle.ReportError)!void {
+pub fn run(self: *Self) !void {
+    _ = try self.visitNode(.root);
+}
+
+fn report(self: *Self, span: Source.Span, comptime fmt: []const u8, args: anytype) ErrorBundle.ReportError!void {
+    try self.errors.report(self.gpa, span, fmt, args);
+}
+
+const NodeInfo = packed struct(u1) {
+    is_assignable: bool = false,
+};
+
+fn visitNode(self: *Self, node_idx: Ast.Node.Index) (std.mem.Allocator.Error || ErrorBundle.ReportError)!NodeInfo {
     const node = self.ast.nodes.get(@intFromEnum(node_idx));
 
     switch (node.kind) {
         .root => {
             const body = self.ast.extractExtras(node.data.extra_range);
             for (body) |i| {
-                try self.visitNode(@enumFromInt(i));
+                _ = try self.visitNode(@enumFromInt(i));
             }
+
+            return .{};
         },
         .var_decl => {
             const name_token = self.tokens.get(node.token + 1);
@@ -58,7 +72,9 @@ pub fn visitNode(self: *Self, node_idx: Ast.Node.Index) (std.mem.Allocator.Error
                 };
             }
 
-            try self.visitNode(node.data.node);
+            _ = try self.visitNode(node.data.node);
+
+            return .{};
         },
         .name_ref => {
             const name_token = self.tokens.get(node.token);
@@ -70,17 +86,67 @@ pub fn visitNode(self: *Self, node_idx: Ast.Node.Index) (std.mem.Allocator.Error
                     .{name},
                 );
             }
-        },
 
-        // TODO
-        .number => {},
-        .@"return" => {},
-        .unary => {},
-        .binary => {},
-        .assign => {},
+            return .{ .is_assignable = true };
+        },
+        .number => {
+            // TODO:
+            // size check
+            // how to handle negative literals?
+
+            return .{};
+        },
+        .@"return" => {
+            _ = try self.visitNode(node.data.node);
+            return .{};
+        },
+        .unary => {
+            _ = try self.visitNode(node.data.node);
+            return .{};
+        },
+        .binary => {
+            _ = try self.visitNode(node.data.node_node.@"0");
+            _ = try self.visitNode(node.data.node_node.@"1");
+            return .{};
+        },
+        .assign => {
+            const dest_info = try self.visitNode(node.data.node_node.@"0");
+            if (!dest_info.is_assignable) {
+                try self.report(self.spanByNode(node_idx), "expression is not assignable", .{});
+            }
+
+            _ = try self.visitNode(node.data.node_node.@"1");
+
+            return .{};
+        },
     }
 }
 
-fn report(self: *Self, span: Source.Span, comptime fmt: []const u8, args: anytype) ErrorBundle.ReportError!void {
-    try self.errors.report(self.gpa, span, fmt, args);
+fn spanByNode(self: *Self, node_idx: Ast.Node.Index) Source.Span {
+    const node = self.ast.nodes.get(@intFromEnum(node_idx));
+    return switch (node.kind) {
+        .root => .{ .begin = 0, .end = @intCast(self.source.text.len) },
+        .var_decl => .{
+            .begin = self.tokens.items(.offset)[node.token],
+            .end = self.spanByNode(node.data.node).end,
+        },
+        .name_ref => self.source.spanByToken(self.tokens.get(node.token)),
+        .number => self.source.spanByToken(self.tokens.get(node.token)),
+        .@"return" => .{
+            .begin = self.tokens.items(.offset)[node.token],
+            .end = self.spanByNode(node.data.node).end,
+        },
+        .unary => .{
+            .begin = self.tokens.items(.offset)[node.token],
+            .end = self.spanByNode(node.data.node).end,
+        },
+        .binary => .{
+            .begin = self.spanByNode(node.data.node_node.@"0").begin,
+            .end = self.spanByNode(node.data.node_node.@"1").end,
+        },
+        .assign => .{
+            .begin = self.spanByNode(node.data.node_node.@"0").begin,
+            .end = self.spanByNode(node.data.node_node.@"1").end,
+        },
+    };
 }

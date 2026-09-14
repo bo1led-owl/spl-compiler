@@ -42,7 +42,7 @@ pub const Node = struct {
         root,
         /// variable declaration
         /// `token` is `var` or `val` to check mutability
-        /// `data` is `node_node`, the first one is the name, the second one is the initialization expression
+        /// `data` is `node`, pointing to the initialization expression
         var_decl,
         /// reference to some kind of entity by its name
         /// `token` is the name

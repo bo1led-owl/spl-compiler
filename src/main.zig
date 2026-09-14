@@ -91,7 +91,7 @@ fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: spl.cli.Args) u8 {
     }
 
     var sema = spl.frontend.Sema.init(gpa, source, tokens, ast, &error_bundle);
-    sema.visitNode(.root) catch |err| {
+    sema.run() catch |err| {
         std.log.err("failed to run semantic analysis: {s}", .{@errorName(err)});
         return 1;
     };
