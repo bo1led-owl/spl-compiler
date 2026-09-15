@@ -151,7 +151,7 @@ fn dumpTokens(
             .kw_var => "VAR",
             .kw_return => "RETURN",
             .semi => "SEMI",
-            .assign => "EQ",
+            .assign => "ASSIGN",
             .plus => "PLUS",
             .minus => "MINUS",
             .asterisk => "MULT",
