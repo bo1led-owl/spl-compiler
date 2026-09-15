@@ -1,41 +1,73 @@
 {
+  "line": 6,
+  "column": 1,
   "kind": "Program",
   "body": [
 {
-    "kind": "Declare",
-    "mut": "val",
-    "type": "String",
-    "name": "s",
-    "init": {
-      "kind": "StringLiteral",
-      "value": "hello\nworld\t!"
-    }
-  },
+  "line": 6,
+  "column": 1,
+    "kind": "FuncDecl",
+    "name": "main",
+    "returnType": "Int64",
+    "params": [],
+    "body": {
+  "line": 6,
+  "column": 1,
+      "kind": "Block",
+      "body": [
 {
-    "kind": "Declare",
-    "mut": "val",
-    "type": "String",
-    "name": "t",
-    "init": {
-      "kind": "StringLiteral",
-      "value": "quote \" here"
-    }
-  },
+  "line": 2,
+  "column": 38,
+        "kind": "Declare",
+        "mut": "val",
+        "type": "String",
+        "name": "s",
+        "init": {
+  "line": 2,
+  "column": 21,
+          "kind": "StringLiteral",
+          "value": "hello\nworld\t!"
+        }
+      },
 {
-    "kind": "Declare",
-    "mut": "val",
-    "type": "String",
-    "name": "u",
-    "init": {
-      "kind": "StringLiteral",
-      "value": "back\\slash"
-    }
-  },
+  "line": 3,
+  "column": 36,
+        "kind": "Declare",
+        "mut": "val",
+        "type": "String",
+        "name": "t",
+        "init": {
+  "line": 3,
+  "column": 21,
+          "kind": "StringLiteral",
+          "value": "quote \" here"
+        }
+      },
 {
-    "kind": "Return",
-    "value": {
-      "kind": "IntLiteral",
-      "value": 0
-    }
+  "line": 4,
+  "column": 34,
+        "kind": "Declare",
+        "mut": "val",
+        "type": "String",
+        "name": "u",
+        "init": {
+  "line": 4,
+  "column": 21,
+          "kind": "StringLiteral",
+          "value": "back\\slash"
+        }
+      },
+{
+  "line": 5,
+  "column": 13,
+        "kind": "Return",
+        "value": {
+  "line": 5,
+  "column": 12,
+          "kind": "IntLiteral",
+          "value": 0
+        }
+      }
+    ]}
   }
 ]}

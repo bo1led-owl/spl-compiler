@@ -1,22 +1,36 @@
 {
+  "line": 7,
+  "column": 1,
   "kind": "Program",
   "body": [
 {
+  "line": 3,
+  "column": 1,
     "kind": "FuncDecl",
     "name": "main",
     "params": [],
     "body": {
+  "line": 3,
+  "column": 1,
       "kind": "Block",
       "body": [
 {
+  "line": 2,
+  "column": 19,
         "kind": "Return",
         "value": {
+  "line": 2,
+  "column": 18,
           "kind": "Call",
           "callee": {
+  "line": 2,
+  "column": 12,
             "kind": "Ident",
             "name": "foo"
           },
           "args": [{
+  "line": 2,
+  "column": 16,
   "kind": "IntLiteral",
   "value": 42
 }]
@@ -25,18 +39,28 @@
     ]}
   },
 {
+  "line": 7,
+  "column": 1,
     "kind": "FuncDecl",
     "name": "foo",
     "params": [{
+  "line": 5,
+  "column": 9,
   "kind": "Ident",
   "name": "x"
 }],
     "body": {
+  "line": 7,
+  "column": 1,
       "kind": "Block",
       "body": [
 {
+  "line": 6,
+  "column": 13,
         "kind": "Return",
         "value": {
+  "line": 6,
+  "column": 12,
           "kind": "Ident",
           "name": "x"
         }

@@ -1,3 +1,4 @@
 {
+  "grammar": "<=2",
   "exit": "nonzero"
 }

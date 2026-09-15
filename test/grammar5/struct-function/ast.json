@@ -1,11 +1,17 @@
 {
+  "line": 18,
+  "column": 1,
   "kind": "Program",
   "body": [
 {
+  "line": 4,
+  "column": 1,
     "kind": "StructDecl",
     "name": "Point",
     "fields": [
 {
+  "line": 2,
+  "column": 13,
       "kind": "Declare",
       "mut": "val",
       "type": "Int64",
@@ -13,6 +19,8 @@
       "init": null
     },
 {
+  "line": 3,
+  "column": 13,
       "kind": "Declare",
       "mut": "val",
       "type": "Int64",
@@ -21,22 +29,32 @@
     }
   ]},
 {
+  "line": 11,
+  "column": 1,
     "kind": "FuncDecl",
     "name": "makePoint",
     "returnType": "Point",
     "params": [{
+  "line": 6,
+  "column": 19,
   "kind": "Param",
   "name": "px",
   "type": "Int64"
 }, {
+  "line": 6,
+  "column": 30,
   "kind": "Param",
   "name": "py",
   "type": "Int64"
 }],
     "body": {
+  "line": 11,
+  "column": 1,
       "kind": "Block",
       "body": [
 {
+  "line": 7,
+  "column": 17,
         "kind": "Declare",
         "mut": "var",
         "type": "Point",
@@ -44,38 +62,58 @@
         "init": null
       },
 {
+  "line": 8,
+  "column": 13,
         "kind": "Assign",
         "target": {
+  "line": 8,
+  "column": 7,
           "kind": "FieldAccess",
           "base": {
+  "line": 8,
+  "column": 5,
             "kind": "Ident",
             "name": "p"
           },
           "field": "x"
         },
         "value": {
+  "line": 8,
+  "column": 11,
           "kind": "Ident",
           "name": "px"
         }
       },
 {
+  "line": 9,
+  "column": 13,
         "kind": "Assign",
         "target": {
+  "line": 9,
+  "column": 7,
           "kind": "FieldAccess",
           "base": {
+  "line": 9,
+  "column": 5,
             "kind": "Ident",
             "name": "p"
           },
           "field": "y"
         },
         "value": {
+  "line": 9,
+  "column": 11,
           "kind": "Ident",
           "name": "py"
         }
       },
 {
+  "line": 10,
+  "column": 13,
         "kind": "Return",
         "value": {
+  "line": 10,
+  "column": 12,
           "kind": "Ident",
           "name": "p"
         }
@@ -83,64 +121,108 @@
     ]}
   },
 {
-    "kind": "Declare",
-    "mut": "var",
-    "type": "Point",
-    "name": "pt",
-    "init": null
-  },
+  "line": 18,
+  "column": 1,
+    "kind": "FuncDecl",
+    "name": "main",
+    "returnType": "Int64",
+    "params": [],
+    "body": {
+  "line": 18,
+  "column": 1,
+      "kind": "Block",
+      "body": [
 {
-    "kind": "Assign",
-    "target": {
-      "kind": "Ident",
-      "name": "pt"
-    },
-    "value": {
-      "kind": "Call",
-      "callee": {
-        "kind": "Ident",
-        "name": "makePoint"
+  "line": 14,
+  "column": 18,
+        "kind": "Declare",
+        "mut": "var",
+        "type": "Point",
+        "name": "pt",
+        "init": null
       },
-      "args": [{
+{
+  "line": 15,
+  "column": 25,
+        "kind": "Assign",
+        "target": {
+  "line": 15,
+  "column": 5,
+          "kind": "Ident",
+          "name": "pt"
+        },
+        "value": {
+  "line": 15,
+  "column": 24,
+          "kind": "Call",
+          "callee": {
+  "line": 15,
+  "column": 10,
+            "kind": "Ident",
+            "name": "makePoint"
+          },
+          "args": [{
+  "line": 15,
+  "column": 20,
   "kind": "IntLiteral",
   "value": 3
 }, {
+  "line": 15,
+  "column": 23,
   "kind": "IntLiteral",
   "value": 4
 }]
-    }
-  },
-{
-    "kind": "Declare",
-    "mut": "val",
-    "type": "Int64",
-    "name": "result",
-    "init": {
-      "kind": "BinOp",
-      "op": "+",
-      "left": {
-        "kind": "FieldAccess",
-        "base": {
-          "kind": "Ident",
-          "name": "pt"
-        },
-        "field": "x"
+        }
       },
-      "right": {
-        "kind": "FieldAccess",
-        "base": {
-          "kind": "Ident",
-          "name": "pt"
-        },
-        "field": "y"
-      }
-    }
-  },
 {
-    "kind": "Return",
-    "value": {
-      "kind": "Ident",
-      "name": "result"
-    }
+  "line": 16,
+  "column": 36,
+        "kind": "Declare",
+        "mut": "val",
+        "type": "Int64",
+        "name": "result",
+        "init": {
+  "line": 16,
+  "column": 35,
+          "kind": "BinOp",
+          "op": "+",
+          "left": {
+  "line": 16,
+  "column": 28,
+            "kind": "FieldAccess",
+            "base": {
+  "line": 16,
+  "column": 25,
+              "kind": "Ident",
+              "name": "pt"
+            },
+            "field": "x"
+          },
+          "right": {
+  "line": 16,
+  "column": 35,
+            "kind": "FieldAccess",
+            "base": {
+  "line": 16,
+  "column": 32,
+              "kind": "Ident",
+              "name": "pt"
+            },
+            "field": "y"
+          }
+        }
+      },
+{
+  "line": 17,
+  "column": 18,
+        "kind": "Return",
+        "value": {
+  "line": 17,
+  "column": 12,
+          "kind": "Ident",
+          "name": "result"
+        }
+      }
+    ]}
   }
 ]}

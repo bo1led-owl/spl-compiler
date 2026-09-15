@@ -1,11 +1,17 @@
 {
+  "line": 15,
+  "column": 1,
   "kind": "Program",
   "body": [
 {
+  "line": 4,
+  "column": 1,
     "kind": "StructDecl",
     "name": "Pair",
     "fields": [
 {
+  "line": 2,
+  "column": 17,
       "kind": "Declare",
       "mut": "val",
       "type": "Int64",
@@ -13,6 +19,8 @@
       "init": null
     },
 {
+  "line": 3,
+  "column": 18,
       "kind": "Declare",
       "mut": "val",
       "type": "Int64",
@@ -21,139 +29,223 @@
     }
   ]},
 {
-    "kind": "Declare",
-    "mut": "var",
-    "type": "Pair",
-    "name": "p",
-    "init": null
-  },
+  "line": 15,
+  "column": 1,
+    "kind": "FuncDecl",
+    "name": "main",
+    "returnType": "Int64",
+    "params": [],
+    "body": {
+  "line": 15,
+  "column": 1,
+      "kind": "Block",
+      "body": [
 {
-    "kind": "Declare",
-    "mut": "var",
-    "type": "Array[4](Int64)",
-    "name": "arr",
-    "init": null
-  },
+  "line": 7,
+  "column": 16,
+        "kind": "Declare",
+        "mut": "var",
+        "type": "Pair",
+        "name": "p",
+        "init": null
+      },
 {
-    "kind": "Assign",
-    "target": {
-      "kind": "FieldAccess",
-      "base": {
-        "kind": "Ident",
-        "name": "p"
+  "line": 8,
+  "column": 22,
+        "kind": "Declare",
+        "mut": "var",
+        "type": "Array[4](Int64)",
+        "name": "arr",
+        "init": null
       },
-      "field": "first"
-    },
-    "value": {
-      "kind": "IntLiteral",
-      "value": 10
-    }
-  },
 {
-    "kind": "Assign",
-    "target": {
-      "kind": "FieldAccess",
-      "base": {
-        "kind": "Ident",
-        "name": "p"
-      },
-      "field": "second"
-    },
-    "value": {
-      "kind": "IntLiteral",
-      "value": 20
-    }
-  },
-{
-    "kind": "Assign",
-    "target": {
-      "kind": "Subscript",
-      "base": {
-        "kind": "Ident",
-        "name": "arr"
-      },
-      "index": {
-        "kind": "IntLiteral",
-        "value": 0
-      }
-    },
-    "value": {
-      "kind": "FieldAccess",
-      "base": {
-        "kind": "Ident",
-        "name": "p"
-      },
-      "field": "first"
-    }
-  },
-{
-    "kind": "Assign",
-    "target": {
-      "kind": "Subscript",
-      "base": {
-        "kind": "Ident",
-        "name": "arr"
-      },
-      "index": {
-        "kind": "IntLiteral",
-        "value": 1
-      }
-    },
-    "value": {
-      "kind": "FieldAccess",
-      "base": {
-        "kind": "Ident",
-        "name": "p"
-      },
-      "field": "second"
-    }
-  },
-{
-    "kind": "Assign",
-    "target": {
-      "kind": "FieldAccess",
-      "base": {
-        "kind": "Ident",
-        "name": "p"
-      },
-      "field": "first"
-    },
-    "value": {
-      "kind": "BinOp",
-      "op": "+",
-      "left": {
-        "kind": "Subscript",
-        "base": {
-          "kind": "Ident",
-          "name": "arr"
+  "line": 9,
+  "column": 17,
+        "kind": "Assign",
+        "target": {
+  "line": 9,
+  "column": 7,
+          "kind": "FieldAccess",
+          "base": {
+  "line": 9,
+  "column": 5,
+            "kind": "Ident",
+            "name": "p"
+          },
+          "field": "first"
         },
-        "index": {
+        "value": {
+  "line": 9,
+  "column": 15,
           "kind": "IntLiteral",
-          "value": 0
+          "value": 10
         }
       },
-      "right": {
-        "kind": "Subscript",
-        "base": {
-          "kind": "Ident",
-          "name": "arr"
+{
+  "line": 10,
+  "column": 18,
+        "kind": "Assign",
+        "target": {
+  "line": 10,
+  "column": 7,
+          "kind": "FieldAccess",
+          "base": {
+  "line": 10,
+  "column": 5,
+            "kind": "Ident",
+            "name": "p"
+          },
+          "field": "second"
         },
-        "index": {
+        "value": {
+  "line": 10,
+  "column": 16,
           "kind": "IntLiteral",
-          "value": 1
+          "value": 20
+        }
+      },
+{
+  "line": 11,
+  "column": 21,
+        "kind": "Assign",
+        "target": {
+  "line": 11,
+  "column": 10,
+          "kind": "Subscript",
+          "base": {
+  "line": 11,
+  "column": 5,
+            "kind": "Ident",
+            "name": "arr"
+          },
+          "index": {
+  "line": 11,
+  "column": 9,
+            "kind": "IntLiteral",
+            "value": 0
+          }
+        },
+        "value": {
+  "line": 11,
+  "column": 16,
+          "kind": "FieldAccess",
+          "base": {
+  "line": 11,
+  "column": 14,
+            "kind": "Ident",
+            "name": "p"
+          },
+          "field": "first"
+        }
+      },
+{
+  "line": 12,
+  "column": 22,
+        "kind": "Assign",
+        "target": {
+  "line": 12,
+  "column": 10,
+          "kind": "Subscript",
+          "base": {
+  "line": 12,
+  "column": 5,
+            "kind": "Ident",
+            "name": "arr"
+          },
+          "index": {
+  "line": 12,
+  "column": 9,
+            "kind": "IntLiteral",
+            "value": 1
+          }
+        },
+        "value": {
+  "line": 12,
+  "column": 16,
+          "kind": "FieldAccess",
+          "base": {
+  "line": 12,
+  "column": 14,
+            "kind": "Ident",
+            "name": "p"
+          },
+          "field": "second"
+        }
+      },
+{
+  "line": 13,
+  "column": 30,
+        "kind": "Assign",
+        "target": {
+  "line": 13,
+  "column": 7,
+          "kind": "FieldAccess",
+          "base": {
+  "line": 13,
+  "column": 5,
+            "kind": "Ident",
+            "name": "p"
+          },
+          "field": "first"
+        },
+        "value": {
+  "line": 13,
+  "column": 29,
+          "kind": "BinOp",
+          "op": "+",
+          "left": {
+  "line": 13,
+  "column": 20,
+            "kind": "Subscript",
+            "base": {
+  "line": 13,
+  "column": 15,
+              "kind": "Ident",
+              "name": "arr"
+            },
+            "index": {
+  "line": 13,
+  "column": 19,
+              "kind": "IntLiteral",
+              "value": 0
+            }
+          },
+          "right": {
+  "line": 13,
+  "column": 29,
+            "kind": "Subscript",
+            "base": {
+  "line": 13,
+  "column": 24,
+              "kind": "Ident",
+              "name": "arr"
+            },
+            "index": {
+  "line": 13,
+  "column": 28,
+              "kind": "IntLiteral",
+              "value": 1
+            }
+          }
+        }
+      },
+{
+  "line": 14,
+  "column": 19,
+        "kind": "Return",
+        "value": {
+  "line": 14,
+  "column": 14,
+          "kind": "FieldAccess",
+          "base": {
+  "line": 14,
+  "column": 12,
+            "kind": "Ident",
+            "name": "p"
+          },
+          "field": "first"
         }
       }
-    }
-  },
-{
-    "kind": "Return",
-    "value": {
-      "kind": "FieldAccess",
-      "base": {
-        "kind": "Ident",
-        "name": "p"
-      },
-      "field": "first"
-    }
+    ]}
   }
 ]}

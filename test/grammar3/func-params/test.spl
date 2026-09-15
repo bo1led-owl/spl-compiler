@@ -2,3 +2,7 @@ def add(a, b) {
     var result = a + b;
     return result;
 }
+
+def main() {
+    return 0;
+}

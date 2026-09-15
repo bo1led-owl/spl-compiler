@@ -1,11 +1,17 @@
 {
+  "line": 12,
+  "column": 1,
   "kind": "Program",
   "body": [
 {
+  "line": 4,
+  "column": 1,
     "kind": "StructDecl",
     "name": "Point",
     "fields": [
 {
+  "line": 2,
+  "column": 13,
       "kind": "Declare",
       "mut": "val",
       "type": "Int64",
@@ -13,6 +19,8 @@
       "init": null
     },
 {
+  "line": 3,
+  "column": 13,
       "kind": "Declare",
       "mut": "val",
       "type": "Int64",
@@ -21,73 +29,121 @@
     }
   ]},
 {
-    "kind": "Declare",
-    "mut": "var",
-    "type": "Point",
-    "name": "p",
-    "init": null
-  },
+  "line": 12,
+  "column": 1,
+    "kind": "FuncDecl",
+    "name": "main",
+    "returnType": "Int64",
+    "params": [],
+    "body": {
+  "line": 12,
+  "column": 1,
+      "kind": "Block",
+      "body": [
 {
-    "kind": "Assign",
-    "target": {
-      "kind": "FieldAccess",
-      "base": {
-        "kind": "Ident",
-        "name": "p"
+  "line": 7,
+  "column": 17,
+        "kind": "Declare",
+        "mut": "var",
+        "type": "Point",
+        "name": "p",
+        "init": null
       },
-      "field": "x"
-    },
-    "value": {
-      "kind": "IntLiteral",
-      "value": 10
-    }
-  },
 {
-    "kind": "Assign",
-    "target": {
-      "kind": "FieldAccess",
-      "base": {
-        "kind": "Ident",
-        "name": "p"
-      },
-      "field": "y"
-    },
-    "value": {
-      "kind": "IntLiteral",
-      "value": 20
-    }
-  },
-{
-    "kind": "Declare",
-    "mut": "val",
-    "type": "Int64",
-    "name": "sum",
-    "init": {
-      "kind": "BinOp",
-      "op": "+",
-      "left": {
-        "kind": "FieldAccess",
-        "base": {
-          "kind": "Ident",
-          "name": "p"
+  "line": 8,
+  "column": 13,
+        "kind": "Assign",
+        "target": {
+  "line": 8,
+  "column": 7,
+          "kind": "FieldAccess",
+          "base": {
+  "line": 8,
+  "column": 5,
+            "kind": "Ident",
+            "name": "p"
+          },
+          "field": "x"
         },
-        "field": "x"
+        "value": {
+  "line": 8,
+  "column": 11,
+          "kind": "IntLiteral",
+          "value": 10
+        }
       },
-      "right": {
-        "kind": "FieldAccess",
-        "base": {
-          "kind": "Ident",
-          "name": "p"
+{
+  "line": 9,
+  "column": 13,
+        "kind": "Assign",
+        "target": {
+  "line": 9,
+  "column": 7,
+          "kind": "FieldAccess",
+          "base": {
+  "line": 9,
+  "column": 5,
+            "kind": "Ident",
+            "name": "p"
+          },
+          "field": "y"
         },
-        "field": "y"
+        "value": {
+  "line": 9,
+  "column": 11,
+          "kind": "IntLiteral",
+          "value": 20
+        }
+      },
+{
+  "line": 10,
+  "column": 31,
+        "kind": "Declare",
+        "mut": "val",
+        "type": "Int64",
+        "name": "sum",
+        "init": {
+  "line": 10,
+  "column": 30,
+          "kind": "BinOp",
+          "op": "+",
+          "left": {
+  "line": 10,
+  "column": 24,
+            "kind": "FieldAccess",
+            "base": {
+  "line": 10,
+  "column": 22,
+              "kind": "Ident",
+              "name": "p"
+            },
+            "field": "x"
+          },
+          "right": {
+  "line": 10,
+  "column": 30,
+            "kind": "FieldAccess",
+            "base": {
+  "line": 10,
+  "column": 28,
+              "kind": "Ident",
+              "name": "p"
+            },
+            "field": "y"
+          }
+        }
+      },
+{
+  "line": 11,
+  "column": 15,
+        "kind": "Return",
+        "value": {
+  "line": 11,
+  "column": 12,
+          "kind": "Ident",
+          "name": "sum"
+        }
       }
-    }
-  },
-{
-    "kind": "Return",
-    "value": {
-      "kind": "Ident",
-      "name": "sum"
-    }
+    ]}
   }
 ]}

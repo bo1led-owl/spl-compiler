@@ -1,60 +1,104 @@
 {
+  "line": 9,
+  "column": 1,
   "kind": "Program",
   "body": [
 {
-    "kind": "Declare",
-    "mut": "var",
-    "type": "String",
-    "name": "a",
-    "init": {
-      "kind": "StringLiteral",
-      "value": "hello"
-    }
-  },
+  "line": 9,
+  "column": 1,
+    "kind": "FuncDecl",
+    "name": "main",
+    "returnType": "Int64",
+    "params": [],
+    "body": {
+  "line": 9,
+  "column": 1,
+      "kind": "Block",
+      "body": [
 {
-    "kind": "Declare",
-    "mut": "var",
-    "type": "String",
-    "name": "b",
-    "init": {
-      "kind": "StringLiteral",
-      "value": "hello"
-    }
-  },
-{
-    "kind": "If",
-    "cond": {
-      "kind": "BinOp",
-      "op": "==",
-      "left": {
-        "kind": "Ident",
-        "name": "a"
+  "line": 2,
+  "column": 28,
+        "kind": "Declare",
+        "mut": "var",
+        "type": "String",
+        "name": "a",
+        "init": {
+  "line": 2,
+  "column": 21,
+          "kind": "StringLiteral",
+          "value": "hello"
+        }
       },
-      "right": {
-        "kind": "Ident",
-        "name": "b"
-      }
-    },
-    "then": {
-      "kind": "Block",
-      "body": [
 {
-        "kind": "Return",
-        "value": {
-          "kind": "IntLiteral",
-          "value": 1
+  "line": 3,
+  "column": 28,
+        "kind": "Declare",
+        "mut": "var",
+        "type": "String",
+        "name": "b",
+        "init": {
+  "line": 3,
+  "column": 21,
+          "kind": "StringLiteral",
+          "value": "hello"
         }
-      }
-    ]},
-    "else": {
-      "kind": "Block",
-      "body": [
+      },
 {
-        "kind": "Return",
-        "value": {
-          "kind": "IntLiteral",
-          "value": 0
-        }
+  "line": 8,
+  "column": 5,
+        "kind": "If",
+        "cond": {
+  "line": 4,
+  "column": 14,
+          "kind": "BinOp",
+          "op": "==",
+          "left": {
+  "line": 4,
+  "column": 9,
+            "kind": "Ident",
+            "name": "a"
+          },
+          "right": {
+  "line": 4,
+  "column": 14,
+            "kind": "Ident",
+            "name": "b"
+          }
+        },
+        "then": {
+  "line": 6,
+  "column": 5,
+          "kind": "Block",
+          "body": [
+{
+  "line": 5,
+  "column": 17,
+            "kind": "Return",
+            "value": {
+  "line": 5,
+  "column": 16,
+              "kind": "IntLiteral",
+              "value": 1
+            }
+          }
+        ]},
+        "else": {
+  "line": 8,
+  "column": 5,
+          "kind": "Block",
+          "body": [
+{
+  "line": 7,
+  "column": 17,
+            "kind": "Return",
+            "value": {
+  "line": 7,
+  "column": 16,
+              "kind": "IntLiteral",
+              "value": 0
+            }
+          }
+        ]}
       }
     ]}
   }

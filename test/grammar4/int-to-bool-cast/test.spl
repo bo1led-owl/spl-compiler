@@ -1,7 +1,9 @@
-var x: Int64 = 1;
-var y: Bool = cast<Bool>(x);
-if (y) {
-  return 1;
-} else {
-  return 0;
+def main(): Int64 {
+    var x: Int64 = 1;
+    var y: Bool = cast<Bool>(x);
+    if (y) {
+        return 1;
+    } else {
+        return 0;
+    }
 }

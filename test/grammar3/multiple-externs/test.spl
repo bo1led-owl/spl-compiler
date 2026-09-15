@@ -1,2 +1,6 @@
 extern def foo(x);
 extern def bar(y, z);
+
+def main() {
+    return 0;
+}

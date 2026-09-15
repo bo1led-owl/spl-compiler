@@ -1,49 +1,85 @@
 {
+  "line": 6,
+  "column": 1,
   "kind": "Program",
   "body": [
 {
-    "kind": "Declare",
-    "mut": "val",
-    "type": "Int32",
-    "name": "i32",
-    "init": {
-      "kind": "IntLiteral",
-      "value": 1000
-    }
-  },
+  "line": 6,
+  "column": 1,
+    "kind": "FuncDecl",
+    "name": "main",
+    "returnType": "Int64",
+    "params": [],
+    "body": {
+  "line": 6,
+  "column": 1,
+      "kind": "Block",
+      "body": [
 {
-    "kind": "Declare",
-    "mut": "val",
-    "type": "Int16",
-    "name": "i16",
-    "init": {
-      "kind": "Cast",
-      "type": "Int16",
-      "value": {
-        "kind": "Ident",
-        "name": "i32"
+  "line": 2,
+  "column": 26,
+        "kind": "Declare",
+        "mut": "val",
+        "type": "Int32",
+        "name": "i32",
+        "init": {
+  "line": 2,
+  "column": 22,
+          "kind": "IntLiteral",
+          "value": 1000
+        }
+      },
+{
+  "line": 3,
+  "column": 38,
+        "kind": "Declare",
+        "mut": "val",
+        "type": "Int16",
+        "name": "i16",
+        "init": {
+  "line": 3,
+  "column": 37,
+          "kind": "Cast",
+          "type": "Int16",
+          "value": {
+  "line": 3,
+  "column": 34,
+            "kind": "Ident",
+            "name": "i32"
+          }
+        }
+      },
+{
+  "line": 4,
+  "column": 38,
+        "kind": "Declare",
+        "mut": "val",
+        "type": "Int64",
+        "name": "i64",
+        "init": {
+  "line": 4,
+  "column": 37,
+          "kind": "Cast",
+          "type": "Int64",
+          "value": {
+  "line": 4,
+  "column": 34,
+            "kind": "Ident",
+            "name": "i16"
+          }
+        }
+      },
+{
+  "line": 5,
+  "column": 15,
+        "kind": "Return",
+        "value": {
+  "line": 5,
+  "column": 12,
+          "kind": "Ident",
+          "name": "i64"
+        }
       }
-    }
-  },
-{
-    "kind": "Declare",
-    "mut": "val",
-    "type": "Int64",
-    "name": "i64",
-    "init": {
-      "kind": "Cast",
-      "type": "Int64",
-      "value": {
-        "kind": "Ident",
-        "name": "i16"
-      }
-    }
-  },
-{
-    "kind": "Return",
-    "value": {
-      "kind": "Ident",
-      "name": "i64"
-    }
+    ]}
   }
 ]}

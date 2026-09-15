@@ -1,44 +1,79 @@
 {
+  "line": 6,
+  "column": 1,
   "kind": "Program",
   "body": [
 {
+  "line": 1,
+  "column": 22,
     "kind": "ExternDecl",
     "name": "putchar",
     "params": [{
+  "line": 1,
+  "column": 20,
   "kind": "Ident",
   "name": "x"
 }]
   },
 {
-    "kind": "Declare",
-    "mut": "var",
-    "name": "a",
-    "init": {
-      "kind": "Call",
-      "callee": {
-        "kind": "Ident",
-        "name": "putchar"
-      },
-      "args": [{
+  "line": 6,
+  "column": 1,
+    "kind": "FuncDecl",
+    "name": "main",
+    "params": [],
+    "body": {
+  "line": 6,
+  "column": 1,
+      "kind": "Block",
+      "body": [
+{
+  "line": 4,
+  "column": 24,
+        "kind": "Declare",
+        "mut": "var",
+        "name": "a",
+        "init": {
+  "line": 4,
+  "column": 23,
+          "kind": "Call",
+          "callee": {
+  "line": 4,
+  "column": 13,
+            "kind": "Ident",
+            "name": "putchar"
+          },
+          "args": [{
+  "line": 4,
+  "column": 21,
   "kind": "IntLiteral",
   "value": 72
 }]
-    }
-  },
-{
-    "kind": "Declare",
-    "mut": "var",
-    "name": "b",
-    "init": {
-      "kind": "Call",
-      "callee": {
-        "kind": "Ident",
-        "name": "putchar"
+        }
       },
-      "args": [{
+{
+  "line": 5,
+  "column": 25,
+        "kind": "Declare",
+        "mut": "var",
+        "name": "b",
+        "init": {
+  "line": 5,
+  "column": 24,
+          "kind": "Call",
+          "callee": {
+  "line": 5,
+  "column": 13,
+            "kind": "Ident",
+            "name": "putchar"
+          },
+          "args": [{
+  "line": 5,
+  "column": 21,
   "kind": "IntLiteral",
   "value": 105
 }]
-    }
+        }
+      }
+    ]}
   }
 ]}

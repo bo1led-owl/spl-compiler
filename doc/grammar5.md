@@ -188,8 +188,9 @@ All semantic rules from grammar 4 apply, plus:
   `String`, or another struct type. Nested structs are embedded by value.
 - **Field access** uses dot notation: `expr.field`. The field must exist in the
   struct type.
-- **Struct assignment** (`a = b` where both are structs) copies all fields by value
-  (LLVM `memcpy`).
+- **Structs are value types**: assignment, passing to functions, and returning from
+  functions all copy the entire struct by value. A struct assignment
+  (`a = b` where both are structs) copies all fields (LLVM `memcpy`).
 - **Passing structs to functions** is by value: the entire struct is copied.
 - **Returning structs from functions** is by value (LLVM handles the ABI).
 - **Passing structs to `extern` C functions** is not allowed (only primitive types and strings).
@@ -197,6 +198,8 @@ All semantic rules from grammar 4 apply, plus:
   constant. The element type can be any type.
 - **Array subscript** uses bracket notation: `arr[index]`. Indexing is zero-based.
   Out-of-bounds access is undefined behavior.
-- **Arrays cannot be passed to functions** (they are accessed in their declaring scope).
+- **Arrays are value types**: an array assignment (`a = b`) copies all elements by
+  value (LLVM `memcpy`). Arrays are stack-allocated in their declaring scope and
+  cannot be passed to or returned from functions.
 - **Error recovery**: see [`doc/error-handling.md`](error-handling.md) for the
   recommended error recovery strategy.

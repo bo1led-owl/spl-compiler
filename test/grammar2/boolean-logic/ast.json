@@ -1,47 +1,71 @@
 {
+  "line": 3,
+  "column": 21,
   "kind": "Program",
   "body": [
 {
+  "line": 1,
+  "column": 13,
     "kind": "Declare",
     "mut": "var",
     "name": "a",
     "init": {
+  "line": 1,
+  "column": 9,
       "kind": "BoolLiteral",
       "value": true
     }
   },
 {
+  "line": 2,
+  "column": 14,
     "kind": "Declare",
     "mut": "var",
     "name": "b",
     "init": {
+  "line": 2,
+  "column": 9,
       "kind": "BoolLiteral",
       "value": false
     }
   },
 {
+  "line": 3,
+  "column": 21,
     "kind": "Declare",
     "mut": "var",
     "name": "c",
     "init": {
+  "line": 3,
+  "column": 20,
       "kind": "BinOp",
       "op": "||",
       "left": {
+  "line": 3,
+  "column": 14,
         "kind": "BinOp",
         "op": "&&",
         "left": {
+  "line": 3,
+  "column": 9,
           "kind": "Ident",
           "name": "a"
         },
         "right": {
+  "line": 3,
+  "column": 14,
           "kind": "Ident",
           "name": "b"
         }
       },
       "right": {
+  "line": 3,
+  "column": 20,
         "kind": "Unary",
         "op": "!",
         "operand": {
+  "line": 3,
+  "column": 20,
           "kind": "Ident",
           "name": "a"
         }

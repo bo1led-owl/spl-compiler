@@ -1,18 +1,52 @@
 {
+  "line": 5,
+  "column": 1,
   "kind": "Program",
   "body": [
 {
+  "line": 1,
+  "column": 24,
     "kind": "ExternDecl",
     "name": "foo",
     "params": [{
+  "line": 1,
+  "column": 16,
   "kind": "Ident",
   "name": "a"
 }, {
+  "line": 1,
+  "column": 19,
   "kind": "Ident",
   "name": "b"
 }, {
+  "line": 1,
+  "column": 22,
   "kind": "Ident",
   "name": "c"
 }]
+  },
+{
+  "line": 5,
+  "column": 1,
+    "kind": "FuncDecl",
+    "name": "main",
+    "params": [],
+    "body": {
+  "line": 5,
+  "column": 1,
+      "kind": "Block",
+      "body": [
+{
+  "line": 4,
+  "column": 13,
+        "kind": "Return",
+        "value": {
+  "line": 4,
+  "column": 12,
+          "kind": "IntLiteral",
+          "value": 0
+        }
+      }
+    ]}
   }
 ]}

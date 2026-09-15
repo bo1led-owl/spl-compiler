@@ -4,3 +4,7 @@ def fact(n) {
     }
     return n * fact(n - 1);
 }
+
+def main() {
+    return 0;
+}

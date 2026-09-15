@@ -4,4 +4,7 @@ def noop() {
 
 extern def foo(x);
 
-var a = foo(noop());
+def main() {
+    var a = foo(noop());
+    return 0;
+}

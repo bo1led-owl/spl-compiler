@@ -1,1 +1,5 @@
 extern def putchar(c);
+
+def main() {
+    return 0;
+}

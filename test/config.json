@@ -15,7 +15,7 @@
       "cmd": ["{root}/build/bin/splc", "-g", "{grammar}", "-a", "{ast_in}", "{input}"],
       "out": "{ast_out}",
       "preprocess": [
-        {"type": "json", "keep": ["kind"]}
+        {"type": "json", "keep": ["kind", "line", "column"]}
       ]
     },
     "llvm": {

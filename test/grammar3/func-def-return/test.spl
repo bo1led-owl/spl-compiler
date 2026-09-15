@@ -1,3 +1,7 @@
 def foo() {
     return 42;
 }
+
+def main() {
+    return 0;
+}

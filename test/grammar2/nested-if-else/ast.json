@@ -1,73 +1,113 @@
 {
+  "line": 12,
+  "column": 1,
   "kind": "Program",
   "body": [
 {
+  "line": 1,
+  "column": 10,
     "kind": "Declare",
     "mut": "var",
     "name": "x",
     "init": {
+  "line": 1,
+  "column": 9,
       "kind": "IntLiteral",
       "value": 1
     }
   },
 {
+  "line": 2,
+  "column": 10,
     "kind": "Declare",
     "mut": "var",
     "name": "y",
     "init": {
+  "line": 2,
+  "column": 9,
       "kind": "IntLiteral",
       "value": 0
     }
   },
 {
+  "line": 3,
+  "column": 10,
     "kind": "Declare",
     "mut": "var",
     "name": "z",
     "init": {
+  "line": 3,
+  "column": 9,
       "kind": "IntLiteral",
       "value": 0
     }
   },
 {
+  "line": 12,
+  "column": 1,
     "kind": "If",
     "cond": {
+  "line": 4,
+  "column": 5,
       "kind": "Ident",
       "name": "x"
     },
     "then": {
+  "line": 10,
+  "column": 1,
       "kind": "Block",
       "body": [
 {
+  "line": 9,
+  "column": 5,
         "kind": "If",
         "cond": {
+  "line": 5,
+  "column": 9,
           "kind": "Ident",
           "name": "y"
         },
         "then": {
+  "line": 7,
+  "column": 5,
           "kind": "Block",
           "body": [
 {
+  "line": 6,
+  "column": 14,
             "kind": "Assign",
             "target": {
+  "line": 6,
+  "column": 9,
               "kind": "Ident",
               "name": "z"
             },
             "value": {
+  "line": 6,
+  "column": 13,
               "kind": "IntLiteral",
               "value": 1
             }
           }
         ]},
         "else": {
+  "line": 9,
+  "column": 5,
           "kind": "Block",
           "body": [
 {
+  "line": 8,
+  "column": 14,
             "kind": "Assign",
             "target": {
+  "line": 8,
+  "column": 9,
               "kind": "Ident",
               "name": "z"
             },
             "value": {
+  "line": 8,
+  "column": 13,
               "kind": "IntLiteral",
               "value": 2
             }
@@ -76,15 +116,23 @@
       }
     ]},
     "else": {
+  "line": 12,
+  "column": 1,
       "kind": "Block",
       "body": [
 {
+  "line": 11,
+  "column": 10,
         "kind": "Assign",
         "target": {
+  "line": 11,
+  "column": 5,
           "kind": "Ident",
           "name": "z"
         },
         "value": {
+  "line": 11,
+  "column": 9,
           "kind": "IntLiteral",
           "value": 3
         }

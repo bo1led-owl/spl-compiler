@@ -1,143 +1,231 @@
 {
+  "line": 12,
+  "column": 1,
   "kind": "Program",
   "body": [
 {
-    "kind": "Declare",
-    "mut": "var",
-    "type": "Array[5](Int64)",
-    "name": "arr",
-    "init": null
-  },
+  "line": 12,
+  "column": 1,
+    "kind": "FuncDecl",
+    "name": "main",
+    "returnType": "Int64",
+    "params": [],
+    "body": {
+  "line": 12,
+  "column": 1,
+      "kind": "Block",
+      "body": [
 {
-    "kind": "Declare",
-    "mut": "var",
-    "type": "Int64",
-    "name": "i",
-    "init": null
-  },
-{
-    "kind": "Assign",
-    "target": {
-      "kind": "Ident",
-      "name": "i"
-    },
-    "value": {
-      "kind": "IntLiteral",
-      "value": 0
-    }
-  },
-{
-    "kind": "Assign",
-    "target": {
-      "kind": "Subscript",
-      "base": {
-        "kind": "Ident",
-        "name": "arr"
+  "line": 2,
+  "column": 22,
+        "kind": "Declare",
+        "mut": "var",
+        "type": "Array[5](Int64)",
+        "name": "arr",
+        "init": null
       },
-      "index": {
-        "kind": "IntLiteral",
-        "value": 0
-      }
-    },
-    "value": {
-      "kind": "IntLiteral",
-      "value": 10
-    }
-  },
 {
-    "kind": "Assign",
-    "target": {
-      "kind": "Subscript",
-      "base": {
-        "kind": "Ident",
-        "name": "arr"
+  "line": 3,
+  "column": 17,
+        "kind": "Declare",
+        "mut": "var",
+        "type": "Int64",
+        "name": "i",
+        "init": null
       },
-      "index": {
-        "kind": "IntLiteral",
-        "value": 1
-      }
-    },
-    "value": {
-      "kind": "IntLiteral",
-      "value": 20
-    }
-  },
 {
-    "kind": "Assign",
-    "target": {
-      "kind": "Subscript",
-      "base": {
-        "kind": "Ident",
-        "name": "arr"
+  "line": 4,
+  "column": 10,
+        "kind": "Assign",
+        "target": {
+  "line": 4,
+  "column": 5,
+          "kind": "Ident",
+          "name": "i"
+        },
+        "value": {
+  "line": 4,
+  "column": 9,
+          "kind": "IntLiteral",
+          "value": 0
+        }
       },
-      "index": {
-        "kind": "IntLiteral",
-        "value": 2
-      }
-    },
-    "value": {
-      "kind": "IntLiteral",
-      "value": 30
-    }
-  },
 {
-    "kind": "Assign",
-    "target": {
-      "kind": "Subscript",
-      "base": {
-        "kind": "Ident",
-        "name": "arr"
+  "line": 5,
+  "column": 16,
+        "kind": "Assign",
+        "target": {
+  "line": 5,
+  "column": 10,
+          "kind": "Subscript",
+          "base": {
+  "line": 5,
+  "column": 5,
+            "kind": "Ident",
+            "name": "arr"
+          },
+          "index": {
+  "line": 5,
+  "column": 9,
+            "kind": "IntLiteral",
+            "value": 0
+          }
+        },
+        "value": {
+  "line": 5,
+  "column": 14,
+          "kind": "IntLiteral",
+          "value": 10
+        }
       },
-      "index": {
-        "kind": "IntLiteral",
-        "value": 3
-      }
-    },
-    "value": {
-      "kind": "IntLiteral",
-      "value": 40
-    }
-  },
 {
-    "kind": "Assign",
-    "target": {
-      "kind": "Subscript",
-      "base": {
-        "kind": "Ident",
-        "name": "arr"
+  "line": 6,
+  "column": 16,
+        "kind": "Assign",
+        "target": {
+  "line": 6,
+  "column": 10,
+          "kind": "Subscript",
+          "base": {
+  "line": 6,
+  "column": 5,
+            "kind": "Ident",
+            "name": "arr"
+          },
+          "index": {
+  "line": 6,
+  "column": 9,
+            "kind": "IntLiteral",
+            "value": 1
+          }
+        },
+        "value": {
+  "line": 6,
+  "column": 14,
+          "kind": "IntLiteral",
+          "value": 20
+        }
       },
-      "index": {
-        "kind": "IntLiteral",
-        "value": 4
-      }
-    },
-    "value": {
-      "kind": "IntLiteral",
-      "value": 50
-    }
-  },
 {
-    "kind": "Declare",
-    "mut": "val",
-    "type": "Int64",
-    "name": "result",
-    "init": {
-      "kind": "Subscript",
-      "base": {
-        "kind": "Ident",
-        "name": "arr"
+  "line": 7,
+  "column": 16,
+        "kind": "Assign",
+        "target": {
+  "line": 7,
+  "column": 10,
+          "kind": "Subscript",
+          "base": {
+  "line": 7,
+  "column": 5,
+            "kind": "Ident",
+            "name": "arr"
+          },
+          "index": {
+  "line": 7,
+  "column": 9,
+            "kind": "IntLiteral",
+            "value": 2
+          }
+        },
+        "value": {
+  "line": 7,
+  "column": 14,
+          "kind": "IntLiteral",
+          "value": 30
+        }
       },
-      "index": {
-        "kind": "IntLiteral",
-        "value": 2
-      }
-    }
-  },
 {
-    "kind": "Return",
-    "value": {
-      "kind": "Ident",
-      "name": "result"
-    }
+  "line": 8,
+  "column": 16,
+        "kind": "Assign",
+        "target": {
+  "line": 8,
+  "column": 10,
+          "kind": "Subscript",
+          "base": {
+  "line": 8,
+  "column": 5,
+            "kind": "Ident",
+            "name": "arr"
+          },
+          "index": {
+  "line": 8,
+  "column": 9,
+            "kind": "IntLiteral",
+            "value": 3
+          }
+        },
+        "value": {
+  "line": 8,
+  "column": 14,
+          "kind": "IntLiteral",
+          "value": 40
+        }
+      },
+{
+  "line": 9,
+  "column": 16,
+        "kind": "Assign",
+        "target": {
+  "line": 9,
+  "column": 10,
+          "kind": "Subscript",
+          "base": {
+  "line": 9,
+  "column": 5,
+            "kind": "Ident",
+            "name": "arr"
+          },
+          "index": {
+  "line": 9,
+  "column": 9,
+            "kind": "IntLiteral",
+            "value": 4
+          }
+        },
+        "value": {
+  "line": 9,
+  "column": 14,
+          "kind": "IntLiteral",
+          "value": 50
+        }
+      },
+{
+  "line": 10,
+  "column": 31,
+        "kind": "Declare",
+        "mut": "val",
+        "type": "Int64",
+        "name": "result",
+        "init": {
+  "line": 10,
+  "column": 30,
+          "kind": "Subscript",
+          "base": {
+  "line": 10,
+  "column": 25,
+            "kind": "Ident",
+            "name": "arr"
+          },
+          "index": {
+  "line": 10,
+  "column": 29,
+            "kind": "IntLiteral",
+            "value": 2
+          }
+        }
+      },
+{
+  "line": 11,
+  "column": 18,
+        "kind": "Return",
+        "value": {
+  "line": 11,
+  "column": 12,
+          "kind": "Ident",
+          "name": "result"
+        }
+      }
+    ]}
   }
 ]}

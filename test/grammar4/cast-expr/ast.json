@@ -1,67 +1,111 @@
 {
+  "line": 7,
+  "column": 1,
   "kind": "Program",
   "body": [
 {
-    "kind": "Declare",
-    "mut": "val",
-    "type": "Int8",
-    "name": "x",
-    "init": {
-      "kind": "Cast",
-      "type": "Int8",
-      "value": {
-        "kind": "IntLiteral",
-        "value": 42
-      }
-    }
-  },
+  "line": 7,
+  "column": 1,
+    "kind": "FuncDecl",
+    "name": "main",
+    "returnType": "Int64",
+    "params": [],
+    "body": {
+  "line": 7,
+  "column": 1,
+      "kind": "Block",
+      "body": [
 {
-    "kind": "Declare",
-    "mut": "val",
-    "type": "Int16",
-    "name": "y",
-    "init": {
-      "kind": "Cast",
-      "type": "Int16",
-      "value": {
-        "kind": "Ident",
-        "name": "x"
-      }
-    }
-  },
+  "line": 2,
+  "column": 33,
+        "kind": "Declare",
+        "mut": "val",
+        "type": "Int8",
+        "name": "x",
+        "init": {
+  "line": 2,
+  "column": 32,
+          "kind": "Cast",
+          "type": "Int8",
+          "value": {
+  "line": 2,
+  "column": 30,
+            "kind": "IntLiteral",
+            "value": 42
+          }
+        }
+      },
 {
-    "kind": "Declare",
-    "mut": "val",
-    "type": "Int32",
-    "name": "z",
-    "init": {
-      "kind": "Cast",
-      "type": "Int32",
-      "value": {
-        "kind": "Ident",
-        "name": "y"
-      }
-    }
-  },
+  "line": 3,
+  "column": 34,
+        "kind": "Declare",
+        "mut": "val",
+        "type": "Int16",
+        "name": "y",
+        "init": {
+  "line": 3,
+  "column": 33,
+          "kind": "Cast",
+          "type": "Int16",
+          "value": {
+  "line": 3,
+  "column": 32,
+            "kind": "Ident",
+            "name": "x"
+          }
+        }
+      },
 {
-    "kind": "Declare",
-    "mut": "val",
-    "type": "Int64",
-    "name": "w",
-    "init": {
-      "kind": "Cast",
-      "type": "Int64",
-      "value": {
-        "kind": "Ident",
-        "name": "z"
-      }
-    }
-  },
+  "line": 4,
+  "column": 34,
+        "kind": "Declare",
+        "mut": "val",
+        "type": "Int32",
+        "name": "z",
+        "init": {
+  "line": 4,
+  "column": 33,
+          "kind": "Cast",
+          "type": "Int32",
+          "value": {
+  "line": 4,
+  "column": 32,
+            "kind": "Ident",
+            "name": "y"
+          }
+        }
+      },
 {
-    "kind": "Return",
-    "value": {
-      "kind": "Ident",
-      "name": "w"
-    }
+  "line": 5,
+  "column": 34,
+        "kind": "Declare",
+        "mut": "val",
+        "type": "Int64",
+        "name": "w",
+        "init": {
+  "line": 5,
+  "column": 33,
+          "kind": "Cast",
+          "type": "Int64",
+          "value": {
+  "line": 5,
+  "column": 32,
+            "kind": "Ident",
+            "name": "z"
+          }
+        }
+      },
+{
+  "line": 6,
+  "column": 13,
+        "kind": "Return",
+        "value": {
+  "line": 6,
+  "column": 12,
+          "kind": "Ident",
+          "name": "w"
+        }
+      }
+    ]}
   }
 ]}

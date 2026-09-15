@@ -2,12 +2,15 @@ struct Point {
     x: Int64;
     y: Int64;
 }
-var points: Point[3];
-points[0].x = 1;
-points[0].y = 2;
-points[1].x = 3;
-points[1].y = 4;
-points[2].x = 5;
-points[2].y = 6;
-val sum: Int64 = points[0].x + points[0].y + points[1].x;
-return sum;
+
+def main(): Int64 {
+    var points: Point[3];
+    points[0].x = 1;
+    points[0].y = 2;
+    points[1].x = 3;
+    points[1].y = 4;
+    points[2].x = 5;
+    points[2].y = 6;
+    val sum: Int64 = points[0].x + points[0].y + points[1].x;
+    return sum;
+}

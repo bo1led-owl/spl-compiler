@@ -1,68 +1,106 @@
 {
+  "line": 7,
+  "column": 1,
   "kind": "Program",
   "body": [
 {
+  "line": 1,
+  "column": 10,
     "kind": "Declare",
     "mut": "var",
     "name": "i",
     "init": {
+  "line": 1,
+  "column": 9,
       "kind": "IntLiteral",
       "value": 0
     }
   },
 {
+  "line": 7,
+  "column": 1,
     "kind": "While",
     "cond": {
+  "line": 2,
+  "column": 12,
       "kind": "BinOp",
       "op": "<",
       "left": {
+  "line": 2,
+  "column": 8,
         "kind": "Ident",
         "name": "i"
       },
       "right": {
+  "line": 2,
+  "column": 12,
         "kind": "IntLiteral",
         "value": 10
       }
     },
     "body": {
+  "line": 7,
+  "column": 1,
       "kind": "Block",
       "body": [
 {
+  "line": 5,
+  "column": 5,
         "kind": "If",
         "cond": {
+  "line": 3,
+  "column": 14,
           "kind": "BinOp",
           "op": "==",
           "left": {
+  "line": 3,
+  "column": 9,
             "kind": "Ident",
             "name": "i"
           },
           "right": {
+  "line": 3,
+  "column": 14,
             "kind": "IntLiteral",
             "value": 5
           }
         },
         "then": {
+  "line": 5,
+  "column": 5,
           "kind": "Block",
           "body": [
 {
+  "line": 4,
+  "column": 14,
             "kind": "Break"
           }
         ]}
       },
 {
+  "line": 6,
+  "column": 14,
         "kind": "Assign",
         "target": {
+  "line": 6,
+  "column": 5,
           "kind": "Ident",
           "name": "i"
         },
         "value": {
+  "line": 6,
+  "column": 13,
           "kind": "BinOp",
           "op": "+",
           "left": {
+  "line": 6,
+  "column": 9,
             "kind": "Ident",
             "name": "i"
           },
           "right": {
+  "line": 6,
+  "column": 13,
             "kind": "IntLiteral",
             "value": 1
           }

@@ -1,7 +1,9 @@
-val a: Int8 = 1;
-val b: Int16 = 2;
-val c: Int32 = 3;
-val d: Int64 = 4;
-val e: Bool = true;
-val f: String = "hi";
-return cast<Int64>(d);
+def main(): Int64 {
+    val a: Int8 = 1;
+    val b: Int16 = 2;
+    val c: Int32 = 3;
+    val d: Int64 = 4;
+    val e: Bool = true;
+    val f: String = "hi";
+    return cast<Int64>(d);
+}

@@ -1,3 +1,5 @@
-var x: Bool = true;
-var y: Int64 = cast<Int64>(x);
-return y;
+def main(): Int64 {
+    var x: Bool = true;
+    var y: Int64 = cast<Int64>(x);
+    return y;
+}

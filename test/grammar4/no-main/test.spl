@@ -1,0 +1,3 @@
+def foo(): Int64 {
+    return 42;
+}

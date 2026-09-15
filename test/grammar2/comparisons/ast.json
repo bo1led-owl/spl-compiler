@@ -1,103 +1,153 @@
 {
+  "line": 6,
+  "column": 20,
   "kind": "Program",
   "body": [
 {
+  "line": 1,
+  "column": 17,
     "kind": "Declare",
     "mut": "var",
     "name": "cmp",
     "init": {
+  "line": 1,
+  "column": 16,
       "kind": "BinOp",
       "op": "==",
       "left": {
+  "line": 1,
+  "column": 11,
         "kind": "IntLiteral",
         "value": 1
       },
       "right": {
+  "line": 1,
+  "column": 16,
         "kind": "IntLiteral",
         "value": 2
       }
     }
   },
 {
+  "line": 2,
+  "column": 18,
     "kind": "Declare",
     "mut": "var",
     "name": "cmp2",
     "init": {
+  "line": 2,
+  "column": 17,
       "kind": "BinOp",
       "op": "!=",
       "left": {
+  "line": 2,
+  "column": 12,
         "kind": "IntLiteral",
         "value": 3
       },
       "right": {
+  "line": 2,
+  "column": 17,
         "kind": "IntLiteral",
         "value": 4
       }
     }
   },
 {
+  "line": 3,
+  "column": 17,
     "kind": "Declare",
     "mut": "var",
     "name": "cmp3",
     "init": {
+  "line": 3,
+  "column": 16,
       "kind": "BinOp",
       "op": "<",
       "left": {
+  "line": 3,
+  "column": 12,
         "kind": "IntLiteral",
         "value": 5
       },
       "right": {
+  "line": 3,
+  "column": 16,
         "kind": "IntLiteral",
         "value": 6
       }
     }
   },
 {
+  "line": 4,
+  "column": 17,
     "kind": "Declare",
     "mut": "var",
     "name": "cmp4",
     "init": {
+  "line": 4,
+  "column": 16,
       "kind": "BinOp",
       "op": ">",
       "left": {
+  "line": 4,
+  "column": 12,
         "kind": "IntLiteral",
         "value": 7
       },
       "right": {
+  "line": 4,
+  "column": 16,
         "kind": "IntLiteral",
         "value": 8
       }
     }
   },
 {
+  "line": 5,
+  "column": 19,
     "kind": "Declare",
     "mut": "var",
     "name": "cmp5",
     "init": {
+  "line": 5,
+  "column": 17,
       "kind": "BinOp",
       "op": "<=",
       "left": {
+  "line": 5,
+  "column": 12,
         "kind": "IntLiteral",
         "value": 9
       },
       "right": {
+  "line": 5,
+  "column": 17,
         "kind": "IntLiteral",
         "value": 10
       }
     }
   },
 {
+  "line": 6,
+  "column": 20,
     "kind": "Declare",
     "mut": "var",
     "name": "cmp6",
     "init": {
+  "line": 6,
+  "column": 18,
       "kind": "BinOp",
       "op": ">=",
       "left": {
+  "line": 6,
+  "column": 12,
         "kind": "IntLiteral",
         "value": 11
       },
       "right": {
+  "line": 6,
+  "column": 18,
         "kind": "IntLiteral",
         "value": 12
       }

@@ -1,50 +1,80 @@
 {
+  "line": 12,
+  "column": 1,
   "kind": "Program",
   "body": [
 {
+  "line": 7,
+  "column": 1,
     "kind": "FuncDecl",
     "name": "max",
     "params": [{
+  "line": 1,
+  "column": 9,
   "kind": "Ident",
   "name": "a"
 }, {
+  "line": 1,
+  "column": 12,
   "kind": "Ident",
   "name": "b"
 }],
     "body": {
+  "line": 7,
+  "column": 1,
       "kind": "Block",
       "body": [
 {
+  "line": 6,
+  "column": 5,
         "kind": "If",
         "cond": {
+  "line": 2,
+  "column": 13,
           "kind": "BinOp",
           "op": ">",
           "left": {
+  "line": 2,
+  "column": 9,
             "kind": "Ident",
             "name": "a"
           },
           "right": {
+  "line": 2,
+  "column": 13,
             "kind": "Ident",
             "name": "b"
           }
         },
         "then": {
+  "line": 4,
+  "column": 5,
           "kind": "Block",
           "body": [
 {
+  "line": 3,
+  "column": 17,
             "kind": "Return",
             "value": {
+  "line": 3,
+  "column": 16,
               "kind": "Ident",
               "name": "a"
             }
           }
         ]},
         "else": {
+  "line": 6,
+  "column": 5,
           "kind": "Block",
           "body": [
 {
+  "line": 5,
+  "column": 17,
             "kind": "Return",
             "value": {
+  "line": 5,
+  "column": 16,
               "kind": "Ident",
               "name": "b"
             }
@@ -54,34 +84,52 @@
     ]}
   },
 {
+  "line": 12,
+  "column": 1,
     "kind": "FuncDecl",
     "name": "main",
     "params": [],
     "body": {
+  "line": 12,
+  "column": 1,
       "kind": "Block",
       "body": [
 {
+  "line": 10,
+  "column": 24,
         "kind": "Declare",
         "mut": "var",
         "name": "m",
         "init": {
+  "line": 10,
+  "column": 23,
           "kind": "Call",
           "callee": {
+  "line": 10,
+  "column": 13,
             "kind": "Ident",
             "name": "max"
           },
           "args": [{
+  "line": 10,
+  "column": 17,
   "kind": "IntLiteral",
   "value": 10
 }, {
+  "line": 10,
+  "column": 21,
   "kind": "IntLiteral",
   "value": 20
 }]
         }
       },
 {
+  "line": 11,
+  "column": 13,
         "kind": "Return",
         "value": {
+  "line": 11,
+  "column": 12,
           "kind": "Ident",
           "name": "m"
         }

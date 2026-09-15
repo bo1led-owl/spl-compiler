@@ -2,5 +2,7 @@ def double(x) {
     return x * 2;
 }
 
-var y = double(21);
-return y;
+def main() {
+    var y = double(21);
+    return y;
+}

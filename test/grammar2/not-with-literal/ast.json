@@ -1,14 +1,22 @@
 {
+  "line": 1,
+  "column": 14,
   "kind": "Program",
   "body": [
 {
+  "line": 1,
+  "column": 14,
     "kind": "Declare",
     "mut": "var",
     "name": "x",
     "init": {
+  "line": 1,
+  "column": 10,
       "kind": "Unary",
       "op": "!",
       "operand": {
+  "line": 1,
+  "column": 10,
         "kind": "BoolLiteral",
         "value": true
       }

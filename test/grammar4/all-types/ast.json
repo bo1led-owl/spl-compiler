@@ -1,75 +1,121 @@
 {
+  "line": 9,
+  "column": 1,
   "kind": "Program",
   "body": [
 {
-    "kind": "Declare",
-    "mut": "val",
-    "type": "Int8",
-    "name": "a",
-    "init": {
-      "kind": "IntLiteral",
-      "value": 1
-    }
-  },
+  "line": 9,
+  "column": 1,
+    "kind": "FuncDecl",
+    "name": "main",
+    "returnType": "Int64",
+    "params": [],
+    "body": {
+  "line": 9,
+  "column": 1,
+      "kind": "Block",
+      "body": [
 {
-    "kind": "Declare",
-    "mut": "val",
-    "type": "Int16",
-    "name": "b",
-    "init": {
-      "kind": "IntLiteral",
-      "value": 2
-    }
-  },
+  "line": 2,
+  "column": 20,
+        "kind": "Declare",
+        "mut": "val",
+        "type": "Int8",
+        "name": "a",
+        "init": {
+  "line": 2,
+  "column": 19,
+          "kind": "IntLiteral",
+          "value": 1
+        }
+      },
 {
-    "kind": "Declare",
-    "mut": "val",
-    "type": "Int32",
-    "name": "c",
-    "init": {
-      "kind": "IntLiteral",
-      "value": 3
-    }
-  },
+  "line": 3,
+  "column": 21,
+        "kind": "Declare",
+        "mut": "val",
+        "type": "Int16",
+        "name": "b",
+        "init": {
+  "line": 3,
+  "column": 20,
+          "kind": "IntLiteral",
+          "value": 2
+        }
+      },
 {
-    "kind": "Declare",
-    "mut": "val",
-    "type": "Int64",
-    "name": "d",
-    "init": {
-      "kind": "IntLiteral",
-      "value": 4
-    }
-  },
+  "line": 4,
+  "column": 21,
+        "kind": "Declare",
+        "mut": "val",
+        "type": "Int32",
+        "name": "c",
+        "init": {
+  "line": 4,
+  "column": 20,
+          "kind": "IntLiteral",
+          "value": 3
+        }
+      },
 {
-    "kind": "Declare",
-    "mut": "val",
-    "type": "Bool",
-    "name": "e",
-    "init": {
-      "kind": "BoolLiteral",
-      "value": true
-    }
-  },
+  "line": 5,
+  "column": 21,
+        "kind": "Declare",
+        "mut": "val",
+        "type": "Int64",
+        "name": "d",
+        "init": {
+  "line": 5,
+  "column": 20,
+          "kind": "IntLiteral",
+          "value": 4
+        }
+      },
 {
-    "kind": "Declare",
-    "mut": "val",
-    "type": "String",
-    "name": "f",
-    "init": {
-      "kind": "StringLiteral",
-      "value": "hi"
-    }
-  },
+  "line": 6,
+  "column": 23,
+        "kind": "Declare",
+        "mut": "val",
+        "type": "Bool",
+        "name": "e",
+        "init": {
+  "line": 6,
+  "column": 19,
+          "kind": "BoolLiteral",
+          "value": true
+        }
+      },
 {
-    "kind": "Return",
-    "value": {
-      "kind": "Cast",
-      "type": "Int64",
-      "value": {
-        "kind": "Ident",
-        "name": "d"
+  "line": 7,
+  "column": 25,
+        "kind": "Declare",
+        "mut": "val",
+        "type": "String",
+        "name": "f",
+        "init": {
+  "line": 7,
+  "column": 21,
+          "kind": "StringLiteral",
+          "value": "hi"
+        }
+      },
+{
+  "line": 8,
+  "column": 26,
+        "kind": "Return",
+        "value": {
+  "line": 8,
+  "column": 25,
+          "kind": "Cast",
+          "type": "Int64",
+          "value": {
+  "line": 8,
+  "column": 24,
+            "kind": "Ident",
+            "name": "d"
+          }
+        }
       }
-    }
+    ]}
   }
 ]}

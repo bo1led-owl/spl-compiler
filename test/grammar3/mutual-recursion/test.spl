@@ -12,4 +12,6 @@ def is_odd(n) {
   return is_even(n - 1);
 }
 
-return is_even(4);
+def main() {
+  return is_even(4);
+}

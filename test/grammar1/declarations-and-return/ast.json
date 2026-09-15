@@ -1,35 +1,53 @@
 {
+  "line": 3,
+  "column": 9,
   "kind": "Program",
   "body": [
 {
+  "line": 1,
+  "column": 11,
     "kind": "Declare",
     "mut": "val",
     "name": "x",
     "init": {
+  "line": 1,
+  "column": 9,
       "kind": "IntLiteral",
       "value": 42
     }
   },
 {
+  "line": 2,
+  "column": 14,
     "kind": "Declare",
     "mut": "var",
     "name": "y",
     "init": {
+  "line": 2,
+  "column": 13,
       "kind": "BinOp",
       "op": "+",
       "left": {
+  "line": 2,
+  "column": 9,
         "kind": "Ident",
         "name": "x"
       },
       "right": {
+  "line": 2,
+  "column": 13,
         "kind": "IntLiteral",
         "value": 1
       }
     }
   },
 {
+  "line": 3,
+  "column": 9,
     "kind": "Return",
     "value": {
+  "line": 3,
+  "column": 8,
       "kind": "Ident",
       "name": "y"
     }
