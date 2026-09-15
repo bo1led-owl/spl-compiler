@@ -21,6 +21,11 @@ jobs:
       - name: Install test harness dependency
         run: pip install pytest
 
+      - name: Setup LLVM
+        uses: ZhongRuoyu/setup-llvm@v0
+        with:
+          llvm-version: 22
+
       - uses: mlugg/setup-zig@v2
         with:
           version: 0.16.0
