@@ -1,71 +1,109 @@
 {
+  "line": 7,
+  "column": 1,
   "kind": "Program",
   "body": [
 {
+  "line": 1,
+  "column": 10,
     "kind": "Declare",
     "mut": "var",
     "name": "x",
     "init": {
+  "line": 1,
+  "column": 9,
       "kind": "IntLiteral",
       "value": 0
     }
   },
 {
+  "line": 2,
+  "column": 10,
     "kind": "Declare",
     "mut": "var",
     "name": "y",
     "init": {
+  "line": 2,
+  "column": 9,
       "kind": "IntLiteral",
       "value": 1
     }
   },
 {
+  "line": 7,
+  "column": 1,
     "kind": "If",
     "cond": {
+  "line": 3,
+  "column": 20,
       "kind": "BinOp",
       "op": "||",
       "left": {
+  "line": 3,
+  "column": 10,
         "kind": "BinOp",
         "op": "!=",
         "left": {
+  "line": 3,
+  "column": 5,
           "kind": "Ident",
           "name": "x"
         },
         "right": {
+  "line": 3,
+  "column": 10,
           "kind": "IntLiteral",
           "value": 0
         }
       },
       "right": {
+  "line": 3,
+  "column": 20,
         "kind": "BinOp",
         "op": "!=",
         "left": {
+  "line": 3,
+  "column": 15,
           "kind": "Ident",
           "name": "y"
         },
         "right": {
+  "line": 3,
+  "column": 20,
           "kind": "IntLiteral",
           "value": 0
         }
       }
     },
     "then": {
+  "line": 5,
+  "column": 1,
       "kind": "Block",
       "body": [
 {
+  "line": 4,
+  "column": 11,
         "kind": "Return",
         "value": {
+  "line": 4,
+  "column": 10,
           "kind": "IntLiteral",
           "value": 1
         }
       }
     ]},
     "else": {
+  "line": 7,
+  "column": 1,
       "kind": "Block",
       "body": [
 {
+  "line": 6,
+  "column": 11,
         "kind": "Return",
         "value": {
+  "line": 6,
+  "column": 10,
           "kind": "IntLiteral",
           "value": 0
         }

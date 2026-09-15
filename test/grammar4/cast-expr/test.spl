@@ -1,5 +1,7 @@
-val x: Int8 = cast<Int8>(42);
-val y: Int16 = cast<Int16>(x);
-val z: Int32 = cast<Int32>(y);
-val w: Int64 = cast<Int64>(z);
-return w;
+def main(): Int64 {
+    val x: Int8 = cast<Int8>(42);
+    val y: Int16 = cast<Int16>(x);
+    val z: Int32 = cast<Int32>(y);
+    val w: Int64 = cast<Int64>(z);
+    return w;
+}

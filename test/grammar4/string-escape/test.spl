@@ -1,4 +1,6 @@
-val s: String = "hello\nworld\t!";
-val t: String = "quote \" here";
-val u: String = "back\\slash";
-return 0;
+def main(): Int64 {
+    val s: String = "hello\nworld\t!";
+    val t: String = "quote \" here";
+    val u: String = "back\\slash";
+    return 0;
+}

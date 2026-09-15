@@ -1,36 +1,58 @@
 {
+  "line": 17,
+  "column": 1,
   "kind": "Program",
   "body": [
 {
+  "line": 6,
+  "column": 1,
     "kind": "FuncDecl",
     "name": "is_even",
     "params": [{
+  "line": 1,
+  "column": 13,
   "kind": "Ident",
   "name": "n"
 }],
     "body": {
+  "line": 6,
+  "column": 1,
       "kind": "Block",
       "body": [
 {
+  "line": 4,
+  "column": 3,
         "kind": "If",
         "cond": {
+  "line": 2,
+  "column": 12,
           "kind": "BinOp",
           "op": "==",
           "left": {
+  "line": 2,
+  "column": 7,
             "kind": "Ident",
             "name": "n"
           },
           "right": {
+  "line": 2,
+  "column": 12,
             "kind": "IntLiteral",
             "value": 0
           }
         },
         "then": {
+  "line": 4,
+  "column": 3,
           "kind": "Block",
           "body": [
 {
+  "line": 3,
+  "column": 13,
             "kind": "Return",
             "value": {
+  "line": 3,
+  "column": 12,
               "kind": "IntLiteral",
               "value": 1
             }
@@ -38,21 +60,33 @@
         ]}
       },
 {
+  "line": 5,
+  "column": 23,
         "kind": "Return",
         "value": {
+  "line": 5,
+  "column": 22,
           "kind": "Call",
           "callee": {
+  "line": 5,
+  "column": 10,
             "kind": "Ident",
             "name": "is_odd"
           },
           "args": [{
+  "line": 5,
+  "column": 21,
   "kind": "BinOp",
   "op": "-",
   "left": {
+  "line": 5,
+  "column": 17,
     "kind": "Ident",
     "name": "n"
   },
   "right": {
+  "line": 5,
+  "column": 21,
     "kind": "IntLiteral",
     "value": 1
   }
@@ -62,35 +96,55 @@
     ]}
   },
 {
+  "line": 13,
+  "column": 1,
     "kind": "FuncDecl",
     "name": "is_odd",
     "params": [{
+  "line": 8,
+  "column": 12,
   "kind": "Ident",
   "name": "n"
 }],
     "body": {
+  "line": 13,
+  "column": 1,
       "kind": "Block",
       "body": [
 {
+  "line": 11,
+  "column": 3,
         "kind": "If",
         "cond": {
+  "line": 9,
+  "column": 12,
           "kind": "BinOp",
           "op": "==",
           "left": {
+  "line": 9,
+  "column": 7,
             "kind": "Ident",
             "name": "n"
           },
           "right": {
+  "line": 9,
+  "column": 12,
             "kind": "IntLiteral",
             "value": 0
           }
         },
         "then": {
+  "line": 11,
+  "column": 3,
           "kind": "Block",
           "body": [
 {
+  "line": 10,
+  "column": 13,
             "kind": "Return",
             "value": {
+  "line": 10,
+  "column": 12,
               "kind": "IntLiteral",
               "value": 0
             }
@@ -98,21 +152,33 @@
         ]}
       },
 {
+  "line": 12,
+  "column": 24,
         "kind": "Return",
         "value": {
+  "line": 12,
+  "column": 23,
           "kind": "Call",
           "callee": {
+  "line": 12,
+  "column": 10,
             "kind": "Ident",
             "name": "is_even"
           },
           "args": [{
+  "line": 12,
+  "column": 22,
   "kind": "BinOp",
   "op": "-",
   "left": {
+  "line": 12,
+  "column": 18,
     "kind": "Ident",
     "name": "n"
   },
   "right": {
+  "line": 12,
+  "column": 22,
     "kind": "IntLiteral",
     "value": 1
   }
@@ -122,17 +188,38 @@
     ]}
   },
 {
-    "kind": "Return",
-    "value": {
-      "kind": "Call",
-      "callee": {
-        "kind": "Ident",
-        "name": "is_even"
-      },
-      "args": [{
+  "line": 17,
+  "column": 1,
+    "kind": "FuncDecl",
+    "name": "main",
+    "params": [],
+    "body": {
+  "line": 17,
+  "column": 1,
+      "kind": "Block",
+      "body": [
+{
+  "line": 16,
+  "column": 20,
+        "kind": "Return",
+        "value": {
+  "line": 16,
+  "column": 19,
+          "kind": "Call",
+          "callee": {
+  "line": 16,
+  "column": 10,
+            "kind": "Ident",
+            "name": "is_even"
+          },
+          "args": [{
+  "line": 16,
+  "column": 18,
   "kind": "IntLiteral",
   "value": 4
 }]
-    }
+        }
+      }
+    ]}
   }
 ]}

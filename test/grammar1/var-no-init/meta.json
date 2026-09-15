@@ -1,1 +1,12 @@
-{"grammar": ">=1", "stages": ["parser"], "exit": "nonzero"}
+{
+  "grammar": {
+    "parser": [
+      "1",
+      "2"
+    ]
+  },
+  "stages": [
+    "parser"
+  ],
+  "exit": "nonzero"
+}

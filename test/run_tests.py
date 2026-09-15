@@ -577,11 +577,15 @@ def transform(step, in_path, out_path):
         write_file(out_path, out + "\n")
     elif step_type == "regex":
         pattern = step.get("pattern")
-        repl = step.get("repl", "")
+        repl = step.get("repl")  # None means delete matched lines
         if not isinstance(pattern, str):
             raise StepError("preprocess 'regex' step: 'pattern' is required")
         text = read_file(in_path)
-        write_file(out_path, re.sub(pattern, repl, text))
+        if repl is None:
+            # Delete matching lines including trailing newline
+            write_file(out_path, re.sub(pattern + r"\n?", "", text, flags=re.MULTILINE))
+        else:
+            write_file(out_path, re.sub(pattern, repl, text))
     elif step_type == "llvm":
         write_file(out_path, normalize_llvm(read_file(in_path)))
     elif step_type == "exec":

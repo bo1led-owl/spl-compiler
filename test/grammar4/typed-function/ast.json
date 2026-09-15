@@ -1,32 +1,50 @@
 {
+  "line": 8,
+  "column": 1,
   "kind": "Program",
   "body": [
 {
+  "line": 3,
+  "column": 1,
     "kind": "FuncDecl",
     "name": "add",
     "returnType": "Int64",
     "params": [{
+  "line": 1,
+  "column": 12,
   "kind": "Param",
   "name": "a",
   "type": "Int64"
 }, {
+  "line": 1,
+  "column": 22,
   "kind": "Param",
   "name": "b",
   "type": "Int64"
 }],
     "body": {
+  "line": 3,
+  "column": 1,
       "kind": "Block",
       "body": [
 {
+  "line": 2,
+  "column": 17,
         "kind": "Return",
         "value": {
+  "line": 2,
+  "column": 16,
           "kind": "BinOp",
           "op": "+",
           "left": {
+  "line": 2,
+  "column": 12,
             "kind": "Ident",
             "name": "a"
           },
           "right": {
+  "line": 2,
+  "column": 16,
             "kind": "Ident",
             "name": "b"
           }
@@ -35,30 +53,58 @@
     ]}
   },
 {
-    "kind": "Declare",
-    "mut": "val",
-    "type": "Int64",
-    "name": "result",
-    "init": {
-      "kind": "Call",
-      "callee": {
-        "kind": "Ident",
-        "name": "add"
-      },
-      "args": [{
+  "line": 8,
+  "column": 1,
+    "kind": "FuncDecl",
+    "name": "main",
+    "returnType": "Int64",
+    "params": [],
+    "body": {
+  "line": 8,
+  "column": 1,
+      "kind": "Block",
+      "body": [
+{
+  "line": 6,
+  "column": 34,
+        "kind": "Declare",
+        "mut": "val",
+        "type": "Int64",
+        "name": "result",
+        "init": {
+  "line": 6,
+  "column": 33,
+          "kind": "Call",
+          "callee": {
+  "line": 6,
+  "column": 25,
+            "kind": "Ident",
+            "name": "add"
+          },
+          "args": [{
+  "line": 6,
+  "column": 29,
   "kind": "IntLiteral",
   "value": 3
 }, {
+  "line": 6,
+  "column": 32,
   "kind": "IntLiteral",
   "value": 4
 }]
-    }
-  },
+        }
+      },
 {
-    "kind": "Return",
-    "value": {
-      "kind": "Ident",
-      "name": "result"
-    }
+  "line": 7,
+  "column": 18,
+        "kind": "Return",
+        "value": {
+  "line": 7,
+  "column": 12,
+          "kind": "Ident",
+          "name": "result"
+        }
+      }
+    ]}
   }
 ]}

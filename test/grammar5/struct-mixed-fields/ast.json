@@ -1,11 +1,17 @@
 {
+  "line": 21,
+  "column": 1,
   "kind": "Program",
   "body": [
 {
+  "line": 8,
+  "column": 1,
     "kind": "StructDecl",
     "name": "Mixed",
     "fields": [
 {
+  "line": 2,
+  "column": 10,
       "kind": "Declare",
       "mut": "val",
       "type": "Int8",
@@ -13,6 +19,8 @@
       "init": null
     },
 {
+  "line": 3,
+  "column": 11,
       "kind": "Declare",
       "mut": "val",
       "type": "Int16",
@@ -20,6 +28,8 @@
       "init": null
     },
 {
+  "line": 4,
+  "column": 11,
       "kind": "Declare",
       "mut": "val",
       "type": "Int32",
@@ -27,6 +37,8 @@
       "init": null
     },
 {
+  "line": 5,
+  "column": 11,
       "kind": "Declare",
       "mut": "val",
       "type": "Int64",
@@ -34,6 +46,8 @@
       "init": null
     },
 {
+  "line": 6,
+  "column": 10,
       "kind": "Declare",
       "mut": "val",
       "type": "Bool",
@@ -41,6 +55,8 @@
       "init": null
     },
 {
+  "line": 7,
+  "column": 12,
       "kind": "Declare",
       "mut": "val",
       "type": "String",
@@ -49,177 +65,279 @@
     }
   ]},
 {
-    "kind": "Declare",
-    "mut": "var",
-    "type": "Mixed",
-    "name": "m",
-    "init": null
-  },
+  "line": 21,
+  "column": 1,
+    "kind": "FuncDecl",
+    "name": "main",
+    "returnType": "Int64",
+    "params": [],
+    "body": {
+  "line": 21,
+  "column": 1,
+      "kind": "Block",
+      "body": [
 {
-    "kind": "Assign",
-    "target": {
-      "kind": "FieldAccess",
-      "base": {
-        "kind": "Ident",
-        "name": "m"
+  "line": 11,
+  "column": 17,
+        "kind": "Declare",
+        "mut": "var",
+        "type": "Mixed",
+        "name": "m",
+        "init": null
       },
-      "field": "a"
-    },
-    "value": {
-      "kind": "IntLiteral",
-      "value": 1
-    }
-  },
 {
-    "kind": "Assign",
-    "target": {
-      "kind": "FieldAccess",
-      "base": {
-        "kind": "Ident",
-        "name": "m"
+  "line": 12,
+  "column": 12,
+        "kind": "Assign",
+        "target": {
+  "line": 12,
+  "column": 7,
+          "kind": "FieldAccess",
+          "base": {
+  "line": 12,
+  "column": 5,
+            "kind": "Ident",
+            "name": "m"
+          },
+          "field": "a"
+        },
+        "value": {
+  "line": 12,
+  "column": 11,
+          "kind": "IntLiteral",
+          "value": 1
+        }
       },
-      "field": "b"
-    },
-    "value": {
-      "kind": "IntLiteral",
-      "value": 2
-    }
-  },
 {
-    "kind": "Assign",
-    "target": {
-      "kind": "FieldAccess",
-      "base": {
-        "kind": "Ident",
-        "name": "m"
+  "line": 13,
+  "column": 12,
+        "kind": "Assign",
+        "target": {
+  "line": 13,
+  "column": 7,
+          "kind": "FieldAccess",
+          "base": {
+  "line": 13,
+  "column": 5,
+            "kind": "Ident",
+            "name": "m"
+          },
+          "field": "b"
+        },
+        "value": {
+  "line": 13,
+  "column": 11,
+          "kind": "IntLiteral",
+          "value": 2
+        }
       },
-      "field": "c"
-    },
-    "value": {
-      "kind": "IntLiteral",
-      "value": 3
-    }
-  },
 {
-    "kind": "Assign",
-    "target": {
-      "kind": "FieldAccess",
-      "base": {
-        "kind": "Ident",
-        "name": "m"
+  "line": 14,
+  "column": 12,
+        "kind": "Assign",
+        "target": {
+  "line": 14,
+  "column": 7,
+          "kind": "FieldAccess",
+          "base": {
+  "line": 14,
+  "column": 5,
+            "kind": "Ident",
+            "name": "m"
+          },
+          "field": "c"
+        },
+        "value": {
+  "line": 14,
+  "column": 11,
+          "kind": "IntLiteral",
+          "value": 3
+        }
       },
-      "field": "d"
-    },
-    "value": {
-      "kind": "IntLiteral",
-      "value": 4
-    }
-  },
 {
-    "kind": "Assign",
-    "target": {
-      "kind": "FieldAccess",
-      "base": {
-        "kind": "Ident",
-        "name": "m"
+  "line": 15,
+  "column": 12,
+        "kind": "Assign",
+        "target": {
+  "line": 15,
+  "column": 7,
+          "kind": "FieldAccess",
+          "base": {
+  "line": 15,
+  "column": 5,
+            "kind": "Ident",
+            "name": "m"
+          },
+          "field": "d"
+        },
+        "value": {
+  "line": 15,
+  "column": 11,
+          "kind": "IntLiteral",
+          "value": 4
+        }
       },
-      "field": "e"
-    },
-    "value": {
-      "kind": "BoolLiteral",
-      "value": true
-    }
-  },
 {
-    "kind": "Assign",
-    "target": {
-      "kind": "FieldAccess",
-      "base": {
-        "kind": "Ident",
-        "name": "m"
+  "line": 16,
+  "column": 15,
+        "kind": "Assign",
+        "target": {
+  "line": 16,
+  "column": 7,
+          "kind": "FieldAccess",
+          "base": {
+  "line": 16,
+  "column": 5,
+            "kind": "Ident",
+            "name": "m"
+          },
+          "field": "e"
+        },
+        "value": {
+  "line": 16,
+  "column": 11,
+          "kind": "BoolLiteral",
+          "value": true
+        }
       },
-      "field": "f"
-    },
-    "value": {
-      "kind": "StringLiteral",
-      "value": "hi"
-    }
-  },
 {
-    "kind": "Declare",
-    "mut": "var",
-    "type": "Int64",
-    "name": "result",
-    "init": null
-  },
+  "line": 17,
+  "column": 15,
+        "kind": "Assign",
+        "target": {
+  "line": 17,
+  "column": 7,
+          "kind": "FieldAccess",
+          "base": {
+  "line": 17,
+  "column": 5,
+            "kind": "Ident",
+            "name": "m"
+          },
+          "field": "f"
+        },
+        "value": {
+  "line": 17,
+  "column": 11,
+          "kind": "StringLiteral",
+          "value": "hi"
+        }
+      },
 {
-    "kind": "Assign",
-    "target": {
-      "kind": "Ident",
-      "name": "result"
-    },
-    "value": {
-      "kind": "BinOp",
-      "op": "+",
-      "left": {
-        "kind": "BinOp",
-        "op": "+",
-        "left": {
+  "line": 18,
+  "column": 22,
+        "kind": "Declare",
+        "mut": "var",
+        "type": "Int64",
+        "name": "result",
+        "init": null
+      },
+{
+  "line": 19,
+  "column": 74,
+        "kind": "Assign",
+        "target": {
+  "line": 19,
+  "column": 5,
+          "kind": "Ident",
+          "name": "result"
+        },
+        "value": {
+  "line": 19,
+  "column": 73,
           "kind": "BinOp",
           "op": "+",
           "left": {
-            "kind": "Cast",
-            "type": "Int64",
-            "value": {
-              "kind": "FieldAccess",
-              "base": {
-                "kind": "Ident",
-                "name": "m"
+  "line": 19,
+  "column": 67,
+            "kind": "BinOp",
+            "op": "+",
+            "left": {
+  "line": 19,
+  "column": 48,
+              "kind": "BinOp",
+              "op": "+",
+              "left": {
+  "line": 19,
+  "column": 29,
+                "kind": "Cast",
+                "type": "Int64",
+                "value": {
+  "line": 19,
+  "column": 28,
+                  "kind": "FieldAccess",
+                  "base": {
+  "line": 19,
+  "column": 26,
+                    "kind": "Ident",
+                    "name": "m"
+                  },
+                  "field": "a"
+                }
               },
-              "field": "a"
+              "right": {
+  "line": 19,
+  "column": 48,
+                "kind": "Cast",
+                "type": "Int64",
+                "value": {
+  "line": 19,
+  "column": 47,
+                  "kind": "FieldAccess",
+                  "base": {
+  "line": 19,
+  "column": 45,
+                    "kind": "Ident",
+                    "name": "m"
+                  },
+                  "field": "b"
+                }
+              }
+            },
+            "right": {
+  "line": 19,
+  "column": 67,
+              "kind": "Cast",
+              "type": "Int64",
+              "value": {
+  "line": 19,
+  "column": 66,
+                "kind": "FieldAccess",
+                "base": {
+  "line": 19,
+  "column": 64,
+                  "kind": "Ident",
+                  "name": "m"
+                },
+                "field": "c"
+              }
             }
           },
           "right": {
-            "kind": "Cast",
-            "type": "Int64",
-            "value": {
-              "kind": "FieldAccess",
-              "base": {
-                "kind": "Ident",
-                "name": "m"
-              },
-              "field": "b"
-            }
-          }
-        },
-        "right": {
-          "kind": "Cast",
-          "type": "Int64",
-          "value": {
+  "line": 19,
+  "column": 73,
             "kind": "FieldAccess",
             "base": {
+  "line": 19,
+  "column": 71,
               "kind": "Ident",
               "name": "m"
             },
-            "field": "c"
+            "field": "d"
           }
         }
       },
-      "right": {
-        "kind": "FieldAccess",
-        "base": {
-          "kind": "Ident",
-          "name": "m"
-        },
-        "field": "d"
-      }
-    }
-  },
 {
-    "kind": "Return",
-    "value": {
-      "kind": "Ident",
-      "name": "result"
-    }
+  "line": 20,
+  "column": 18,
+        "kind": "Return",
+        "value": {
+  "line": 20,
+  "column": 12,
+          "kind": "Ident",
+          "name": "result"
+        }
+      }
+    ]}
   }
 ]}

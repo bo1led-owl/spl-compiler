@@ -1,1 +1,14 @@
-{"grammar": ["2", "3"], "stages": ["lexer", "parser", "llvm", "compiler"], "exit": {"compiler": 2}}
+{
+  "grammar": [
+    "2"
+  ],
+  "stages": [
+    "lexer",
+    "parser",
+    "llvm",
+    "compiler"
+  ],
+  "exit": {
+    "compiler": 2
+  }
+}

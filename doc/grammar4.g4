@@ -14,7 +14,7 @@ grammar grammar4;
 // lexer runs a single-line comment to end-of-line, a generated line comment
 // must always end with a newline (whitespace.py guarantees this).
 
-program : externDeclaration* funcDeclaration* statement* EOF;
+program : externDeclaration* funcDeclaration* EOF;
 
 statement
     : returnStatement

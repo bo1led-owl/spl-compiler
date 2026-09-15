@@ -2,4 +2,6 @@ def double(x) {
   return x * 2;
 }
 
-return double(21);
+def main() {
+  return double(21);
+}

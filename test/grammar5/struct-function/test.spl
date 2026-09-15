@@ -2,13 +2,17 @@ struct Point {
     x: Int64;
     y: Int64;
 }
+
 def makePoint(px: Int64, py: Int64): Point {
     var p: Point;
     p.x = px;
     p.y = py;
     return p;
 }
-var pt: Point;
-pt = makePoint(3, 4);
-val result: Int64 = pt.x + pt.y;
-return result;
+
+def main(): Int64 {
+    var pt: Point;
+    pt = makePoint(3, 4);
+    val result: Int64 = pt.x + pt.y;
+    return result;
+}

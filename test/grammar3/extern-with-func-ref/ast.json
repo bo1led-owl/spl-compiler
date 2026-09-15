@@ -1,16 +1,26 @@
 {
+  "line": 10,
+  "column": 1,
   "kind": "Program",
   "body": [
 {
+  "line": 3,
+  "column": 1,
     "kind": "FuncDecl",
     "name": "noop",
     "params": [],
     "body": {
+  "line": 3,
+  "column": 1,
       "kind": "Block",
       "body": [
 {
+  "line": 2,
+  "column": 13,
         "kind": "Return",
         "value": {
+  "line": 2,
+  "column": 12,
           "kind": "IntLiteral",
           "value": 0
         }
@@ -18,31 +28,69 @@
     ]}
   },
 {
+  "line": 5,
+  "column": 18,
     "kind": "ExternDecl",
     "name": "foo",
     "params": [{
+  "line": 5,
+  "column": 16,
   "kind": "Ident",
   "name": "x"
 }]
   },
 {
-    "kind": "Declare",
-    "mut": "var",
-    "name": "a",
-    "init": {
-      "kind": "Call",
-      "callee": {
-        "kind": "Ident",
-        "name": "foo"
-      },
-      "args": [{
+  "line": 10,
+  "column": 1,
+    "kind": "FuncDecl",
+    "name": "main",
+    "params": [],
+    "body": {
+  "line": 10,
+  "column": 1,
+      "kind": "Block",
+      "body": [
+{
+  "line": 8,
+  "column": 24,
+        "kind": "Declare",
+        "mut": "var",
+        "name": "a",
+        "init": {
+  "line": 8,
+  "column": 23,
+          "kind": "Call",
+          "callee": {
+  "line": 8,
+  "column": 13,
+            "kind": "Ident",
+            "name": "foo"
+          },
+          "args": [{
+  "line": 8,
+  "column": 22,
   "kind": "Call",
   "callee": {
+  "line": 8,
+  "column": 17,
     "kind": "Ident",
     "name": "noop"
   },
   "args": []
 }]
-    }
+        }
+      },
+{
+  "line": 9,
+  "column": 13,
+        "kind": "Return",
+        "value": {
+  "line": 9,
+  "column": 12,
+          "kind": "IntLiteral",
+          "value": 0
+        }
+      }
+    ]}
   }
 ]}

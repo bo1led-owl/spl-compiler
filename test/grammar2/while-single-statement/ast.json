@@ -1,35 +1,55 @@
 {
+  "line": 3,
+  "column": 14,
   "kind": "Program",
   "body": [
 {
+  "line": 1,
+  "column": 10,
     "kind": "Declare",
     "mut": "var",
     "name": "x",
     "init": {
+  "line": 1,
+  "column": 9,
       "kind": "IntLiteral",
       "value": 1
     }
   },
 {
+  "line": 3,
+  "column": 14,
     "kind": "While",
     "cond": {
+  "line": 2,
+  "column": 8,
       "kind": "Ident",
       "name": "x"
     },
     "body": {
+  "line": 3,
+  "column": 14,
       "kind": "Assign",
       "target": {
+  "line": 3,
+  "column": 5,
         "kind": "Ident",
         "name": "x"
       },
       "value": {
+  "line": 3,
+  "column": 13,
         "kind": "BinOp",
         "op": "-",
         "left": {
+  "line": 3,
+  "column": 9,
           "kind": "Ident",
           "name": "x"
         },
         "right": {
+  "line": 3,
+  "column": 13,
           "kind": "IntLiteral",
           "value": 1
         }

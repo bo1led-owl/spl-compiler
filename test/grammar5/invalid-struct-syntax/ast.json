@@ -1,11 +1,17 @@
 {
+  "line": 4,
+  "column": 9,
   "kind": "Program",
   "body": [
 {
+  "line": 4,
+  "column": 9,
     "kind": "StructDecl",
     "name": "Point",
     "fields": [
 {
+  "line": 2,
+  "column": 13,
       "kind": "Declare",
       "mut": "val",
       "type": "Int64",
@@ -13,6 +19,8 @@
       "init": null
     },
 {
+  "line": 4,
+  "column": 1,
       "kind": "Declare",
       "mut": "val",
       "type": "Int64",

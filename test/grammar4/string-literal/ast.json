@@ -1,31 +1,59 @@
 {
+  "line": 5,
+  "column": 1,
   "kind": "Program",
   "body": [
 {
-    "kind": "Declare",
-    "mut": "val",
-    "type": "String",
-    "name": "s",
-    "init": {
-      "kind": "StringLiteral",
-      "value": "hello"
-    }
-  },
+  "line": 5,
+  "column": 1,
+    "kind": "FuncDecl",
+    "name": "main",
+    "returnType": "Int64",
+    "params": [],
+    "body": {
+  "line": 5,
+  "column": 1,
+      "kind": "Block",
+      "body": [
 {
-    "kind": "Declare",
-    "mut": "val",
-    "type": "String",
-    "name": "msg",
-    "init": {
-      "kind": "StringLiteral",
-      "value": "world"
-    }
-  },
+  "line": 2,
+  "column": 28,
+        "kind": "Declare",
+        "mut": "val",
+        "type": "String",
+        "name": "s",
+        "init": {
+  "line": 2,
+  "column": 21,
+          "kind": "StringLiteral",
+          "value": "hello"
+        }
+      },
 {
-    "kind": "Return",
-    "value": {
-      "kind": "IntLiteral",
-      "value": 0
-    }
+  "line": 3,
+  "column": 30,
+        "kind": "Declare",
+        "mut": "val",
+        "type": "String",
+        "name": "msg",
+        "init": {
+  "line": 3,
+  "column": 23,
+          "kind": "StringLiteral",
+          "value": "world"
+        }
+      },
+{
+  "line": 4,
+  "column": 13,
+        "kind": "Return",
+        "value": {
+  "line": 4,
+  "column": 12,
+          "kind": "IntLiteral",
+          "value": 0
+        }
+      }
+    ]}
   }
 ]}

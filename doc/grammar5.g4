@@ -13,7 +13,7 @@ grammar grammar5;
 // lexer runs a single-line comment to end-of-line, a generated line comment
 // must always end with a newline (whitespace.py guarantees this).
 
-program : structDeclaration* externDeclaration* funcDeclaration* statement* EOF;
+program : structDeclaration* externDeclaration* funcDeclaration* EOF;
 
 statement
     : returnStatement

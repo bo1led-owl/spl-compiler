@@ -5,5 +5,8 @@ def max(a: Int64, b: Int64): Int64 {
         return b;
     }
 }
-val m: Int64 = max(7, 12);
-return m;
+
+def main(): Int64 {
+    val m: Int64 = max(7, 12);
+    return m;
+}

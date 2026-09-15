@@ -2,11 +2,14 @@ struct Pair {
     first: Int64;
     second: Int64;
 }
-var p: Pair;
-var arr: Int64[4];
-p.first = 10;
-p.second = 20;
-arr[0] = p.first;
-arr[1] = p.second;
-p.first = arr[0] + arr[1];
-return p.first;
+
+def main(): Int64 {
+    var p: Pair;
+    var arr: Int64[4];
+    p.first = 10;
+    p.second = 20;
+    arr[0] = p.first;
+    arr[1] = p.second;
+    p.first = arr[0] + arr[1];
+    return p.first;
+}

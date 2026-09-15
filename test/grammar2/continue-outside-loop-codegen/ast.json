@@ -1,12 +1,20 @@
 {
+  "line": 2,
+  "column": 9,
   "kind": "Program",
   "body": [
 {
+  "line": 1,
+  "column": 9,
     "kind": "Continue"
   },
 {
+  "line": 2,
+  "column": 9,
     "kind": "Return",
     "value": {
+  "line": 2,
+  "column": 8,
       "kind": "IntLiteral",
       "value": 0
     }

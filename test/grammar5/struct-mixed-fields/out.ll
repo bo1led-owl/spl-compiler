@@ -1,5 +1,7 @@
 ; ModuleID = 'spl'
 source_filename = "spl"
+target datalayout = "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-i128:128-f80:128-n8:16:32:64-S128"
+target triple = "x86_64-unknown-linux-gnu"
 
 %Mixed = type { i8, i16, i32, i64, i1, ptr }
 
@@ -16,13 +18,13 @@ entry:
   %fieldaddr2 = getelementptr inbounds nuw %Mixed, ptr %m, i32 0, i32 2
   store i32 3, ptr %fieldaddr2, align 4
   %fieldaddr3 = getelementptr inbounds nuw %Mixed, ptr %m, i32 0, i32 3
-  store i64 4, ptr %fieldaddr3, align 4
+  store i64 4, ptr %fieldaddr3, align 8
   %fieldaddr4 = getelementptr inbounds nuw %Mixed, ptr %m, i32 0, i32 4
   store i1 true, ptr %fieldaddr4, align 1
   %fieldaddr5 = getelementptr inbounds nuw %Mixed, ptr %m, i32 0, i32 5
   store ptr @.str.0, ptr %fieldaddr5, align 8
   %result = alloca i64, align 8
-  store i64 0, ptr %result, align 4
+  store i64 0, ptr %result, align 8
   %fieldaddr6 = getelementptr inbounds nuw %Mixed, ptr %m, i32 0, i32 0
   %fieldtmp = load i8, ptr %fieldaddr6, align 1
   %sexttmp = sext i8 %fieldtmp to i64
@@ -35,9 +37,9 @@ entry:
   %sexttmp12 = sext i32 %fieldtmp11 to i64
   %addtmp13 = add i64 %addtmp, %sexttmp12
   %fieldaddr14 = getelementptr inbounds nuw %Mixed, ptr %m, i32 0, i32 3
-  %fieldtmp15 = load i64, ptr %fieldaddr14, align 4
+  %fieldtmp15 = load i64, ptr %fieldaddr14, align 8
   %addtmp16 = add i64 %addtmp13, %fieldtmp15
-  store i64 %addtmp16, ptr %result, align 4
-  %result17 = load i64, ptr %result, align 4
+  store i64 %addtmp16, ptr %result, align 8
+  %result17 = load i64, ptr %result, align 8
   ret i64 %result17
 }

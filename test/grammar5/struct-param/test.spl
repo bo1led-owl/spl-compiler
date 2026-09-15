@@ -2,14 +2,18 @@ struct Point {
     x: Int64;
     y: Int64;
 }
+
 def dotProduct(a: Point, b: Point): Int64 {
     return a.x * b.x + a.y * b.y;
 }
-var p1: Point;
-var p2: Point;
-p1.x = 1;
-p1.y = 2;
-p2.x = 3;
-p2.y = 4;
-val result: Int64 = dotProduct(p1, p2);
-return result;
+
+def main(): Int64 {
+    var p1: Point;
+    var p2: Point;
+    p1.x = 1;
+    p1.y = 2;
+    p2.x = 3;
+    p2.y = 4;
+    val result: Int64 = dotProduct(p1, p2);
+    return result;
+}

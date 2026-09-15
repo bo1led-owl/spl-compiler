@@ -1,0 +1,10 @@
+{
+  "grammar": {
+    "lexer": ">=4",
+    "parser": ["4"]
+  },
+  "exit": {
+    "lexer": 0,
+    "parser": "nonzero"
+  }
+}

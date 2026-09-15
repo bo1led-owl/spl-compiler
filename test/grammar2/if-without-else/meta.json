@@ -1,3 +1,9 @@
 {
-  "grammar": ">=2"
+  "grammar": {
+    "lexer": "2",
+    "parser": "2",
+    "llvm": [
+      "2"
+    ]
+  }
 }

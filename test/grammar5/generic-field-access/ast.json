@@ -1,11 +1,17 @@
 {
+  "line": 13,
+  "column": 1,
   "kind": "Program",
   "body": [
 {
+  "line": 4,
+  "column": 1,
     "kind": "StructDecl",
     "name": "Rectangle",
     "fields": [
 {
+  "line": 2,
+  "column": 15,
       "kind": "Declare",
       "mut": "val",
       "type": "Int64",
@@ -13,6 +19,8 @@
       "init": null
     },
 {
+  "line": 3,
+  "column": 16,
       "kind": "Declare",
       "mut": "val",
       "type": "Int64",
@@ -21,81 +29,133 @@
     }
   ]},
 {
-    "kind": "Declare",
-    "mut": "var",
-    "type": "Rectangle",
-    "name": "r",
-    "init": null
-  },
+  "line": 13,
+  "column": 1,
+    "kind": "FuncDecl",
+    "name": "main",
+    "returnType": "Int64",
+    "params": [],
+    "body": {
+  "line": 13,
+  "column": 1,
+      "kind": "Block",
+      "body": [
 {
-    "kind": "Assign",
-    "target": {
-      "kind": "FieldAccess",
-      "base": {
-        "kind": "Ident",
-        "name": "r"
+  "line": 7,
+  "column": 21,
+        "kind": "Declare",
+        "mut": "var",
+        "type": "Rectangle",
+        "name": "r",
+        "init": null
       },
-      "field": "width"
-    },
-    "value": {
-      "kind": "IntLiteral",
-      "value": 6
-    }
-  },
 {
-    "kind": "Assign",
-    "target": {
-      "kind": "FieldAccess",
-      "base": {
-        "kind": "Ident",
-        "name": "r"
-      },
-      "field": "height"
-    },
-    "value": {
-      "kind": "IntLiteral",
-      "value": 7
-    }
-  },
-{
-    "kind": "Declare",
-    "mut": "var",
-    "type": "Int64",
-    "name": "area",
-    "init": null
-  },
-{
-    "kind": "Assign",
-    "target": {
-      "kind": "Ident",
-      "name": "area"
-    },
-    "value": {
-      "kind": "BinOp",
-      "op": "*",
-      "left": {
-        "kind": "FieldAccess",
-        "base": {
-          "kind": "Ident",
-          "name": "r"
+  "line": 8,
+  "column": 16,
+        "kind": "Assign",
+        "target": {
+  "line": 8,
+  "column": 7,
+          "kind": "FieldAccess",
+          "base": {
+  "line": 8,
+  "column": 5,
+            "kind": "Ident",
+            "name": "r"
+          },
+          "field": "width"
         },
-        "field": "width"
+        "value": {
+  "line": 8,
+  "column": 15,
+          "kind": "IntLiteral",
+          "value": 6
+        }
       },
-      "right": {
-        "kind": "FieldAccess",
-        "base": {
-          "kind": "Ident",
-          "name": "r"
+{
+  "line": 9,
+  "column": 17,
+        "kind": "Assign",
+        "target": {
+  "line": 9,
+  "column": 7,
+          "kind": "FieldAccess",
+          "base": {
+  "line": 9,
+  "column": 5,
+            "kind": "Ident",
+            "name": "r"
+          },
+          "field": "height"
         },
-        "field": "height"
+        "value": {
+  "line": 9,
+  "column": 16,
+          "kind": "IntLiteral",
+          "value": 7
+        }
+      },
+{
+  "line": 10,
+  "column": 20,
+        "kind": "Declare",
+        "mut": "var",
+        "type": "Int64",
+        "name": "area",
+        "init": null
+      },
+{
+  "line": 11,
+  "column": 30,
+        "kind": "Assign",
+        "target": {
+  "line": 11,
+  "column": 5,
+          "kind": "Ident",
+          "name": "area"
+        },
+        "value": {
+  "line": 11,
+  "column": 24,
+          "kind": "BinOp",
+          "op": "*",
+          "left": {
+  "line": 11,
+  "column": 14,
+            "kind": "FieldAccess",
+            "base": {
+  "line": 11,
+  "column": 12,
+              "kind": "Ident",
+              "name": "r"
+            },
+            "field": "width"
+          },
+          "right": {
+  "line": 11,
+  "column": 24,
+            "kind": "FieldAccess",
+            "base": {
+  "line": 11,
+  "column": 22,
+              "kind": "Ident",
+              "name": "r"
+            },
+            "field": "height"
+          }
+        }
+      },
+{
+  "line": 12,
+  "column": 16,
+        "kind": "Return",
+        "value": {
+  "line": 12,
+  "column": 12,
+          "kind": "Ident",
+          "name": "area"
+        }
       }
-    }
-  },
-{
-    "kind": "Return",
-    "value": {
-      "kind": "Ident",
-      "name": "area"
-    }
+    ]}
   }
 ]}

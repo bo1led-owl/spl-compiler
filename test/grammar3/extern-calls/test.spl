@@ -1,3 +1,6 @@
 extern def putchar(x);
-var a = putchar(72);
-var b = putchar(105);
+
+def main() {
+    var a = putchar(72);
+    var b = putchar(105);
+}

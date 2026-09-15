@@ -1,4 +1,6 @@
 {
-  "grammar": ">=2",
-  "stages": ["lexer"]
+  "grammar": "<=2",
+  "stages": [
+    "lexer"
+  ]
 }

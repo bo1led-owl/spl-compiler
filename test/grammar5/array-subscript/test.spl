@@ -1,10 +1,12 @@
-var arr: Int64[5];
-var i: Int64;
-i = 0;
-arr[0] = 10;
-arr[1] = 20;
-arr[2] = 30;
-arr[3] = 40;
-arr[4] = 50;
-val result: Int64 = arr[2];
-return result;
+def main(): Int64 {
+    var arr: Int64[5];
+    var i: Int64;
+    i = 0;
+    arr[0] = 10;
+    arr[1] = 20;
+    arr[2] = 30;
+    arr[3] = 40;
+    arr[4] = 50;
+    val result: Int64 = arr[2];
+    return result;
+}

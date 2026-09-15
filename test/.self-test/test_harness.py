@@ -645,6 +645,23 @@ def test_preprocess_regex_and_exec(harness, run):
     assert rc == 0 and "PASS  lexer/a" in out
 
 
+def test_preprocess_regex_delete_lines(harness, run):
+    """Regex preprocess without repl deletes matching lines."""
+    harness.add_test("a", src="0;")
+    # Golden has only the meaningful line
+    harness.write("a", "tokens.json", "42\n")
+    # Actual output contains metadata lines that should be deleted
+    script = "import sys; open(sys.argv[1],'w').write('version=1\\n42\\n')"
+    stage = {
+        "cmd": ["python3", "-S", "-c", script, "{tokens_out}"],
+        "out": "{tokens_out}",
+        "preprocess": [{"type": "regex", "pattern": "version=.*"}],
+    }
+    cfg = harness.write_config(stages={"lexer": stage})
+    rc, out = run(["test", "--config", cfg])
+    assert rc == 0 and "PASS  lexer/a" in out
+
+
 def test_malformed_preprocess_exec_fails(harness, run):
     harness.add_test("a", src="0;")
     harness.write("a", "tokens.json", RAW_TOKENS)

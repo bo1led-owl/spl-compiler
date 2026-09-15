@@ -1,4 +1,7 @@
 def noop() {
   var x = 0;
 }
-return 42;
+
+def main() {
+  return 42;
+}

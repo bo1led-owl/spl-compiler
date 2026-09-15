@@ -1,49 +1,85 @@
 {
+  "line": 6,
+  "column": 1,
   "kind": "Program",
   "body": [
 {
-    "kind": "Declare",
-    "mut": "val",
-    "type": "Int64",
-    "name": "x",
-    "init": {
-      "kind": "IntLiteral",
-      "value": 42
-    }
-  },
+  "line": 6,
+  "column": 1,
+    "kind": "FuncDecl",
+    "name": "main",
+    "returnType": "Int64",
+    "params": [],
+    "body": {
+  "line": 6,
+  "column": 1,
+      "kind": "Block",
+      "body": [
 {
-    "kind": "Declare",
-    "mut": "val",
-    "type": "Int64",
-    "name": "y",
-    "init": {
-      "kind": "IntLiteral",
-      "value": 10
-    }
-  },
-{
-    "kind": "Declare",
-    "mut": "var",
-    "type": "Int64",
-    "name": "sum",
-    "init": {
-      "kind": "BinOp",
-      "op": "+",
-      "left": {
-        "kind": "Ident",
-        "name": "x"
+  "line": 2,
+  "column": 22,
+        "kind": "Declare",
+        "mut": "val",
+        "type": "Int64",
+        "name": "x",
+        "init": {
+  "line": 2,
+  "column": 20,
+          "kind": "IntLiteral",
+          "value": 42
+        }
       },
-      "right": {
-        "kind": "Ident",
-        "name": "y"
-      }
-    }
-  },
 {
-    "kind": "Return",
-    "value": {
-      "kind": "Ident",
-      "name": "sum"
-    }
+  "line": 3,
+  "column": 22,
+        "kind": "Declare",
+        "mut": "val",
+        "type": "Int64",
+        "name": "y",
+        "init": {
+  "line": 3,
+  "column": 20,
+          "kind": "IntLiteral",
+          "value": 10
+        }
+      },
+{
+  "line": 4,
+  "column": 27,
+        "kind": "Declare",
+        "mut": "var",
+        "type": "Int64",
+        "name": "sum",
+        "init": {
+  "line": 4,
+  "column": 26,
+          "kind": "BinOp",
+          "op": "+",
+          "left": {
+  "line": 4,
+  "column": 22,
+            "kind": "Ident",
+            "name": "x"
+          },
+          "right": {
+  "line": 4,
+  "column": 26,
+            "kind": "Ident",
+            "name": "y"
+          }
+        }
+      },
+{
+  "line": 5,
+  "column": 15,
+        "kind": "Return",
+        "value": {
+  "line": 5,
+  "column": 12,
+          "kind": "Ident",
+          "name": "sum"
+        }
+      }
+    ]}
   }
 ]}

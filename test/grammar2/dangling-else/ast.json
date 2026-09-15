@@ -1,28 +1,46 @@
 {
+  "line": 6,
+  "column": 9,
   "kind": "Program",
   "body": [
 {
+  "line": 5,
+  "column": 13,
     "kind": "If",
     "cond": {
+  "line": 1,
+  "column": 5,
       "kind": "IntLiteral",
       "value": 1
     },
     "then": {
+  "line": 5,
+  "column": 13,
       "kind": "If",
       "cond": {
+  "line": 2,
+  "column": 7,
         "kind": "IntLiteral",
         "value": 0
       },
       "then": {
+  "line": 3,
+  "column": 13,
         "kind": "Return",
         "value": {
+  "line": 3,
+  "column": 12,
           "kind": "IntLiteral",
           "value": 1
         }
       },
       "else": {
+  "line": 5,
+  "column": 13,
         "kind": "Return",
         "value": {
+  "line": 5,
+  "column": 12,
           "kind": "IntLiteral",
           "value": 2
         }
@@ -30,8 +48,12 @@
     }
   },
 {
+  "line": 6,
+  "column": 9,
     "kind": "Return",
     "value": {
+  "line": 6,
+  "column": 8,
       "kind": "IntLiteral",
       "value": 0
     }

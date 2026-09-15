@@ -1,0 +1,6 @@
+{
+  "grammar": ">=3",
+  "exit": {
+    "parser": "nonzero"
+  }
+}

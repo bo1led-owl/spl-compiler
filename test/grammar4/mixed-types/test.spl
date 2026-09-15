@@ -1,4 +1,6 @@
-val i32: Int32 = 1000;
-val i16: Int16 = cast<Int16>(i32);
-val i64: Int64 = cast<Int64>(i16);
-return i64;
+def main(): Int64 {
+    val i32: Int32 = 1000;
+    val i16: Int16 = cast<Int16>(i32);
+    val i64: Int64 = cast<Int64>(i16);
+    return i64;
+}

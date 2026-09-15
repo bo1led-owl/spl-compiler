@@ -2,8 +2,11 @@ struct Rectangle {
     width: Int64;
     height: Int64;
 }
-var r: Rectangle;
-r.width = 30;
-r.height = 15;
-val area: Int64 = r.width * r.height;
-return area;
+
+def main(): Int64 {
+    var r: Rectangle;
+    r.width = 30;
+    r.height = 15;
+    val area: Int64 = r.width * r.height;
+    return area;
+}

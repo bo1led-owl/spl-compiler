@@ -1,63 +1,99 @@
 {
+  "line": 9,
+  "column": 9,
   "kind": "Program",
   "body": [
 {
+  "line": 1,
+  "column": 10,
     "kind": "Declare",
     "mut": "var",
     "name": "x",
     "init": {
+  "line": 1,
+  "column": 9,
       "kind": "IntLiteral",
       "value": 0
     }
   },
 {
+  "line": 8,
+  "column": 1,
     "kind": "While",
     "cond": {
+  "line": 2,
+  "column": 12,
       "kind": "BinOp",
       "op": "<",
       "left": {
+  "line": 2,
+  "column": 8,
         "kind": "Ident",
         "name": "x"
       },
       "right": {
+  "line": 2,
+  "column": 12,
         "kind": "IntLiteral",
         "value": 10
       }
     },
     "body": {
+  "line": 8,
+  "column": 1,
       "kind": "Block",
       "body": [
 {
+  "line": 7,
+  "column": 5,
         "kind": "If",
         "cond": {
+  "line": 3,
+  "column": 13,
           "kind": "BinOp",
           "op": "<",
           "left": {
+  "line": 3,
+  "column": 9,
             "kind": "Ident",
             "name": "x"
           },
           "right": {
+  "line": 3,
+  "column": 13,
             "kind": "IntLiteral",
             "value": 5
           }
         },
         "then": {
+  "line": 5,
+  "column": 5,
           "kind": "Block",
           "body": [
 {
+  "line": 4,
+  "column": 18,
             "kind": "Assign",
             "target": {
+  "line": 4,
+  "column": 9,
               "kind": "Ident",
               "name": "x"
             },
             "value": {
+  "line": 4,
+  "column": 17,
               "kind": "BinOp",
               "op": "+",
               "left": {
+  "line": 4,
+  "column": 13,
                 "kind": "Ident",
                 "name": "x"
               },
               "right": {
+  "line": 4,
+  "column": 17,
                 "kind": "IntLiteral",
                 "value": 1
               }
@@ -65,9 +101,13 @@
           }
         ]},
         "else": {
+  "line": 7,
+  "column": 5,
           "kind": "Block",
           "body": [
 {
+  "line": 6,
+  "column": 14,
             "kind": "Break"
           }
         ]}
@@ -75,8 +115,12 @@
     ]}
   },
 {
+  "line": 9,
+  "column": 9,
     "kind": "Return",
     "value": {
+  "line": 9,
+  "column": 8,
       "kind": "Ident",
       "name": "x"
     }

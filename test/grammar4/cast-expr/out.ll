@@ -1,5 +1,7 @@
 ; ModuleID = 'spl'
 source_filename = "spl"
+target datalayout = "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-i128:128-f80:128-n8:16:32:64-S128"
+target triple = "x86_64-unknown-linux-gnu"
 
 define i64 @main() {
 entry:
@@ -16,7 +18,7 @@ entry:
   %w = alloca i64, align 8
   %z4 = load i32, ptr %z, align 4
   %sexttmp5 = sext i32 %z4 to i64
-  store i64 %sexttmp5, ptr %w, align 4
-  %w6 = load i64, ptr %w, align 4
+  store i64 %sexttmp5, ptr %w, align 8
+  %w6 = load i64, ptr %w, align 8
   ret i64 %w6
 }

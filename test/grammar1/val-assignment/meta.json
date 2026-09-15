@@ -1,1 +1,19 @@
-{"grammar": {"lexer": ">=1", "parser": ["1", "2", "3"]}, "stages": ["lexer", "parser", "llvm"], "exit": {"lexer": 0, "parser": 0, "llvm": "nonzero"}}
+{
+  "grammar": {
+    "lexer": "<=2",
+    "parser": [
+      "1",
+      "2"
+    ]
+  },
+  "stages": [
+    "lexer",
+    "parser",
+    "llvm"
+  ],
+  "exit": {
+    "lexer": 0,
+    "parser": 0,
+    "llvm": "nonzero"
+  }
+}

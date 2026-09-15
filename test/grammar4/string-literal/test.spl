@@ -1,3 +1,5 @@
-val s: String = "hello";
-val msg: String = "world";
-return 0;
+def main(): Int64 {
+    val s: String = "hello";
+    val msg: String = "world";
+    return 0;
+}

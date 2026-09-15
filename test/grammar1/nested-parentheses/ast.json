@@ -1,9 +1,15 @@
 {
+  "line": 1,
+  "column": 18,
   "kind": "Program",
   "body": [
 {
+  "line": 1,
+  "column": 18,
     "kind": "Return",
     "value": {
+  "line": 1,
+  "column": 12,
       "kind": "IntLiteral",
       "value": 10
     }

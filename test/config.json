@@ -15,7 +15,7 @@
       "cmd": ["{root}/zig-out/bin/splc", "-a", "{ast_in}", "--last-stage=parser", "{input}"],
       "out": "{ast_out}",
       "preprocess": [
-        {"type": "json", "keep": ["kind"]}
+        {"type": "json", "keep": ["kind", "line", "column"]}
       ]
     },
     "llvm": {
