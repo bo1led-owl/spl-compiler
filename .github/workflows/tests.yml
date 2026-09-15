@@ -10,8 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        # Add grammar versions you have implemented (e.g. [1, 2, 3, 4, 5])
         grammar: [1]
+        stage: ["lexer"]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -21,6 +21,11 @@ jobs:
       - name: Install test harness dependency
         run: pip install pytest
 
+      - name: Setup LLVM
+        uses: ZhongRuoyu/setup-llvm@v0
+        with:
+          llvm-version: 22
+
       - uses: mlugg/setup-zig@v2
         with:
           version: 0.16.0
@@ -28,7 +33,7 @@ jobs:
           mirror: https://pkg.hexops.org/zig 
 
       - name: Build your compiler
-        run: zig build --release=fast -p build/
+        run: zig build --release=fast -DllvmIncludeDir=$(llvm-config --includedir) -DllvmLibDir=$(llvm-config --libdir) -DllvmLibName=$(llvm-config --libs x86)
 
-      - name: Run tests for grammar ${{ matrix.grammar }}
-        run: python3 test/run_tests.py test --grammar ${{ matrix.grammar }} --no-build
+      - name: Run tests for grammar ${{ matrix.grammar }} stage ${{ matrix.stage }}
+        run: python3 test/run_tests.py test --grammar ${{ matrix.grammar }} --stage=${{ matrix.stage }} --no-build
