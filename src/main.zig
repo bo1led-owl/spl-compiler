@@ -103,15 +103,15 @@ fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: spl.cli.Args) u8 {
         return 1;
     }
 
-    const llvm_output_path, const should_free_path = if (args.emit_llvm)
-        .{ args.output_path, false }
+    const llvm_output_path = if (args.emit_llvm)
+        args.output_path
     else
-        .{ std.fmt.allocPrintSentinel(gpa, "{s}.bc", .{args.output_path}, 0) catch {
+        std.fmt.allocPrintSentinel(gpa, "{s}.bc", .{args.output_path}, 0) catch {
             std.log.err("failed to allocate temporary path", .{});
             return 1;
-        }, true };
+        };
 
-    defer if (should_free_path) gpa.free(llvm_output_path);
+    defer if (!args.emit_llvm) gpa.free(llvm_output_path);
 
     var codegen = spl.Codegen.init(gpa, source, tokens, ast);
     codegen.run(llvm_output_path, .{ .emit_llvm = args.emit_llvm }) catch |err| {
