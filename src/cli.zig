@@ -111,7 +111,12 @@ pub const Args = struct {
             .ast_dump_path = ast_dump_path,
             .emit_llvm = emit_llvm,
             .last_stage = last_stage,
-            .output_path = if (emit_llvm) "a.ll" else "a.bc",
+            .output_path = if (output_path) |path|
+                path
+            else if (emit_llvm)
+                "a.ll"
+            else
+                "a.out",
         };
     }
 };
