@@ -1,7 +1,6 @@
-const std = @import("std");
-
 const Self = @This();
 
+const std = @import("std");
 const lex = @import("lex.zig");
 const Source = @import("Source.zig");
 const Ast = @import("Ast.zig");
@@ -31,6 +30,11 @@ pub fn init(
     };
 }
 
+pub fn deinit(self: *Self) void {
+    self.vars.deinit(self.gpa);
+    self.* = undefined;
+}
+
 pub fn run(self: *Self) !void {
     _ = try self.visitNode(.root);
 }
@@ -43,14 +47,33 @@ const NodeInfo = packed struct(u1) {
     is_assignable: bool = false,
 };
 
-fn visitNode(self: *Self, node_idx: Ast.Node.Index) (std.mem.Allocator.Error || ErrorBundle.ReportError)!NodeInfo {
-    const node = self.ast.nodes.get(@intFromEnum(node_idx));
+fn visitNode(self: *Self, node_index: Ast.Node.Index) (std.mem.Allocator.Error || ErrorBundle.ReportError)!NodeInfo {
+    const node = self.ast.nodes.get(@intFromEnum(node_index));
 
     switch (node.kind) {
         .root => {
             const body = self.ast.extractExtras(node.data.extra_range);
+            if (body.len == 0) {
+                try self.report(
+                    self.spanByNode(node_index),
+                    "empty program, at least one statement expected",
+                    .{},
+                );
+                return .{};
+            }
+
             for (body) |i| {
                 _ = try self.visitNode(@enumFromInt(i));
+            }
+
+            const last_node = self.ast.nodes.get(body[body.len - 1]);
+            if (last_node.kind != .@"return") {
+                try self.report(
+                    self.spanByNode(@enumFromInt(body[body.len - 1])),
+                    "last statement must be a `return`",
+                    .{},
+                );
+                return .{};
             }
 
             return .{};
@@ -118,7 +141,7 @@ fn visitNode(self: *Self, node_idx: Ast.Node.Index) (std.mem.Allocator.Error || 
         .assign => {
             const dest_info = try self.visitNode(node.data.node_node.@"0");
             if (!dest_info.is_assignable) {
-                try self.report(self.spanByNode(node_idx), "expression is not assignable", .{});
+                try self.report(self.spanByNode(node_index), "expression is not assignable", .{});
             }
 
             _ = try self.visitNode(node.data.node_node.@"1");
@@ -128,8 +151,8 @@ fn visitNode(self: *Self, node_idx: Ast.Node.Index) (std.mem.Allocator.Error || 
     }
 }
 
-fn spanByNode(self: *Self, node_idx: Ast.Node.Index) Source.Span {
-    const node = self.ast.nodes.get(@intFromEnum(node_idx));
+fn spanByNode(self: *Self, node_index: Ast.Node.Index) Source.Span {
+    const node = self.ast.nodes.get(@intFromEnum(node_index));
     return switch (node.kind) {
         .root => .{ .begin = 0, .end = @intCast(self.source.text.len) },
         .var_decl => .{

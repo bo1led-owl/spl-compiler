@@ -19,14 +19,14 @@
       ]
     },
     "llvm": {
-      "cmd": ["{root}/zig-out/bin/splc", "-o", "{llvm_out}", "--last-stage=llvm", "{input}"],
+      "cmd": ["{root}/zig-out/bin/splc", "-o", "{llvm_out}", "--emit-llvm", "{input}"],
       "out": "{llvm_out}",
       "preprocess": [
         {"type": "llvm"}
       ]
     },
     "compile": {
-      "cmd": ["{root}/zig-out/bin/splc", "-o", "{exe}", "--last-stage=codegen", "{input}"]
+      "cmd": ["{root}/zig-out/bin/splc", "-o", "{exe}", "{input}"]
     },
     "run": {
       "cmd": ["{exe}"],

@@ -25,7 +25,7 @@ gpa: std.mem.Allocator,
 source: Source,
 errors: *ErrorBundle,
 
-token_idx: Token.Index,
+token_index: Token.Index,
 tokens: lex.TokenList,
 
 nodes: Ast.NodeList,
@@ -37,7 +37,7 @@ pub fn init(gpa: std.mem.Allocator, source: Source, tokens: lex.TokenList, error
         .gpa = gpa,
         .source = source,
         .errors = errors,
-        .token_idx = 0,
+        .token_index = 0,
         .tokens = tokens,
         .nodes = .empty,
         .scratch = .empty,
@@ -45,14 +45,17 @@ pub fn init(gpa: std.mem.Allocator, source: Source, tokens: lex.TokenList, error
     };
 }
 
+pub fn deinit(self: *Self) void {
+    self.scratch.deinit(self.gpa);
+    self.* = undefined;
+}
+
 pub fn parse(self: *Self) (std.mem.Allocator.Error || std.Io.Writer.Error)!Ast {
     std.debug.assert(self.tokens.len > 0);
 
-    defer self.scratch.deinit(self.gpa);
-
     _ = try self.addNode(.{ .kind = .root, .token = 0 });
 
-    while (self.tokenKind(self.token_idx) != .eof) {
+    while (self.tokenKind(self.token_index) != .eof) {
         const stmt_opt = self.parseStatement() catch |err|
             switch (err) {
                 error.ParseError => {
@@ -68,7 +71,7 @@ pub fn parse(self: *Self) (std.mem.Allocator.Error || std.Io.Writer.Error)!Ast {
             try self.scratch.append(self.gpa, stmt);
         } else {
             try self.reportUnexpected(
-                self.tokenKind(self.token_idx),
+                self.tokenKind(self.token_index),
                 .{"a statement"},
             );
             _ = self.nextToken();
@@ -99,12 +102,12 @@ fn addNode(self: *Self, node: Node) !Node.Index {
     return @enumFromInt(result);
 }
 
-fn tokenKind(self: Self, idx: Token.Index) Token.Kind {
-    return self.tokens.items(.kind)[idx];
+fn tokenKind(self: Self, index: Token.Index) Token.Kind {
+    return self.tokens.items(.kind)[index];
 }
 
 fn eatToken(self: *Self, kind: Token.Kind) ?Token.Index {
-    if (self.tokenKind(self.token_idx) == kind) {
+    if (self.tokenKind(self.token_index) == kind) {
         return self.nextToken();
     }
 
@@ -112,8 +115,8 @@ fn eatToken(self: *Self, kind: Token.Kind) ?Token.Index {
 }
 
 fn nextToken(self: *Self) Token.Index {
-    defer self.token_idx += 1;
-    return self.token_idx;
+    defer self.token_index += 1;
+    return self.token_index;
 }
 
 inline fn formatExpectedList(comptime list: anytype) []const u8 {
@@ -148,7 +151,7 @@ inline fn formatExpectedList(comptime list: anytype) []const u8 {
 }
 
 fn report(self: *Self, comptime fmt: []const u8, args: anytype) ErrorBundle.ReportError!void {
-    const cur_token = self.tokens.get(self.token_idx);
+    const cur_token = self.tokens.get(self.token_index);
     try self.errors.report(
         self.gpa,
         .{ .begin = cur_token.offset, .end = cur_token.offset + self.source.tokenLen(cur_token) },
@@ -181,8 +184,8 @@ fn failWithUnexpected(self: *Self, actual: Token.Kind, comptime expected: anytyp
 }
 
 fn expectToken(self: *Self, comptime kind: Token.Kind) !Token.Index {
-    if (self.tokenKind(self.token_idx) != kind) {
-        return self.failWithUnexpected(self.tokenKind(self.token_idx), .{kind});
+    if (self.tokenKind(self.token_index) != kind) {
+        return self.failWithUnexpected(self.tokenKind(self.token_index), .{kind});
     }
 
     return self.nextToken();
@@ -204,13 +207,13 @@ fn skipUntil(self: *Self, kind: Token.Kind) bool {
     if (std.mem.findScalarPos(
         Token.Kind,
         self.tokens.items(.kind),
-        self.token_idx,
+        self.token_index,
         kind,
-    )) |idx| {
-        self.token_idx = @intCast(idx);
+    )) |index| {
+        self.token_index = @intCast(index);
         return true;
     } else {
-        self.token_idx = @intCast(self.tokens.len - 1);
+        self.token_index = @intCast(self.tokens.len - 1);
         return false;
     }
 }
@@ -219,14 +222,14 @@ fn skipUntilAny(self: *Self, kinds: []const Token.Kind) Token.Kind {
     if (std.mem.findAnyPos(
         Token.Kind,
         self.tokens.items(.kind),
-        self.token_idx,
+        self.token_index,
         kinds,
-    )) |idx| {
-        self.token_idx = @intCast(idx);
-        return self.tokenKind(self.token_idx);
+    )) |index| {
+        self.token_index = @intCast(index);
+        return self.tokenKind(self.token_index);
     } else {
-        self.token_idx = @intCast(self.tokens.len - 1);
-        std.debug.assert(self.tokenKind(self.token_idx) == .eof);
+        self.token_index = @intCast(self.tokens.len - 1);
+        std.debug.assert(self.tokenKind(self.token_index) == .eof);
         return .eof;
     }
 }
@@ -270,7 +273,7 @@ fn assignmentNodeKind(token: Token.Kind) ?Node.Kind {
 fn parseAssignmentOrExpr(self: *Self) !?Node.Index {
     const lhs = try self.parseExpr() orelse return null;
 
-    const node_kind = assignmentNodeKind(self.tokenKind(self.token_idx)) orelse return lhs;
+    const node_kind = assignmentNodeKind(self.tokenKind(self.token_index)) orelse return lhs;
     const token = self.nextToken();
 
     const rhs = try self.expectExpr();
@@ -285,7 +288,7 @@ fn parseAssignmentOrExpr(self: *Self) !?Node.Index {
 fn expectExpr(self: *Self) !Node.Index {
     return try self.parseExpr() orelse
         self.failWithUnexpected(
-            self.tokenKind(self.token_idx),
+            self.tokenKind(self.token_index),
             .{"an expression"},
         );
 }
@@ -302,7 +305,7 @@ const Associativity = enum {
 };
 
 fn peekBinaryOp(self: Self) ?struct { token: Token.Index, precedence: u32, associativity: Associativity } {
-    const kind = self.tokenKind(self.token_idx);
+    const kind = self.tokenKind(self.token_index);
 
     const prec: u32, const assoc: Associativity = switch (kind) {
         .plus, .minus => .{ 0, .left },
@@ -310,7 +313,7 @@ fn peekBinaryOp(self: Self) ?struct { token: Token.Index, precedence: u32, assoc
         else => return null,
     };
 
-    return .{ .token = self.token_idx, .precedence = prec, .associativity = assoc };
+    return .{ .token = self.token_index, .precedence = prec, .associativity = assoc };
 }
 
 fn parseExprPrecedence(self: *Self, initial_lhs: Node.Index, min_prec: u32) !Node.Index {
@@ -349,7 +352,7 @@ fn parseExprPrecedence(self: *Self, initial_lhs: Node.Index, min_prec: u32) !Nod
 fn expectTerm(self: *Self) !Node.Index {
     return try self.parseTerm() orelse
         self.failWithUnexpected(
-            self.tokenKind(self.token_idx),
+            self.tokenKind(self.token_index),
             .{"a term"},
         );
 }

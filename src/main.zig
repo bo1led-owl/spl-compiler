@@ -31,7 +31,7 @@ fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: spl.cli.Args) u8 {
         return 0;
     }
 
-    const source: spl.frontend.Source = .{ .text = readFile(io, gpa, args.path) catch |err| {
+    const source: spl.frontend.Source = .{ .text = readFile(io, gpa, args.source_path) catch |err| {
         std.log.err("failed to read source file: {s}", .{@errorName(err)});
         return 1;
     } };
@@ -50,15 +50,13 @@ fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: spl.cli.Args) u8 {
     }
 
     if (args.last_stage == .lexer) {
-        if (std.mem.findAny(
-            spl.frontend.lex.Token.Kind,
-            tokens.items(.kind),
-            &.{
-                .err_invalid_character,
-                .err_number_has_leading_zero,
-                .err_unterminated_multiline_comment,
-            },
-        ) != null) {
+        const error_occured = std.mem.findAny(spl.frontend.lex.Token.Kind, tokens.items(.kind), &.{
+            .err_invalid_character,
+            .err_number_has_leading_zero,
+            .err_unterminated_multiline_comment,
+        }) != null;
+
+        if (error_occured) {
             std.log.err("tokenizing error not reported due to stage limit", .{});
             return 1;
         }
@@ -75,6 +73,8 @@ fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: spl.cli.Args) u8 {
         return 1;
     };
     defer ast.deinit(gpa);
+
+    parser.deinit();
 
     if (args.ast_dump_path) |dump_path| {
         dumpAst(io, source, tokens, ast, dump_path) catch |err|
@@ -95,12 +95,20 @@ fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: spl.cli.Args) u8 {
         std.log.err("failed to run semantic analysis: {s}", .{@errorName(err)});
         return 1;
     };
+    sema.deinit();
 
     if (error_bundle.nonEmpty()) {
         error_bundle.sort();
         error_bundle.renderToStderr(io, source.text, null) catch {};
         return 1;
     }
+
+    var codegen = spl.Codegen.init(gpa, source, tokens, ast);
+    codegen.run(args.output_path, .{ .emit_llvm = args.emit_llvm }) catch |err| {
+        std.log.err("failed to generate code: {s}", .{@errorName(err)});
+        return 1;
+    };
+    codegen.deinit();
 
     return 0;
 }
@@ -161,13 +169,16 @@ fn dumpTokens(
             .err_invalid_character,
             .err_number_has_leading_zero,
             .err_unterminated_multiline_comment,
+            .err_ident_too_long,
             => "ERROR",
         };
 
         const error_msg = switch (token.kind) {
-            .err_invalid_character => "invalid character",
-            .err_number_has_leading_zero => "number has leading zero",
-            .err_unterminated_multiline_comment => "unterminated multiline comment",
+            .err_invalid_character,
+            .err_number_has_leading_zero,
+            .err_unterminated_multiline_comment,
+            .err_ident_too_long,
+            => token.kind.toString(),
             else => null,
         };
 
@@ -217,9 +228,9 @@ fn dumpAstNode(
     source: spl.frontend.Source,
     tokens: spl.frontend.lex.TokenList,
     ast: spl.frontend.Ast,
-    node_idx: spl.frontend.Ast.Node.Index,
+    node_index: spl.frontend.Ast.Node.Index,
 ) !void {
-    const node = ast.nodes.get(@intFromEnum(node_idx));
+    const node = ast.nodes.get(@intFromEnum(node_index));
 
     try jws.beginObject();
 

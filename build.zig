@@ -1,13 +1,8 @@
 const std = @import("std");
 
 pub fn build(b: *std.Build) void {
+    const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
-
-    const target = if (optimize != .ReleaseFast)
-        // workaround for Zig's linker failure with glibc
-        b.standardTargetOptions(.{ .default_target = .{ .abi = .musl } })
-    else
-        b.standardTargetOptions(.{});
 
     const mod = b.addModule("spl", .{
         .root_source_file = b.path("src/root.zig"),
@@ -27,6 +22,10 @@ pub fn build(b: *std.Build) void {
                 .{ .name = "spl", .module = mod },
             },
         }),
+
+        // workaround for Zig's linker failure with glibc
+        .use_lld = true,
+        .use_llvm = true,
     });
 
     b.installArtifact(exe);
