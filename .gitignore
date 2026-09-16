@@ -4,6 +4,13 @@ test/build/
 .zig-cache/
 zig-out/
 
+# Temporaries and binaries
+*.ll
+*.bc
+a.out
+
+!test/**/*.ll
+
 # IDE / editor
 .cache
 compile_commands.json

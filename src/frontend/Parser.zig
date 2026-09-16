@@ -59,6 +59,7 @@ pub fn parse(self: *Self) (std.mem.Allocator.Error || std.Io.Writer.Error)!Ast {
         const stmt_opt = self.parseStatement() catch |err|
             switch (err) {
                 error.ParseError => {
+                    try self.scratch.append(self.gpa, try self.addRecoveryNode());
                     self.skipUntilInclusive(.semi);
                     continue;
                 },
@@ -70,10 +71,8 @@ pub fn parse(self: *Self) (std.mem.Allocator.Error || std.Io.Writer.Error)!Ast {
             // that contain N nodes inside
             try self.scratch.append(self.gpa, stmt);
         } else {
-            try self.reportUnexpected(
-                self.tokenKind(self.token_index),
-                .{"a statement"},
-            );
+            try self.reportUnexpected(self.tokenKind(self.token_index), .{"a statement"});
+            try self.scratch.append(self.gpa, try self.addRecoveryNode());
             _ = self.nextToken();
             continue;
         }
@@ -100,6 +99,10 @@ fn addNode(self: *Self, node: Node) !Node.Index {
     const result: u32 = @intCast(self.nodes.len);
     try self.nodes.append(self.gpa, node);
     return @enumFromInt(result);
+}
+
+fn addRecoveryNode(self: *Self) !Node.Index {
+    return self.addNode(.{ .kind = .recovery, .token = self.token_index });
 }
 
 fn tokenKind(self: Self, index: Token.Index) Token.Kind {
@@ -239,10 +242,31 @@ fn parseVarDecl(self: *Self) !?Node.Index {
         self.eatToken(.kw_var) orelse
         return null;
 
-    _ = try self.expectToken(.ident);
-    _ = try self.expectToken(.assign);
+    _ = self.expectToken(.ident) catch |err|
+        switch (err) {
+            error.ParseError => return try self.addRecoveryNode(),
+            else => return err,
+        };
 
-    const initNode = try self.expectExpr();
+    const initNode = blk: {
+        _ = self.expectToken(.assign) catch |err|
+            switch (err) {
+                error.ParseError => {
+                    defer _ = self.skipUntil(.semi);
+                    break :blk try self.addRecoveryNode();
+                },
+                else => return err,
+            };
+
+        break :blk self.expectExpr() catch |err|
+            switch (err) {
+                error.ParseError => {
+                    defer _ = self.skipUntil(.semi);
+                    break :blk try self.addRecoveryNode();
+                },
+                else => return err,
+            };
+    };
 
     return try self.addNode(.{
         .kind = .var_decl,
@@ -253,7 +277,14 @@ fn parseVarDecl(self: *Self) !?Node.Index {
 
 fn parseReturn(self: *Self) !?Node.Index {
     const ret_token = self.eatToken(.kw_return) orelse return null;
-    const retval = try self.expectExpr();
+    const retval = self.expectExpr() catch |err|
+        switch (err) {
+            error.ParseError => blk: {
+                defer _ = self.skipUntil(.semi);
+                break :blk try self.addRecoveryNode();
+            },
+            else => return err,
+        };
 
     return try self.addNode(.{
         .kind = .@"return",
@@ -394,7 +425,17 @@ fn parseNameRef(self: *Self) !?Node.Index {
 
 fn parseParenExpr(self: *Self) !?Node.Index {
     _ = self.eatToken(.lparen) orelse return null;
-    const res = try self.expectExpr();
+
+    const res = self.expectExpr() catch |err|
+        switch (err) {
+            error.ParseError => blk: {
+                defer _ = self.skipUntilAny(&.{ .rparen, .semi });
+                break :blk try self.addRecoveryNode();
+            },
+            else => return err,
+        };
+
     _ = try self.expectToken(.rparen);
+
     return res;
 }

@@ -40,6 +40,9 @@ pub const Node = struct {
         /// `token` is the first token in the file
         /// `data` is `extra_range`, where a slice of extra data contains indices of statements
         root,
+        /// recovery node, put as a plug in case of parsing failure
+        /// `token` and `data` are not guaranteed to be valid
+        recovery,
         /// variable declaration
         /// `token` is `var` or `val` to check mutability
         /// `data` is `node`, pointing to the initialization expression

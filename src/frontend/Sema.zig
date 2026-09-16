@@ -51,6 +51,7 @@ fn visitNode(self: *Self, node_index: Ast.Node.Index) (std.mem.Allocator.Error |
     const node = self.ast.nodes.get(@intFromEnum(node_index));
 
     switch (node.kind) {
+        .recovery => return .{},
         .root => {
             const body = self.ast.extractExtras(node.data.extra_range);
             if (body.len == 0) {
@@ -154,6 +155,7 @@ fn visitNode(self: *Self, node_index: Ast.Node.Index) (std.mem.Allocator.Error |
 fn spanByNode(self: *Self, node_index: Ast.Node.Index) Source.Span {
     const node = self.ast.nodes.get(@intFromEnum(node_index));
     return switch (node.kind) {
+        .recovery => self.source.spanByToken(self.tokens.get(node.token)),
         .root => .{ .begin = 0, .end = @intCast(self.source.text.len) },
         .var_decl => .{
             .begin = self.tokens.items(.offset)[node.token],

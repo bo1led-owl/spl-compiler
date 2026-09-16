@@ -266,6 +266,7 @@ fn dumpAstNode(
         .unary => "Unary",
         .binary => "BinOp",
         .assign => "Assign",
+        .recovery => "ERROR",
     });
 
     switch (node.kind) {
@@ -281,6 +282,7 @@ fn dumpAstNode(
 
             try jws.endArray();
         },
+        .recovery => {},
         .var_decl => {
             try jws.objectField("mut");
             try jws.write(tokens.items(.kind)[node.token] == .kw_var);

@@ -80,6 +80,7 @@ fn gen(self: *Self, node_index: Ast.Node.Index) !c.LLVMValueRef {
     const node = self.ast.nodes.get(@intFromEnum(node_index));
 
     switch (node.kind) {
+        .recovery => unreachable,
         .root => {
             const function_type: c.LLVMTypeRef = c.LLVMFunctionType(self.i64_type(), null, 0, 0);
             const function: c.LLVMValueRef = c.LLVMAddFunction(self.module, "main", function_type);
@@ -161,6 +162,7 @@ fn genStorable(self: *Self, node_index: Ast.Node.Index) !c.LLVMValueRef {
             const name = self.source.tokenLiteral(self.tokens.get(node.token));
             return self.vars.get(name).?;
         },
+        .recovery,
         .root,
         .var_decl,
         .number,
