@@ -428,9 +428,11 @@ fn parseParenExpr(self: *Self) !?Node.Index {
 
     const res = self.expectExpr() catch |err|
         switch (err) {
-            error.ParseError => blk: {
-                defer _ = self.skipUntilAny(&.{ .rparen, .semi });
-                break :blk try self.addRecoveryNode();
+            error.ParseError => {
+                defer if (self.skipUntilAny(&.{ .rparen, .semi }) == .rparen) {
+                    _ = self.nextToken();
+                };
+                return try self.addRecoveryNode();
             },
             else => return err,
         };
