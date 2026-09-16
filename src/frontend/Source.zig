@@ -4,6 +4,7 @@ const Self = @This();
 
 const lex = @import("lex.zig");
 
+filename: []const u8,
 text: []const u8,
 
 pub const Span = struct {
@@ -41,6 +42,10 @@ pub fn tokenLen(self: Self, token: lex.Token) u32 {
 
 pub fn tokenLiteral(self: Self, token: lex.Token) []const u8 {
     return self.text[token.offset..(token.offset + self.tokenLen(token))];
+}
+
+pub fn lineIndexFromOffset(self: Self, offset: u32) u32 {
+    return @intCast(std.mem.countScalar(u8, self.text[0..@min(offset, self.text.len)], '\n'));
 }
 
 pub fn locationFromOffset(self: Self, offset: u32) Location {

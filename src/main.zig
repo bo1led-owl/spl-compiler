@@ -31,10 +31,13 @@ fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: spl.cli.Args) u8 {
         return 0;
     }
 
-    const source: spl.frontend.Source = .{ .text = readFile(io, gpa, args.source_path) catch |err| {
-        std.log.err("failed to read source file: {s}", .{@errorName(err)});
-        return 1;
-    } };
+    const source: spl.frontend.Source = .{
+        .filename = args.source_path,
+        .text = readFile(io, gpa, args.source_path) catch |err| {
+            std.log.err("failed to read source file: {s}", .{@errorName(err)});
+            return 1;
+        },
+    };
     defer gpa.free(source.text);
 
     var lexer = spl.frontend.Lexer.init(source.text);
@@ -84,7 +87,7 @@ fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: spl.cli.Args) u8 {
     if (args.last_stage == .parser) {
         if (error_bundle.nonEmpty()) {
             error_bundle.sort();
-            error_bundle.renderToStderr(io, source.text, null) catch {};
+            error_bundle.renderToStderr(io, source, null) catch {};
             return 1;
         }
         return 0;
@@ -99,7 +102,7 @@ fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: spl.cli.Args) u8 {
 
     if (error_bundle.nonEmpty()) {
         error_bundle.sort();
-        error_bundle.renderToStderr(io, source.text, null) catch {};
+        error_bundle.renderToStderr(io, source, null) catch {};
         return 1;
     }
 

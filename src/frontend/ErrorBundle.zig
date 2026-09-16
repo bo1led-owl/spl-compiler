@@ -61,7 +61,7 @@ pub fn report(
 pub fn renderToStderr(
     self: Self,
     io: std.Io,
-    source: []const u8,
+    source: Source,
     terminal_mode: ?std.Io.Terminal.Mode,
 ) !void {
     var buffer: [256]u8 = undefined;
@@ -78,14 +78,12 @@ fn getNullTerminatedMsg(self: Self, err: ErrorDetails) [*:0]const u8 {
     return @ptrCast(self.msg_storage.items[err.msg_start..]);
 }
 
-pub fn renderToTerminal(self: Self, source: []const u8, terminal: std.Io.Terminal) !void {
+pub fn renderToTerminal(self: Self, source: Source, terminal: std.Io.Terminal) !void {
     for (self.errors.items) |err| {
         try terminal.setColor(.bold);
-        try terminal.writer.print(
-            // replace with actual filename sometime in the future
-            "<source>:{d}: ",
-            .{lex.lineIndexFromOffset(source, err.span.begin + 1)},
-        );
+
+        const loc = source.locationFromOffset(err.span.begin + 1);
+        try terminal.writer.print("{s}:{d}:{d} ", .{ source.filename, loc.line, loc.column });
 
         try terminal.setColor(.red);
         try terminal.writer.writeAll("error: ");
@@ -99,7 +97,7 @@ pub fn renderToTerminal(self: Self, source: []const u8, terminal: std.Io.Termina
         try terminal.setColor(.reset);
         try terminal.writer.writeByte('\n');
 
-        try renderRelevant(terminal, source, err.span);
+        try renderRelevant(terminal, source.text, err.span);
     }
 }
 
