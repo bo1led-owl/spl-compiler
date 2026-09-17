@@ -15,22 +15,23 @@ pub fn main(init: std.process.Init.Minimal) u8 {
     const io = io_impl.io();
 
     const args = spl.cli.Args.parse(init.args) catch |err| {
-        std.log.err("{s}", .{@errorName(err)});
+        std.log.err("failed to parse arguments: {s}", .{@errorName(err)});
         return 2;
     };
 
-    return mainArgs(io, gpa, args);
+    switch (args) {
+        .help => {
+            std.Io.File.stdout().writeStreamingAll(io, spl.cli.help_msg) catch |err| {
+                std.log.err("failed to write help message: {s}", .{@errorName(err)});
+                return 1;
+            };
+            return 0;
+        },
+        .full => |full_args| return mainArgs(io, gpa, full_args),
+    }
 }
 
-fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: spl.cli.Args) u8 {
-    var stdout_writer = std.Io.File.stdout().writer(io, &stdout_buffer);
-
-    if (args.help) {
-        stdout_writer.interface.writeAll(spl.cli.help_msg) catch return 1;
-        stdout_writer.flush() catch return 1;
-        return 0;
-    }
-
+fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: spl.cli.Args.Full) u8 {
     const source: spl.frontend.Source = .{
         .filename = args.source_path,
         .text = readFile(io, gpa, args.source_path) catch |err| {
@@ -134,6 +135,11 @@ fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: spl.cli.Args) u8 {
     };
     gpa.free(res.stdout);
     gpa.free(res.stderr);
+
+    std.Io.Dir.cwd().deleteFile(io, llvm_output_path) catch |err| {
+        std.log.err("failed to delete temporary bitcode file: {s}", .{@errorName(err)});
+        return 1;
+    };
 
     return 0;
 }

@@ -8,14 +8,14 @@ pub const help_msg =
     \\
     \\Options:
     \\  -h, --help                                   - print this message and exit
-    \\  -o FILE, --output=FILE                       - output file
+    \\  -o FILE, --output=FILE                       - set output file
     \\           --emit-llvm                         - output LLVM IR file and stop
     \\  -t DUMP, --tokens-dump=DUMP                  - dump tokens as JSON into DUMP
     \\  -a DUMP, --ast-dump=DUMP                     - dump AST as JSON into DUMP
     \\           --last-stage=<lexer|parser|codegen> - limit the compiler pipeline to specified stage
 ++ "\n";
 
-pub const Args = struct {
+pub const Args = union(enum) {
     pub const Stage = enum(u8) {
         lexer = 0,
         parser = 1,
@@ -30,13 +30,17 @@ pub const Args = struct {
         UnknownStage,
     };
 
-    source_path: []const u8,
-    output_path: [:0]const u8 = "",
-    tokens_dump_path: ?[]const u8 = null,
-    ast_dump_path: ?[]const u8 = null,
-    last_stage: Stage = .codegen,
-    emit_llvm: bool = false,
-    help: bool = false,
+    pub const Full = struct {
+        source_path: []const u8,
+        output_path: [:0]const u8,
+        tokens_dump_path: ?[]const u8,
+        ast_dump_path: ?[]const u8,
+        last_stage: Stage,
+        emit_llvm: bool,
+    };
+
+    help,
+    full: Full,
 
     pub fn parse(args: std.process.Args) ParseError!Args {
         const Next = enum { tokens_dump, ast_dump, output };
@@ -64,7 +68,7 @@ pub const Args = struct {
 
         while (iter.next()) |arg| {
             if (std.mem.eql(u8, arg, "-h") or std.mem.eql(u8, arg, "--help")) {
-                return .{ .help = true, .source_path = &.{} };
+                return .help;
             } else if (std.mem.eql(u8, arg, "-t")) {
                 next_opt = .tokens_dump;
             } else if (std.mem.startsWith(u8, arg, "--tokens-dump=")) {
@@ -105,7 +109,7 @@ pub const Args = struct {
             return ParseError.TooFewArguments;
         }
 
-        return .{
+        return .{ .full = .{
             .source_path = source_path.?,
             .tokens_dump_path = tokens_dump_path,
             .ast_dump_path = ast_dump_path,
@@ -117,6 +121,6 @@ pub const Args = struct {
                 "a.ll"
             else
                 "a.out",
-        };
+        } };
     }
 };
