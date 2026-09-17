@@ -82,7 +82,7 @@ pub fn renderToTerminal(self: Self, source: Source, terminal: std.Io.Terminal) !
     for (self.errors.items) |err| {
         try terminal.setColor(.bold);
 
-        const loc = source.locationFromOffset(err.span.begin + 1);
+        const loc = source.locationFromOffset(err.span.begin);
         try terminal.writer.print("{s}:{d}:{d} ", .{ source.filename, loc.line, loc.column });
 
         try terminal.setColor(.red);
