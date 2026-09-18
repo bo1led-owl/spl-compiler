@@ -43,16 +43,16 @@ pub const Args = union(enum) {
     full: Full,
 
     pub fn parse(args: std.process.Args) ParseError!Args {
-        const Next = enum { tokens_dump, ast_dump, output };
+        const Next = enum { none, tokens_dump, ast_dump, output };
 
         var source_path: ?[]const u8 = null;
         var output_path: ?[:0]const u8 = null;
         var tokens_dump_path: ?[]const u8 = null;
         var ast_dump_path: ?[]const u8 = null;
-        var last_stage = Stage.codegen;
+        var last_stage: Stage = .codegen;
         var emit_llvm = false;
 
-        var next_opt: ?Next = null;
+        var next: Next = .none;
 
         const stages = std.StaticStringMap(Stage).initComptime(comptime init: {
             // iterate over all variants of the enum and make pairs like `("foo", .foo)`
@@ -70,15 +70,15 @@ pub const Args = union(enum) {
             if (std.mem.eql(u8, arg, "-h") or std.mem.eql(u8, arg, "--help")) {
                 return .help;
             } else if (std.mem.eql(u8, arg, "-t")) {
-                next_opt = .tokens_dump;
+                next = .tokens_dump;
             } else if (std.mem.startsWith(u8, arg, "--tokens-dump=")) {
                 tokens_dump_path = arg[("--tokens-dump=".len)..];
             } else if (std.mem.eql(u8, arg, "-a")) {
-                next_opt = .ast_dump;
+                next = .ast_dump;
             } else if (std.mem.startsWith(u8, arg, "--ast-dump=")) {
                 ast_dump_path = arg[("--ast-dump=".len)..];
             } else if (std.mem.eql(u8, arg, "-o")) {
-                next_opt = .output;
+                next = .output;
             } else if (std.mem.startsWith(u8, arg, "--output=")) {
                 output_path = arg[("--output=".len)..];
             } else if (std.mem.startsWith(u8, arg, "--last-stage=")) {
@@ -88,8 +88,8 @@ pub const Args = union(enum) {
                 emit_llvm = true;
             } else if (std.mem.startsWith(u8, arg, "-")) {
                 return ParseError.UnknownOption;
-            } else if (next_opt) |next| {
-                next_opt = null;
+            } else if (next != .none) {
+                defer next = .none;
                 switch (next) {
                     .tokens_dump => tokens_dump_path = arg,
                     .ast_dump => ast_dump_path = arg,
@@ -102,7 +102,7 @@ pub const Args = union(enum) {
             }
         }
 
-        if (next_opt != null) {
+        if (next != .none) {
             return ParseError.MissingOptionValue;
         }
         if (source_path == null) {
@@ -115,12 +115,7 @@ pub const Args = union(enum) {
             .ast_dump_path = ast_dump_path,
             .emit_llvm = emit_llvm,
             .last_stage = last_stage,
-            .output_path = if (output_path) |path|
-                path
-            else if (emit_llvm)
-                "a.ll"
-            else
-                "a.out",
+            .output_path = output_path orelse if (emit_llvm) "a.ll" else "a.out",
         } };
     }
 };
