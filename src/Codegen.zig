@@ -72,7 +72,7 @@ pub fn run(self: *Self, output_file: [:0]const u8, options: Options) !void {
     }
 }
 
-fn i64_type(self: Self) c.LLVMTypeRef {
+fn i64Type(self: Self) c.LLVMTypeRef {
     return c.LLVMInt64TypeInContext(self.context);
 }
 
@@ -82,7 +82,7 @@ fn gen(self: *Self, node_index: Ast.Node.Index) !c.LLVMValueRef {
     switch (node.kind) {
         .recovery => unreachable,
         .root => {
-            const function_type: c.LLVMTypeRef = c.LLVMFunctionType(self.i64_type(), null, 0, 0);
+            const function_type: c.LLVMTypeRef = c.LLVMFunctionType(self.i64Type(), null, 0, 0);
             const function: c.LLVMValueRef = c.LLVMAddFunction(self.module, "main", function_type);
             const entry: c.LLVMBasicBlockRef = c.LLVMAppendBasicBlock(function, "entry");
             c.LLVMPositionBuilderAtEnd(self.builder, entry);
@@ -100,7 +100,7 @@ fn gen(self: *Self, node_index: Ast.Node.Index) !c.LLVMValueRef {
             @memcpy(null_terminated_name[0..name.len], name);
             null_terminated_name[name.len] = 0;
 
-            const alloca = c.LLVMBuildAlloca(self.builder, self.i64_type(), &null_terminated_name);
+            const alloca = c.LLVMBuildAlloca(self.builder, self.i64Type(), &null_terminated_name);
             try self.vars.put(self.gpa, name, alloca);
 
             const value = try self.gen(node.data.node);
@@ -111,13 +111,13 @@ fn gen(self: *Self, node_index: Ast.Node.Index) !c.LLVMValueRef {
         .name_ref => {
             const name = self.source.tokenLiteral(self.tokens.get(node.token));
             const alloca = self.vars.get(name).?;
-            return c.LLVMBuildLoad2(self.builder, self.i64_type(), alloca, "");
+            return c.LLVMBuildLoad2(self.builder, self.i64Type(), alloca, "");
         },
         .number => {
             const literal = self.source.tokenLiteral(self.tokens.get(node.token));
             const value = std.fmt.parseUnsigned(u64, literal, 10) catch
                 @panic("integer literals must be verified before codegen");
-            return c.LLVMConstInt(self.i64_type(), value, @intFromBool(false));
+            return c.LLVMConstInt(self.i64Type(), value, @intFromBool(false));
         },
         .@"return" => {
             const value = try self.gen(node.data.node);

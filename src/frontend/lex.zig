@@ -174,29 +174,22 @@ pub const Lexer = struct {
     }
 
     fn skipCommentsAndWhitespace(self: *Self) ?Token {
-        var running = true;
-        while (running) {
-            running = false;
+        self.skipWhile(std.ascii.isWhitespace);
 
-            self.skipWhile(std.ascii.isWhitespace);
+        if (std.mem.eql(u8, "//", self.peekChars(2))) {
+            self.skipUntil('\n');
+            return self.skipCommentsAndWhitespace();
+        } else if (std.mem.eql(u8, "/*", self.peekChars(2))) {
+            const comment_end = std.mem.findPos(u8, self.source, self.offset + 2, "*/");
 
-            if (std.mem.eql(u8, "//", self.peekChars(2))) {
-                self.skipUntil('\n');
-                _ = self.getChar();
-
-                running = true;
-            } else if (std.mem.eql(u8, "/*", self.peekChars(2))) {
-                const comment_end = std.mem.findPos(u8, self.source, self.offset + 2, "*/");
-
-                if (comment_end) |end| {
-                    self.offset = @intCast(end + 2);
-                } else {
-                    defer self.offset = @intCast(self.source.len);
-                    return self.mkToken(.err_unterminated_multiline_comment);
-                }
-
-                running = true;
+            if (comment_end) |end| {
+                self.offset = @intCast(end + 2);
+            } else {
+                defer self.offset = @intCast(self.source.len);
+                return self.mkToken(.err_unterminated_multiline_comment);
             }
+
+            return self.skipCommentsAndWhitespace();
         }
 
         return null;

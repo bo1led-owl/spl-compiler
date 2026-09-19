@@ -72,7 +72,7 @@ fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: spl.cli.Args.Full) u8 {
     defer error_bundle.deinit(gpa);
 
     var parser = spl.frontend.Parser.init(gpa, source, tokens, &error_bundle);
-    var ast = parser.parse() catch |err| {
+    var ast = parser.run() catch |err| {
         std.log.err("failed to parse: {s}", .{@errorName(err)});
         return 1;
     };

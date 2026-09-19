@@ -50,7 +50,7 @@ pub fn deinit(self: *Self) void {
     self.* = undefined;
 }
 
-pub fn parse(self: *Self) (std.mem.Allocator.Error || std.Io.Writer.Error)!Ast {
+pub fn run(self: *Self) (std.mem.Allocator.Error || std.Io.Writer.Error)!Ast {
     std.debug.assert(self.tokens.len > 0);
 
     _ = try self.addNode(.{ .kind = .root, .token = 0 });
