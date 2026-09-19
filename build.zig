@@ -4,8 +4,8 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    const mod = b.addModule("spl", .{
-        .root_source_file = b.path("src/root.zig"),
+    const mod = b.addModule("frontend", .{
+        .root_source_file = b.path("src/frontend/root.zig"),
         .target = target,
         .link_libc = true,
     });
@@ -15,11 +15,11 @@ pub fn build(b: *std.Build) void {
     const exe = b.addExecutable(.{
         .name = "splc",
         .root_module = b.createModule(.{
-            .root_source_file = b.path("src/main.zig"),
+            .root_source_file = b.path("src/driver/main.zig"),
             .target = target,
             .optimize = optimize,
             .imports = &.{
-                .{ .name = "spl", .module = mod },
+                .{ .name = "frontend", .module = mod },
             },
         }),
 

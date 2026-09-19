@@ -1,15 +1,14 @@
 const Self = @This();
 
 const std = @import("std");
-const frontend = @import("frontend.zig");
 const c = @cImport({
     @cInclude("llvm-c/Core.h");
     @cInclude("llvm-c/BitWriter.h");
 });
 
-const lex = frontend.lex;
-const Source = frontend.Source;
-const Ast = frontend.Ast;
+const Source = @import("Source.zig");
+const Ast = @import("Ast.zig");
+const lex = @import("lex.zig");
 
 pub const Options = struct {
     emit_llvm: bool = false,
@@ -18,7 +17,7 @@ pub const Options = struct {
 gpa: std.mem.Allocator,
 source: Source,
 tokens: lex.TokenList,
-ast: frontend.Ast,
+ast: Ast,
 context: c.LLVMContextRef,
 module: c.LLVMModuleRef,
 builder: c.LLVMBuilderRef,

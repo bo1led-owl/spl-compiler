@@ -1,5 +1,6 @@
 const std = @import("std");
-const spl = @import("spl");
+const frontend = @import("frontend");
+const cli = @import("cli.zig");
 
 var stdout_buffer: [4096]u8 align(std.heap.page_size_min) = undefined;
 var dump_buffer: [4096]u8 align(std.heap.page_size_min) = undefined;
@@ -14,14 +15,14 @@ pub fn main(init: std.process.Init.Minimal) u8 {
     defer io_impl.deinit();
     const io = io_impl.io();
 
-    const args = spl.cli.Args.parse(init.args) catch |err| {
+    const args = cli.Args.parse(init.args) catch |err| {
         std.log.err("failed to parse arguments: {s}", .{@errorName(err)});
         return 2;
     };
 
     switch (args) {
         .help => {
-            std.Io.File.stdout().writeStreamingAll(io, spl.cli.help_msg) catch |err| {
+            std.Io.File.stdout().writeStreamingAll(io, cli.help_msg) catch |err| {
                 std.log.err("failed to write help message: {s}", .{@errorName(err)});
                 return 1;
             };
@@ -31,8 +32,8 @@ pub fn main(init: std.process.Init.Minimal) u8 {
     }
 }
 
-fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: spl.cli.Args.Full) u8 {
-    const source: spl.frontend.Source = .{
+fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: cli.Args.Full) u8 {
+    const source: frontend.Source = .{
         .filename = args.source_path,
         .text = readFile(io, gpa, args.source_path) catch |err| {
             std.log.err("failed to read source file: {s}", .{@errorName(err)});
@@ -41,7 +42,7 @@ fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: spl.cli.Args.Full) u8 {
     };
     defer gpa.free(source.text);
 
-    var lexer = spl.frontend.Lexer.init(source.text);
+    var lexer = frontend.Lexer.init(source.text);
     var tokens = lexer.run(gpa) catch |err| {
         std.log.err("failed to tokenize: {s}", .{@errorName(err)});
         return 1;
@@ -54,7 +55,7 @@ fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: spl.cli.Args.Full) u8 {
     }
 
     if (args.last_stage == .lexer) {
-        const error_occured = std.mem.findAny(spl.frontend.lex.Token.Kind, tokens.items(.kind), &.{
+        const error_occured = std.mem.findAny(frontend.lex.Token.Kind, tokens.items(.kind), &.{
             .err_invalid_character,
             .err_number_has_leading_zero,
             .err_unterminated_multiline_comment,
@@ -68,10 +69,10 @@ fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: spl.cli.Args.Full) u8 {
         return 0;
     }
 
-    var error_bundle: spl.frontend.ErrorBundle = .empty;
+    var error_bundle: frontend.ErrorBundle = .empty;
     defer error_bundle.deinit(gpa);
 
-    var parser = spl.frontend.Parser.init(gpa, source, tokens, &error_bundle);
+    var parser = frontend.Parser.init(gpa, source, tokens, &error_bundle);
     var ast = parser.run() catch |err| {
         std.log.err("failed to parse: {s}", .{@errorName(err)});
         return 1;
@@ -94,7 +95,7 @@ fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: spl.cli.Args.Full) u8 {
         return 0;
     }
 
-    var sema = spl.frontend.Sema.init(gpa, source, tokens, ast, &error_bundle);
+    var sema = frontend.Sema.init(gpa, source, tokens, ast, &error_bundle);
     sema.run() catch |err| {
         std.log.err("failed to run semantic analysis: {s}", .{@errorName(err)});
         return 1;
@@ -117,7 +118,7 @@ fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: spl.cli.Args.Full) u8 {
 
     defer if (!args.emit_llvm) gpa.free(llvm_output_path);
 
-    var codegen = spl.Codegen.init(gpa, source, tokens, ast);
+    var codegen = frontend.Codegen.init(gpa, source, tokens, ast);
     codegen.run(llvm_output_path, .{ .emit_llvm = args.emit_llvm }) catch |err| {
         std.log.err("failed to generate code: {s}", .{@errorName(err)});
         return 1;
@@ -167,8 +168,8 @@ fn readFile(io: std.Io, gpa: std.mem.Allocator, path: []const u8) ![]u8 {
 
 fn dumpTokens(
     io: std.Io,
-    source: spl.frontend.Source,
-    tokens: spl.frontend.lex.TokenList,
+    source: frontend.Source,
+    tokens: frontend.lex.TokenList,
     path: []const u8,
 ) !void {
     const dump_file = try std.Io.Dir.cwd().createFile(io, path, .{});
@@ -240,9 +241,9 @@ fn dumpTokens(
 
 fn dumpAst(
     io: std.Io,
-    source: spl.frontend.Source,
-    tokens: spl.frontend.lex.TokenList,
-    ast: spl.frontend.Ast,
+    source: frontend.Source,
+    tokens: frontend.lex.TokenList,
+    ast: frontend.Ast,
     path: []const u8,
 ) !void {
     const dump_file = try std.Io.Dir.cwd().createFile(io, path, .{});
@@ -256,10 +257,10 @@ fn dumpAst(
 
 fn dumpAstNode(
     jws: *std.json.Stringify,
-    source: spl.frontend.Source,
-    tokens: spl.frontend.lex.TokenList,
-    ast: spl.frontend.Ast,
-    node_index: spl.frontend.Ast.Node.Index,
+    source: frontend.Source,
+    tokens: frontend.lex.TokenList,
+    ast: frontend.Ast,
+    node_index: frontend.Ast.Node.Index,
 ) !void {
     const node = ast.nodes.get(@intFromEnum(node_index));
 
