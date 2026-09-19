@@ -1,6 +1,15 @@
 # Build artifacts
 build/
 test/build/
+.zig-cache/
+zig-out/
+
+# Temporaries and binaries
+*.ll
+*.bc
+a.out
+
+!test/**/*.ll
 
 # IDE / editor
 .cache
@@ -19,6 +28,3 @@ __pycache__/
 # OS
 .DS_Store
 Thumbs.db
-
-.zig-cache/
-zig-out/

@@ -4,21 +4,28 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    const mod = b.addModule("spl", .{
-        .root_source_file = b.path("src/root.zig"),
+    const mod = b.addModule("frontend", .{
+        .root_source_file = b.path("src/frontend/root.zig"),
         .target = target,
+        .link_libc = true,
     });
+
+    linkLlvm(b, mod);
 
     const exe = b.addExecutable(.{
         .name = "splc",
         .root_module = b.createModule(.{
-            .root_source_file = b.path("src/main.zig"),
+            .root_source_file = b.path("src/driver/main.zig"),
             .target = target,
             .optimize = optimize,
             .imports = &.{
-                .{ .name = "spl", .module = mod },
+                .{ .name = "frontend", .module = mod },
             },
         }),
+
+        // workaround for Zig's linker failure with glibc
+        .use_lld = true,
+        .use_llvm = true,
     });
 
     b.installArtifact(exe);
@@ -49,4 +56,22 @@ pub fn build(b: *std.Build) void {
     const test_step = b.step("test", "Run tests");
     test_step.dependOn(&run_mod_tests.step);
     test_step.dependOn(&run_exe_tests.step);
+}
+
+fn linkLlvm(b: *std.Build, mod: *std.Build.Module) void {
+    const llvm_include_dir =
+        b.option([]const u8, "llvmIncludeDir", "LLVM include dir") orelse
+        "/usr/include";
+    const llvm_lib_dir =
+        b.option([]const u8, "llvmLibDir", "LLVM library dir") orelse
+        "/usr/lib";
+
+    var llvm_lib_name = b.option([]const u8, "llvmLibName", "LLVM library name") orelse "LLVM-22";
+    if (std.mem.startsWith(u8, llvm_lib_name, "-l")) {
+        llvm_lib_name = llvm_lib_name[2..];
+    }
+
+    mod.addIncludePath(.{ .cwd_relative = llvm_include_dir });
+    mod.addLibraryPath(.{ .cwd_relative = llvm_lib_dir });
+    mod.linkSystemLibrary(llvm_lib_name, .{});
 }
