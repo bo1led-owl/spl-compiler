@@ -71,7 +71,14 @@ pub const Args = union(enum) {
         _ = iter.next(); // skip program name
 
         while (iter.next()) |arg| {
-            if (flag(arg, 'h', "help")) {
+            if (next_opt) |next| {
+                next_opt = null;
+                switch (next) {
+                    .tokens_dump => tokens_dump_path = arg,
+                    .ast_dump => ast_dump_path = arg,
+                    .output => output_path = arg,
+                }
+            } else if (flag(arg, 'h', "help")) {
                 return .help;
             } else if (flag(arg, 't', null)) {
                 next_opt = .tokens_dump;
@@ -93,13 +100,6 @@ pub const Args = union(enum) {
                 preserve_temp = true;
             } else if (std.mem.startsWith(u8, arg, "-")) {
                 return ParseError.UnknownOption;
-            } else if (next_opt) |next| {
-                next_opt = null;
-                switch (next) {
-                    .tokens_dump => tokens_dump_path = arg,
-                    .ast_dump => ast_dump_path = arg,
-                    .output => output_path = arg,
-                }
             } else if (source_path != null) {
                 return ParseError.TooManyArguments;
             } else {
