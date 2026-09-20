@@ -59,9 +59,10 @@ pub const Args = union(enum) {
 
         const stages = std.StaticStringMap(Stage).initComptime(comptime init: {
             // iterate over all variants of the enum and make pairs like `("foo", .foo)`
-            var res: []const struct { []const u8, Stage } = &.{};
-            for (@typeInfo(Stage).@"enum".fields) |field| {
-                res = res ++ .{.{ field.name, @as(Stage, @enumFromInt(field.value)) }};
+            const fields = @typeInfo(Stage).@"enum".fields;
+            var res: [fields.len]struct { []const u8, Stage } = undefined;
+            for (fields, &res) |field, *res_item| {
+                res_item.* = .{ field.name, @as(Stage, @enumFromInt(field.value)) };
             }
             break :init res;
         });
@@ -70,26 +71,25 @@ pub const Args = union(enum) {
         _ = iter.next(); // skip program name
 
         while (iter.next()) |arg| {
-            if (std.mem.eql(u8, arg, "-h") or std.mem.eql(u8, arg, "--help")) {
+            if (flag(arg, 'h', "help")) {
                 return .help;
-            } else if (std.mem.eql(u8, arg, "-t")) {
+            } else if (flag(arg, 't', null)) {
                 next_opt = .tokens_dump;
-            } else if (std.mem.startsWith(u8, arg, "--tokens-dump=")) {
-                tokens_dump_path = arg[("--tokens-dump=".len)..];
-            } else if (std.mem.eql(u8, arg, "-a")) {
+            } else if (longOption(arg, "tokens-dump")) |value| {
+                tokens_dump_path = value;
+            } else if (flag(arg, 'a', null)) {
                 next_opt = .ast_dump;
-            } else if (std.mem.startsWith(u8, arg, "--ast-dump=")) {
-                ast_dump_path = arg[("--ast-dump=".len)..];
-            } else if (std.mem.eql(u8, arg, "-o")) {
+            } else if (longOption(arg, "ast-dump")) |value| {
+                ast_dump_path = value;
+            } else if (flag(arg, 'o', null)) {
                 next_opt = .output;
-            } else if (std.mem.startsWith(u8, arg, "--output=")) {
-                output_path = arg[("--output=".len)..];
-            } else if (std.mem.startsWith(u8, arg, "--last-stage=")) {
-                last_stage = stages.get(arg["--last-stage=".len..]) orelse
-                    return ParseError.UnknownStage;
-            } else if (std.mem.eql(u8, arg, "--emit-llvm")) {
+            } else if (longOption(arg, "output")) |value| {
+                output_path = value;
+            } else if (longOption(arg, "last-stage")) |value| {
+                last_stage = stages.get(value) orelse return ParseError.UnknownStage;
+            } else if (flag(arg, null, "emit-llvm")) {
                 emit_llvm = true;
-            } else if (std.mem.eql(u8, arg, "--preserve-temp")) {
+            } else if (flag(arg, null, "preserve-temp")) {
                 preserve_temp = true;
             } else if (std.mem.startsWith(u8, arg, "-")) {
                 return ParseError.UnknownOption;
@@ -123,5 +123,29 @@ pub const Args = union(enum) {
             .last_stage = last_stage,
             .output_path = output_path orelse if (emit_llvm) "a.ll" else "a.out",
         } };
+    }
+
+    fn flag(arg: [:0]const u8, comptime short: ?u8, comptime long: ?[]const u8) bool {
+        if (short) |s| {
+            if (std.mem.eql(u8, arg, std.fmt.comptimePrint("-{c}", .{s}))) {
+                return true;
+            }
+        }
+
+        if (long) |l| {
+            if (std.mem.eql(u8, arg, "--" ++ l)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    fn longOption(arg: [:0]const u8, comptime name: []const u8) ?[:0]const u8 {
+        const prefix = "--" ++ name ++ "=";
+        if (std.mem.startsWith(u8, arg, prefix)) {
+            return arg[prefix.len..];
+        }
+        return null;
     }
 };
