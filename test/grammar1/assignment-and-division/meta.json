@@ -1,13 +1,17 @@
 {
-  "grammar": {
-    "lexer": "<=2",
-    "parser": [
-      "1",
-      "2"
-    ],
-    "llvm": [
-      "1",
-      "2"
-    ]
+  "$schema": "../../schemas/meta.schema.json",
+  "grammar": [
+    "1",
+    "2"
+  ],
+  "stages": [
+    "lexer",
+    "parser",
+    "llvm",
+    "compiler",
+    "run"
+  ],
+  "exit": {
+    "run": 5
   }
 }

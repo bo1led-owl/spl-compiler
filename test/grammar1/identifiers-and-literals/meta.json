@@ -1,3 +1,14 @@
 {
-  "grammar": "<=2"
+  "$schema": "../../schemas/meta.schema.json",
+  "grammar": [
+    "1",
+    "2"
+  ],
+  "stages": [
+    "lexer",
+    "parser"
+  ],
+  "exit": {
+    "parser": "nonzero"
+  }
 }

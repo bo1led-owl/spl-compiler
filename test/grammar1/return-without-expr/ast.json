@@ -3,15 +3,16 @@
   "column": 7,
   "kind": "Program",
   "body": [
-{
-  "line": 1,
-  "column": 7,
+  {
+    "line": 1,
+    "column": 7,
     "kind": "Return",
     "value": {
-  "line": 1,
-  "column": 7,
+      "line": 1,
+      "column": 7,
       "kind": "Error",
       "message": "unexpected token 'SEMI'"
     }
   }
-]}
+  ]
+}

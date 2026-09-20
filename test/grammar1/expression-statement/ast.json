@@ -3,15 +3,16 @@
   "column": 3,
   "kind": "Program",
   "body": [
-{
-  "line": 1,
-  "column": 3,
+  {
+    "line": 1,
+    "column": 3,
     "kind": "ExprStmt",
     "value": {
-  "line": 1,
-  "column": 1,
+      "line": 1,
+      "column": 1,
       "kind": "IntLiteral",
       "value": 42
     }
   }
-]}
+  ]
+}

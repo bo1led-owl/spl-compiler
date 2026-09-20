@@ -1,4 +1,5 @@
 {
+  "$schema": "../../schemas/meta.schema.json",
   "grammar": [
     "1",
     "2"
@@ -7,9 +8,10 @@
     "lexer",
     "parser",
     "llvm",
-    "compiler"
+    "compiler",
+    "run"
   ],
   "exit": {
-    "compiler": 6
+    "run": 6
   }
 }

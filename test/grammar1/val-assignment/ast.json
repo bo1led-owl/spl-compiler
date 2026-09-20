@@ -3,45 +3,46 @@
   "column": 9,
   "kind": "Program",
   "body": [
-{
-  "line": 1,
-  "column": 11,
+  {
+    "line": 1,
+    "column": 11,
     "kind": "Declare",
     "mut": "val",
     "name": "x",
     "init": {
-  "line": 1,
-  "column": 9,
+      "line": 1,
+      "column": 9,
       "kind": "IntLiteral",
       "value": 10
     }
   },
-{
-  "line": 2,
-  "column": 7,
+  {
+    "line": 2,
+    "column": 7,
     "kind": "Assign",
     "target": {
-  "line": 2,
-  "column": 1,
+      "line": 2,
+      "column": 1,
       "kind": "Ident",
       "name": "x"
     },
     "value": {
-  "line": 2,
-  "column": 5,
+      "line": 2,
+      "column": 5,
       "kind": "IntLiteral",
       "value": 20
     }
   },
-{
-  "line": 3,
-  "column": 9,
+  {
+    "line": 3,
+    "column": 9,
     "kind": "Return",
     "value": {
-  "line": 3,
-  "column": 8,
+      "line": 3,
+      "column": 8,
       "kind": "Ident",
       "name": "x"
     }
   }
-]}
+  ]
+}

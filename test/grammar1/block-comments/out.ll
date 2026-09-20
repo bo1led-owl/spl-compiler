@@ -5,5 +5,5 @@ target triple = "x86_64-unknown-linux-gnu"
 
 define i64 @main() {
 entry:
-  ret i64 0
+  ret i64 42
 }

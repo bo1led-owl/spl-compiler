@@ -1,0 +1,94 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "schemas/meta.schema.json",
+  "title": "Test meta.json",
+  "description": "Schema for test case metadata (meta.json) in the SysProLang compiler test suite.",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "description": "JSON schema reference for editor LSP support (relative path to meta.schema.json).",
+      "type": "string"
+    },
+    "grammar": {
+      "description": "Grammar version constraint(s) for this test case.\n\n- A string like \"1\", \">=4\", \"<=2\", \"==3\" applies to all stages.\n- A list of strings like [\"1\", \"2\"] applies to all stages.\n- A dict mapping stage names to constraints allows per-stage rules.",
+      "oneOf": [
+        {
+          "title": "Flat constraint (applies to all stages)",
+          "oneOf": [
+            { "type": "string", "pattern": "^(==|>=|<=|>|<)?\\s*\\d+(\\.\\d+)?\\s*$" },
+            { "type": "array", "items": { "type": "string", "pattern": "^\\d+$" }, "minItems": 1 }
+          ]
+        },
+        {
+          "title": "Per-stage constraints",
+          "type": "object",
+          "additionalProperties": {
+            "oneOf": [
+              { "type": "string", "pattern": "^(==|>=|<=|>|<)?\\s*\\d+(\\.\\d+)?\\s*$" },
+              { "type": "array", "items": { "type": "string", "pattern": "^\\d+$" } }
+            ]
+          }
+        }
+      ]
+    },
+    "stages": {
+      "description": "List of stages to run for this test case.\n\nPossible values: \"lexer\", \"parser\", \"llvm\", \"compiler\", \"run\".\nIf absent, stages are inferred from golden file presence or exit contracts.",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["lexer", "parser", "llvm", "compiler", "run"]
+      },
+      "uniqueItems": true,
+      "minItems": 1
+    },
+    "exit": {
+      "description": "Expected exit code(s) for test stages.\n\n- \"nonzero\": any non-zero exit is accepted.\n- An integer: exact exit code expected.\n- A dict mapping stage names to exit specs allows per-stage expectations.\n  The \"run\" stage exit falls back to \"compiler\" if not specified (backward compat).",
+      "oneOf": [
+        {
+          "title": "Flat exit (applies to all stages)",
+          "oneOf": [
+            { "type": "string", "pattern": "^(nonzero|\\d+)$" },
+            { "type": "integer" }
+          ]
+        },
+        {
+          "title": "Per-stage exits",
+          "type": "object",
+          "properties": {
+            "lexer": { "$ref": "#/definitions/exitSpec" },
+            "parser": { "$ref": "#/definitions/exitSpec" },
+            "llvm": { "$ref": "#/definitions/exitSpec" },
+            "compiler": { "$ref": "#/definitions/exitSpec" },
+            "run": { "$ref": "#/definitions/exitSpec" }
+          },
+          "additionalProperties": false,
+          "minProperties": 1
+        }
+      ]
+    },
+    "exclude": {
+      "description": "If true, this test case is excluded from the test run.",
+      "type": "boolean"
+    },
+    "timeout": {
+      "description": "Timeout in seconds for each stage of this test case (default: 30s).",
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "tolerance": {
+      "description": "Floating-point tolerance for numeric output comparison (run stage only).",
+      "type": "number",
+      "exclusiveMinimum": 0
+    }
+  },
+  "additionalProperties": false,
+  "definitions": {
+    "exitSpec": {
+      "description": "An exit code specification: \"nonzero\" or an exact integer.",
+      "oneOf": [
+        { "type": "string", "pattern": "^(nonzero|\\d+)$" },
+        { "type": "integer" }
+      ]
+    }
+  }
+}

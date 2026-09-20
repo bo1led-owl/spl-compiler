@@ -3,39 +3,40 @@
   "column": 18,
   "kind": "Program",
   "body": [
-{
-  "line": 1,
-  "column": 18,
+  {
+    "line": 1,
+    "column": 18,
     "kind": "Return",
     "value": {
-  "line": 1,
-  "column": 17,
+      "line": 1,
+      "column": 17,
       "kind": "BinOp",
       "op": "-",
       "left": {
-  "line": 1,
-  "column": 13,
+        "line": 1,
+        "column": 13,
         "kind": "BinOp",
         "op": "-",
         "left": {
-  "line": 1,
-  "column": 8,
+          "line": 1,
+          "column": 8,
           "kind": "IntLiteral",
           "value": 10
         },
         "right": {
-  "line": 1,
-  "column": 13,
+          "line": 1,
+          "column": 13,
           "kind": "IntLiteral",
           "value": 5
         }
       },
       "right": {
-  "line": 1,
-  "column": 17,
+        "line": 1,
+        "column": 17,
         "kind": "IntLiteral",
         "value": 2
       }
     }
   }
-]}
+  ]
+}

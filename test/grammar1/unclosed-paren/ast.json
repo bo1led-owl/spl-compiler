@@ -3,27 +3,28 @@
   "column": 15,
   "kind": "Program",
   "body": [
-{
-  "line": 1,
-  "column": 15,
+  {
+    "line": 1,
+    "column": 15,
     "kind": "Return",
     "value": {
-  "line": 1,
-  "column": 14,
+      "line": 1,
+      "column": 14,
       "kind": "BinOp",
       "op": "+",
       "left": {
-  "line": 1,
-  "column": 9,
+        "line": 1,
+        "column": 9,
         "kind": "IntLiteral",
         "value": 42
       },
       "right": {
-  "line": 1,
-  "column": 14,
+        "line": 1,
+        "column": 14,
         "kind": "IntLiteral",
         "value": 3
       }
     }
   }
-]}
+  ]
+}

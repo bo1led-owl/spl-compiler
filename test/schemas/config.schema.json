@@ -1,0 +1,206 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "schemas/config.schema.json",
+  "title": "Test runner configuration",
+  "description": "Schema for test/config.json — the driver configuration for the SysProLang compiler test suite.",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "description": "JSON schema reference for editor LSP support (relative path to config.schema.json).",
+      "type": "string"
+    },
+    "build": {
+      "description": "Shell command to build the compiler before running tests.\nSupports {root} placeholder.",
+      "type": "string"
+    },
+    "default_grammar": {
+      "description": "Default grammar version when --grammar is not passed on CLI.",
+      "type": "string",
+      "pattern": "^\\d+$"
+    },
+    "versions": {
+      "description": "List of grammar versions used for compatibility matrix display.",
+      "type": "array",
+      "items": { "type": "integer" },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "out_dir": {
+      "description": "Output directory for build artifacts (default: {root}/test/build).\nSupports {root} placeholder.",
+      "type": "string",
+      "default": "{root}/test/build"
+    },
+    "llvm_dis": {
+      "description": "LLVM disassembler command (string or array of strings). Used to decode .bc files.",
+      "oneOf": [
+        { "type": "string" },
+        { "type": "array", "items": { "type": "string" }, "minItems": 1 }
+      ],
+      "default": "llvm-dis"
+    },
+    "stages": {
+      "description": "Configuration for each test stage.",
+      "type": "object",
+      "properties": {
+        "lexer": { "$ref": "#/definitions/stageConfig" },
+        "parser": { "$ref": "#/definitions/stageConfig" },
+        "llvm": { "$ref": "#/definitions/stageConfig" },
+        "compiler": { "$ref": "#/definitions/stageConfig" },
+        "run": { "$ref": "#/definitions/stageConfig" }
+      },
+      "additionalProperties": false,
+      "minProperties": 1
+    },
+    "fuzz": {
+      "description": "Configuration for Grammarinator-based fuzz testing.",
+      "type": "object",
+      "properties": {
+        "grammar": {
+          "description": "Map of grammar version to .g4 grammar file path.\nPaths support {root} placeholder.",
+          "type": "object",
+          "additionalProperties": { "type": "string" },
+          "minProperties": 1
+        },
+        "count": {
+          "description": "Number of fuzz inputs to generate per run.",
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "default": 40
+        },
+        "max_tokens": {
+          "description": "Maximum number of tokens per generated input.",
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "default": 30
+        },
+        "max_depth": {
+          "description": "Optional maximum generation depth (unlimited if absent).",
+          "type": "integer",
+          "exclusiveMinimum": 0
+        },
+        "exit": {
+          "description": "Map of stage name to expected exit code for fuzz inputs.",
+          "type": "object",
+          "additionalProperties": {
+            "oneOf": [
+              { "type": "integer" },
+              { "type": "string", "pattern": "^(nonzero|\\d+)$" }
+            ]
+          },
+          "minProperties": 1
+        },
+        "stages": {
+          "description": "Which stages to run for fuzz tests (defaults to all configured stages).",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["lexer", "parser", "llvm", "compiler", "run"]
+          },
+          "uniqueItems": true,
+          "minItems": 1
+        }
+      },
+      "required": ["grammar"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["stages"],
+  "additionalProperties": false,
+  "definitions": {
+    "stageConfig": {
+      "description": "Configuration for a single test stage.",
+      "type": "object",
+      "properties": {
+        "cmd": {
+          "description": "Command to run for this stage, as an array of arguments.\nSupports placeholders: {root}, {input}, {exe}, {grammar},\n{tokens_out}, {tokens_in}, {ast_out}, {ast_in}, {llvm_out}.",
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 1
+        },
+        "out": {
+          "description": "Where the stage writes its output.\n- \"stdout\": capture from stdout.\n- A file path (supports placeholders): read from that file.\nDefault: \"stdout\".",
+          "type": "string",
+          "default": "stdout"
+        },
+        "golden": {
+          "description": "Golden file template (overrides STAGE_GOLDEN_DEFAULT).\nSupports {name} placeholder for test name.",
+          "type": "string"
+        },
+        "preprocess": {
+          "description": "List of preprocessing steps to canonicalize output before diffing.",
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "title": "JSON filter",
+                "type": "object",
+                "properties": {
+                  "type": { "type": "string", "enum": ["json"] },
+                  "keep": {
+                    "description": "Whitelist of scalar fields to retain in JSON output.",
+                    "type": "array",
+                    "items": { "type": "string" }
+                  },
+                  "drop": {
+                    "description": "Blacklist of scalar fields to remove from JSON output.",
+                    "type": "array",
+                    "items": { "type": "string" }
+                  }
+                },
+                "required": ["type"],
+                "oneOf": [
+                  { "required": ["keep"] },
+                  { "required": ["drop"] }
+                ],
+                "additionalProperties": false
+              },
+              {
+                "title": "Regex transform",
+                "type": "object",
+                "properties": {
+                  "type": { "type": "string", "enum": ["regex"] },
+                  "pattern": { "type": "string", "description": "Python regex pattern." },
+                  "repl": { "type": "string", "description": "Replacement string (absent = delete matching lines)." }
+                },
+                "required": ["type", "pattern"],
+                "additionalProperties": false
+              },
+              {
+                "title": "LLVM canonicalization",
+                "type": "object",
+                "properties": {
+                  "type": { "type": "string", "enum": ["llvm"] }
+                },
+                "required": ["type"],
+                "additionalProperties": false
+              },
+              {
+                "title": "External command transform",
+                "type": "object",
+                "properties": {
+                  "type": { "type": "string", "enum": ["exec"] },
+                  "cmd": {
+                    "description": "Command array with {input}, {output}, {root} placeholders.",
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "minItems": 1
+                  }
+                },
+                "required": ["type", "cmd"],
+                "additionalProperties": false
+              }
+            ]
+          }
+        },
+        "timeout": {
+          "description": "Timeout in seconds for this stage (can be overridden per test in meta.json).",
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "default": 30
+        }
+      },
+      "required": ["cmd"],
+      "additionalProperties": false
+    }
+  }
+}

@@ -3,78 +3,79 @@
   "column": 17,
   "kind": "Program",
   "body": [
-{
-  "line": 1,
-  "column": 10,
+  {
+    "line": 1,
+    "column": 10,
     "kind": "Declare",
     "mut": "var",
     "name": "a",
     "init": {
-  "line": 1,
-  "column": 9,
+      "line": 1,
+      "column": 9,
       "kind": "IntLiteral",
       "value": 1
     }
   },
-{
-  "line": 2,
-  "column": 10,
+  {
+    "line": 2,
+    "column": 10,
     "kind": "Declare",
     "mut": "var",
     "name": "b",
     "init": {
-  "line": 2,
-  "column": 9,
+      "line": 2,
+      "column": 9,
       "kind": "IntLiteral",
       "value": 2
     }
   },
-{
-  "line": 3,
-  "column": 10,
+  {
+    "line": 3,
+    "column": 10,
     "kind": "Declare",
     "mut": "var",
     "name": "c",
     "init": {
-  "line": 3,
-  "column": 9,
+      "line": 3,
+      "column": 9,
       "kind": "IntLiteral",
       "value": 3
     }
   },
-{
-  "line": 4,
-  "column": 17,
+  {
+    "line": 4,
+    "column": 17,
     "kind": "Return",
     "value": {
-  "line": 4,
-  "column": 16,
+      "line": 4,
+      "column": 16,
       "kind": "BinOp",
       "op": "+",
       "left": {
-  "line": 4,
-  "column": 12,
+        "line": 4,
+        "column": 12,
         "kind": "BinOp",
         "op": "+",
         "left": {
-  "line": 4,
-  "column": 8,
+          "line": 4,
+          "column": 8,
           "kind": "Ident",
           "name": "a"
         },
         "right": {
-  "line": 4,
-  "column": 12,
+          "line": 4,
+          "column": 12,
           "kind": "Ident",
           "name": "b"
         }
       },
       "right": {
-  "line": 4,
-  "column": 16,
+        "line": 4,
+        "column": 16,
         "kind": "Ident",
         "name": "c"
       }
     }
   }
-]}
+  ]
+}

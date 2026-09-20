@@ -1,0 +1,44 @@
+{
+  "line": 3,
+  "column": 9,
+  "kind": "Program",
+  "body": [
+  {
+    "line": 1,
+    "column": 11,
+    "kind": "Declare",
+    "mut": "var",
+    "name": "x",
+    "init": {
+      "line": 1,
+      "column": 9,
+      "kind": "IntLiteral",
+      "value": 42
+    }
+  },
+  {
+    "line": 2,
+    "column": 11,
+    "kind": "Declare",
+    "mut": "val",
+    "name": "x",
+    "init": {
+      "line": 2,
+      "column": 9,
+      "kind": "IntLiteral",
+      "value": 37
+    }
+  },
+  {
+    "line": 3,
+    "column": 9,
+    "kind": "Return",
+    "value": {
+      "line": 3,
+      "column": 8,
+      "kind": "Ident",
+      "name": "x"
+    }
+  }
+  ]
+}

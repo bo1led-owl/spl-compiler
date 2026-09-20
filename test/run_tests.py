@@ -12,8 +12,8 @@ is a directory containing:
   tokens.json             golden token stream     (lexer stage)
   ast.json                golden AST              (parser stage)
   out.ll / out.bc         golden LLVM IR          (llvm stage)
-  stdout                  golden program output   (compiler stage)
-  stdin                   input for the program   (compiler stage)
+  stdout                  golden program output   (run stage)
+  stdin                   input for the program   (run stage)
 
 A test case is discovered by the presence of meta.json. Which stages are run
 for a test case depends on which golden files exist. A test case can therefore
@@ -54,16 +54,22 @@ STAGE_GOLDEN_DEFAULT = {
     "lexer": "tokens.json",
     "parser": "ast.json",
     "llvm": "out.ll",
-    "compiler": "stdout",
+    "run": "stdout",
 }
 
 # Which golden files map to which stages (reverse of STAGE_GOLDEN_DEFAULT)
 GOLDEN_TO_STAGE = {v: k for k, v in STAGE_GOLDEN_DEFAULT.items()}
 # Also support .bc as an alternative for llvm
 GOLDEN_TO_STAGE["out.bc"] = "llvm"
+# Old meta.json used 'compiler' stage with stdout golden; map it to 'run'
+# so that existing stdout files continue to be discovered as 'run' stage
+GOLDEN_TO_STAGE["stdout"] = "run"
 
 DEFAULT_TIMEOUT = 30.0
 DIFF_MAX_LINES = 30
+
+# Canonical stage order for discovery sorting and output grouping
+STAGE_ORDER = ["lexer", "parser", "llvm", "compiler", "run"]
 
 
 class StepError(Exception):
@@ -359,6 +365,13 @@ def discover_tests(test_root, grammar, stage_filter, name_filter, skip_dir=None,
         for stage in meta.get("stages", []):
             found_stages.add(stage)
 
+        # Backward compat: if meta.json lists "compiler" in stages but not
+        # "run", auto-add "run" (the old "compiler" stage covered both
+        # compilation and execution; new scheme splits them).
+        meta_stages = meta.get("stages", [])
+        if "compiler" in meta_stages and "run" not in meta_stages:
+            found_stages.add("run")
+
         # If the test has an explicit non-zero exit contract but no golden
         # and no stages list, run for all configurable stages (user can filter
         # with --stage). Only do this if no golden files were found either.
@@ -380,8 +393,6 @@ def discover_tests(test_root, grammar, stage_filter, name_filter, skip_dir=None,
             continue
 
         for stage in sorted(found_stages):
-            if not check_ir and stage == "llvm":
-                continue
             if not stage_selected(meta, stage, grammar):
                 continue
             if stage_filter and stage != stage_filter:
@@ -393,7 +404,7 @@ def discover_tests(test_root, grammar, stage_filter, name_filter, skip_dir=None,
                         meta=meta, meta_error=meta_error)
             tests.append(test)
 
-    tests.sort(key=lambda t: (t.stage, t.name))
+    tests.sort(key=lambda t: (STAGE_ORDER.index(t.stage) if t.stage in STAGE_ORDER else len(STAGE_ORDER), t.name))
     return tests, excluded
 
 
@@ -680,10 +691,22 @@ def exit_spec(meta, stage=None, default=0):
     If meta["exit"] is a dict, it maps stage names to exit codes.
     If stage is given, return the per-stage exit; otherwise the
     default for the whole test. If it's a flat value, applies to all.
+
+    Backward compat: for the "run" stage, if no "run" key exists in
+    the exit dict but a "compiler" key does, the "compiler" exit code
+    is used (old meta.json used "compiler" for the execution exit).
     """
     e = meta.get("exit", default)
     if isinstance(e, dict):
-        return e.get(stage, default)
+        val = e.get(stage)
+        if val is not None:
+            return val
+        # Backward compat: "run" stage falls back to "compiler" exit
+        if stage == "run":
+            val = e.get("compiler")
+            if val is not None:
+                return val
+        return default
     return e
 
 
@@ -743,7 +766,7 @@ class Result:
         return f"{self.stage}/{self.name}"
 
 
-def run_plain(config, test, workdir, update, grammar):
+def run_plain(config, test, workdir, update, grammar, check_ir=False):
     stage = test.stage
     cfg = config.stage_cfg(stage)
     cmd = cfg.get("cmd")
@@ -800,6 +823,10 @@ def run_plain(config, test, workdir, update, grammar):
     if exit_bad:
         result.status = "FAIL"
 
+    # For llvm stage, skip golden comparison unless --check-ir was passed
+    if stage == "llvm" and not check_ir:
+        return result
+
     golden = golden_variants(config, test)
     if golden is None:
         return no_golden_result(result, meta, test.is_fuzz, stage=stage)
@@ -827,19 +854,79 @@ def run_plain(config, test, workdir, update, grammar):
     return result
 
 
-def run_compiler(config, test, workdir, update, grammar):
-    meta = test.meta
-    compile_cfg = config.stage_cfg("compile")
-    run_cfg = config.stage_cfg("run")
-    if not isinstance(compile_cfg.get("cmd"), list) or not isinstance(run_cfg.get("cmd"), list):
-        raise SkipError("compiler stage requires configured 'compile' and 'run' stages")
+def run_compile(config, test, workdir, update, grammar):
+    """'compiler' stage: compile the source only, check compilation exit.
 
-    result = Result("PASS", "compiler", test.name)
+    The config 'compiler' command is responsible for compiling and linking
+    the source into an executable. The exit code is from the compilation
+    (splc / clang) step, not from program execution.
+
+    This stage has no stdout golden to compare; it only verifies that
+    compilation succeeds (exit 0) or matches the expected compiler exit.
+    """
+    meta = test.meta
+    cfg = config.stage_cfg("compiler")
+    cmd = cfg.get("cmd")
+    if not isinstance(cmd, list):
+        raise SkipError("stage 'compiler' is not configured (no 'cmd')")
+    timeout = meta.get("timeout", cfg.get("timeout", DEFAULT_TIMEOUT))
+
     ph = make_placeholders(test, workdir, "compiler", grammar)
     ph["{exe}"] = os.path.join(workdir, "prog")
+    argv = [resolve(c, ph) for c in cmd]
 
+    rc, _, stderr = run(argv, timeout=timeout)
+
+    result = Result("PASS", "compiler", test.name)
+    result.command = " ".join(argv)
+
+    spec = exit_spec(meta, stage="compiler", default=0)
+    exit_bad = not exit_ok(rc, spec)
+    if exit_bad:
+        result.lines.append(f"exit: expected {spec!r}, got {rc}")
+    if stderr.strip():
+        result.lines.append("stderr: " + stderr.strip().splitlines()[0][:200])
+
+    if exit_bad:
+        result.status = "FAIL"
+
+    if update:
+        # compiler stage produces no golden file; nothing to update
+        if not exit_bad:
+            result.status = "UPD"
+            result.lines.append("compilation succeeded (no golden file)")
+        else:
+            result.status = "FAIL"
+            result.lines.append("compilation failed; no golden to update")
+        return result
+
+    return result
+
+
+def run_exec(config, test, workdir, update, grammar):
+    """'run' stage: compile then execute the program.
+
+    First runs the 'compiler' stage command to produce an executable.
+    Then runs the 'run' stage command to execute it and capture stdout.
+
+    The execution exit code is checked against meta["exit"]["run"]
+    (falling back to meta["exit"]["compiler"] for backward compat).
+    Stdout is compared against the 'stdout' golden file.
+    """
+    meta = test.meta
+    compile_cfg = config.stage_cfg("compiler")
+    run_cfg = config.stage_cfg("run")
+    if not isinstance(compile_cfg.get("cmd"), list):
+        raise SkipError("stage 'run' requires a 'compiler' stage with 'cmd' in config")
+    if not isinstance(run_cfg.get("cmd"), list):
+        raise SkipError("stage 'run' requires a 'run' stage with 'cmd' in config")
+
+    result = Result("PASS", "run", test.name)
+    ph = make_placeholders(test, workdir, "run", grammar)
+    ph["{exe}"] = os.path.join(workdir, "prog")
+
+    # Step 1: Compile source into executable
     compile_argv = [resolve(c, ph) for c in compile_cfg["cmd"]]
-    result.command = " ".join(compile_argv)
     rc, _, cerr = run(compile_argv,
                       timeout=meta.get("timeout", compile_cfg.get("timeout", DEFAULT_TIMEOUT)))
     if rc != 0:
@@ -849,6 +936,7 @@ def run_compiler(config, test, workdir, update, grammar):
             result.lines.append("stderr: " + cerr.strip().splitlines()[0][:200])
         return result
 
+    # Step 2: Run the executable
     stdin_path = os.path.join(test.dir, "stdin")
     stdin_data = open(stdin_path, "rb").read() if os.path.exists(stdin_path) else None
 
@@ -857,10 +945,10 @@ def run_compiler(config, test, workdir, update, grammar):
     rc, stdout, stderr = run(run_argv, stdin=stdin_data, timeout=timeout)
     result.command = " ".join(run_argv)
 
-    raw_path = os.path.join(workdir, "compiler.raw")
+    raw_path = os.path.join(workdir, "run.raw")
     write_file(raw_path, stdout)
 
-    spec = exit_spec(meta, stage="compiler")
+    spec = exit_spec(meta, stage="run")
     exit_bad = not exit_ok(rc, spec)
     if exit_bad:
         result.lines.append(f"exit: expected {spec!r}, got {rc}")
@@ -869,9 +957,20 @@ def run_compiler(config, test, workdir, update, grammar):
 
     golden = golden_path(config, test)
     if update:
-        write_file(golden, stdout)
-        result.status = "UPD"
-        result.lines.append(f"golden -> {os.path.relpath(golden, SCRIPT_DIR)}")
+        # Only write the golden file if stdout is non-empty.
+        # Empty stdout files are not committed as goldens.
+        if stdout.strip():
+            write_file(golden, stdout)
+            result.status = "UPD"
+            result.lines.append(f"golden -> {os.path.relpath(golden, SCRIPT_DIR)}")
+        else:
+            # Stdout is empty; remove golden if it exists (empty goldens are
+            # not meaningful) and report success-without-update.
+            if os.path.exists(golden):
+                os.remove(golden)
+                result.lines.append(f"removed empty golden {os.path.relpath(golden, SCRIPT_DIR)}")
+            result.status = "UPD"
+            result.lines.append("stdout empty; no golden written")
         if exit_bad:
             result.lines.append(
                 "WARNING: exit contract not met; golden updated anyway")
@@ -881,7 +980,7 @@ def run_compiler(config, test, workdir, update, grammar):
         result.status = "FAIL"
 
     if not os.path.exists(golden):
-        return no_golden_result(result, meta, test.is_fuzz, stage="compiler")
+        return no_golden_result(result, meta, test.is_fuzz, stage="run")
 
     steps = run_cfg.get("preprocess", [])
     golden_norm = apply_preprocess(steps, golden, workdir, "golden")
@@ -904,7 +1003,7 @@ def run_compiler(config, test, workdir, update, grammar):
     return result
 
 
-def run_test(config, test, workdir_root, update, grammar):
+def run_test(config, test, workdir_root, update, grammar, check_ir=False):
     if test.meta_error:
         result = Result("FAIL", test.stage, test.name)
         result.lines.append(test.meta_error)
@@ -914,9 +1013,11 @@ def run_test(config, test, workdir_root, update, grammar):
     start = time.monotonic()
     try:
         if test.stage == "compiler":
-            result = run_compiler(config, test, workdir, update, grammar)
+            result = run_compile(config, test, workdir, update, grammar)
+        elif test.stage == "run":
+            result = run_exec(config, test, workdir, update, grammar)
         else:
-            result = run_plain(config, test, workdir, update, grammar)
+            result = run_plain(config, test, workdir, update, grammar, check_ir=check_ir)
     except subprocess.TimeoutExpired:
         result = Result("FAIL", test.stage, test.name)
         result.lines.append("timed out")
@@ -946,7 +1047,7 @@ def print_result(result, verbose, no_color=False):
         return COLOR[status] + text + COLOR["RESET"]
 
     head = paint(result.status, result.status)
-    print(f"{head}  {result.key}  ({result.elapsed:.2f}s)")
+    print(f"{head}  {result.name}  ({result.elapsed:.2f}s)")
     if result.status != "PASS" or verbose:
         if result.command:
             print(f"    command: {result.command}")
@@ -954,15 +1055,15 @@ def print_result(result, verbose, no_color=False):
             print(f"    {line}")
 
 
-def run_batch(config, batch, workdir_root, update, jobs, grammar):
+def run_batch(config, batch, workdir_root, update, jobs, grammar, check_ir=False):
     """Run a set of tests (serial or parallel) preserving their input order."""
     if not batch:
         return []
     if jobs == 1:
-        return [run_test(config, t, workdir_root, update, grammar) for t in batch]
+        return [run_test(config, t, workdir_root, update, grammar, check_ir=check_ir) for t in batch]
     ordered_index = {id(t): i for i, t in enumerate(batch)}
     with ThreadPoolExecutor(max_workers=jobs) as pool:
-        futures = {id(t): pool.submit(run_test, config, t, workdir_root, update, grammar)
+        futures = {id(t): pool.submit(run_test, config, t, workdir_root, update, grammar, check_ir=check_ir)
                    for t in batch}
         return [futures[tid].result()
                 for tid in sorted(futures, key=lambda tid: ordered_index[tid])]
@@ -1132,9 +1233,10 @@ def main(argv=None):
             print("build failed", file=sys.stderr)
             return 1
 
+    check_ir = args.check_ir
     committed, excluded = discover_tests(SCRIPT_DIR, effective_grammar, args.stage, args.name_filter,
                                             os.path.abspath(config.out_dir),
-                                            check_ir=args.check_ir)
+                                            check_ir=check_ir)
 
     workdir_root = config.out_dir
 
@@ -1182,8 +1284,21 @@ def main(argv=None):
             gen_thread.join()
             if gen_error:
                 raise gen_error[0]
-        for test in committed + fuzz_tests:
-            print(f"{test.stage}/{test.name}")
+        # Group by stage in canonical order
+        stage_tests = {}
+        for test in committed:
+            stage_tests.setdefault(test.stage, []).append(test)
+        for stage in STAGE_ORDER:
+            tests_s = stage_tests.get(stage)
+            if not tests_s:
+                continue
+            print(f"=== {stage.upper()} ===")
+            for test in tests_s:
+                print(f"  {test.name}")
+        if fuzz_tests:
+            print("=== FUZZ ===")
+            for test in fuzz_tests:
+                print(f"  {test.stage}/{test.name}")
         return 0
 
     if args.command == "list-matrix":
@@ -1197,10 +1312,26 @@ def main(argv=None):
     # Run and print committed tests immediately.
     committed_results = run_batch(config, committed, workdir_root,
                                   args.command == "update", args.jobs,
-                                  effective_grammar)
+                                  effective_grammar, check_ir=check_ir)
     print()
+    # Group results by stage in canonical order
+    stage_results = {}
     for result in committed_results:
-        print_result(result, args.verbose, no_color)
+        stage_results.setdefault(result.stage, []).append(result)
+    for stage in STAGE_ORDER:
+        results_stage = stage_results.get(stage)
+        if not results_stage:
+            continue
+        stage_upper = stage.upper()
+        print(f"=== {stage_upper} ===")
+        for result in results_stage:
+            # Strip stage prefix from name when showing under grouped header
+            orig_name = result.name
+            short_name = orig_name.removeprefix(result.stage + "/")
+            result.name = short_name
+            print_result(result, args.verbose, no_color)
+            result.name = orig_name
+        print()
 
     # Now wait for fuzz generation and run the fuzz tests.
     fuzz_results = []
@@ -1223,11 +1354,18 @@ def main(argv=None):
             else:
                 fuzz_results = run_batch(config, fuzz_tests, workdir_root,
                                          args.command == "update", args.jobs,
-                                         effective_grammar)
+                                         effective_grammar, check_ir=check_ir)
                 print("---- fuzz tests ----")
                 print(fuzz_seed_line)
+                stage_results_fuzz = {}
                 for result in fuzz_results:
-                    print_result(result, args.verbose, no_color)
+                    stage_results_fuzz.setdefault(result.stage, []).append(result)
+                for stage in STAGE_ORDER:
+                    results_s = stage_results_fuzz.get(stage)
+                    if not results_s:
+                        continue
+                    for result in results_s:
+                        print_result(result, args.verbose, no_color)
                 print(fuzz_seed_line)
 
     results = committed_results + fuzz_results
