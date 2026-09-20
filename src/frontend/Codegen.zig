@@ -4,6 +4,8 @@ const std = @import("std");
 const c = @cImport({
     @cInclude("llvm-c/Core.h");
     @cInclude("llvm-c/BitWriter.h");
+    @cInclude("llvm-c/Target.h");
+    @cInclude("llvm-c/TargetMachine.h");
 });
 
 const Source = @import("Source.zig");
@@ -57,16 +59,66 @@ pub fn run(self: *Self, output_file: [:0]const u8, options: Options) !void {
     _ = try self.gen(.root);
 
     if (options.emit_llvm) {
-        var err_msg: [512]u8 align(8) = undefined;
-        const failed = c.LLVMPrintModuleToFile(self.module, output_file, @ptrCast(&err_msg)) != 0;
-
-        if (failed) {
-            std.log.err("failed dumping LLVM IR: {s}", .{@as([*:0]u8, @ptrCast(&err_msg))});
-        }
+        self.printModule(output_file);
     } else {
-        const failed = c.LLVMWriteBitcodeToFile(self.module, output_file) != 0;
+        self.makeBinaryFile(output_file);
+    }
+}
+
+fn printModule(self: Self, output_file: [:0]const u8) void {
+    var err_msg: [*:0]u8 = undefined;
+    const failed = c.LLVMPrintModuleToFile(self.module, output_file, @ptrCast(&err_msg)) != 0;
+
+    if (failed) {
+        std.log.err("failed dumping LLVM IR: {s}", .{@as([*:0]u8, @ptrCast(&err_msg))});
+        c.LLVMDisposeMessage(err_msg);
+    }
+}
+
+fn makeBinaryFile(self: Self, output_file: [:0]const u8) void {
+    _ = c.LLVMInitializeNativeTarget();
+    _ = c.LLVMInitializeNativeAsmPrinter();
+
+    const triple = c.LLVMGetDefaultTargetTriple();
+    defer c.LLVMDisposeMessage(triple);
+
+    c.LLVMSetTarget(self.module, triple);
+
+    var target: c.LLVMTargetRef = undefined;
+    {
+        var err_msg: [*:0]u8 = undefined;
+        const failed = c.LLVMGetTargetFromTriple(triple, &target, @ptrCast(&err_msg)) != 0;
         if (failed) {
-            std.log.err("failed writing LLVM bitcode", .{});
+            std.log.err("failed to get target: {s}", .{err_msg});
+            c.LLVMDisposeMessage(err_msg);
+            return;
+        }
+    }
+
+    const target_machine = c.LLVMCreateTargetMachine(
+        target,
+        triple,
+        "generic",
+        "",
+        c.LLVMCodeGenLevelDefault,
+        c.LLVMRelocDefault,
+        c.LLVMCodeModelDefault,
+    );
+    defer c.LLVMDisposeTargetMachine(target_machine);
+
+    {
+        var err_msg: [*:0]u8 = undefined;
+        const failed = c.LLVMTargetMachineEmitToFile(
+            target_machine,
+            self.module,
+            output_file,
+            c.LLVMObjectFile,
+            @ptrCast(&err_msg),
+        ) != 0;
+        if (failed) {
+            std.log.err("failed to emit object file: {s}", .{err_msg});
+            c.LLVMDisposeMessage(err_msg);
+            return;
         }
     }
 }

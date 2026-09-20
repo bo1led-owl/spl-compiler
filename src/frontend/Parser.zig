@@ -356,7 +356,7 @@ fn parseExprPrecedence(self: *Self, initial_lhs: Node.Index, min_prec: u32) !Nod
 
         _ = self.nextToken();
 
-        var rhs = try self.expectExpr();
+        var rhs = try self.expectTerm();
 
         while (true) {
             const next_op = self.peekBinaryOp() orelse break;

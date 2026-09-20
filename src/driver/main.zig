@@ -111,7 +111,7 @@ fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: cli.Args.Full) u8 {
     const llvm_output_path = if (args.emit_llvm)
         args.output_path
     else
-        std.fmt.allocPrintSentinel(gpa, "{s}.bc", .{args.output_path}, 0) catch {
+        std.fmt.allocPrintSentinel(gpa, "{s}.o", .{args.output_path}, 0) catch {
             std.log.err("failed to allocate temporary path", .{});
             return 1;
         };
@@ -135,12 +135,19 @@ fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: cli.Args.Full) u8 {
         return 1;
     };
     gpa.free(res.stdout);
-    gpa.free(res.stderr);
+    defer gpa.free(res.stderr);
 
-    std.Io.Dir.cwd().deleteFile(io, llvm_output_path) catch |err| {
-        std.log.err("failed to delete temporary bitcode file: {s}", .{@errorName(err)});
+    if (res.term.exited != 0) {
+        std.log.err("clang failed with exit code {d}, stderr:\n{s}", .{ res.term.exited, res.stderr });
         return 1;
-    };
+    }
+
+    if (!args.preserve_temp) {
+        std.Io.Dir.cwd().deleteFile(io, llvm_output_path) catch |err| {
+            std.log.err("failed to delete temporary file: {s}", .{@errorName(err)});
+            return 1;
+        };
+    }
 
     return 0;
 }

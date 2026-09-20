@@ -7,6 +7,7 @@ zig-out/
 # Temporaries and binaries
 *.ll
 *.bc
+*.o
 a.out
 
 !test/**/*.ll

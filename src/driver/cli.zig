@@ -13,6 +13,7 @@ pub const help_msg =
     \\  -t DUMP, --tokens-dump=DUMP                  - dump tokens as JSON into DUMP
     \\  -a DUMP, --ast-dump=DUMP                     - dump AST as JSON into DUMP
     \\           --last-stage=<lexer|parser|codegen> - limit the compiler pipeline to specified stage
+    \\           --preserve-temp                     - do not delete temporary files
 ++ "\n";
 
 pub const Args = union(enum) {
@@ -37,6 +38,7 @@ pub const Args = union(enum) {
         ast_dump_path: ?[]const u8,
         last_stage: Stage,
         emit_llvm: bool,
+        preserve_temp: bool,
     };
 
     help,
@@ -51,6 +53,7 @@ pub const Args = union(enum) {
         var ast_dump_path: ?[]const u8 = null;
         var last_stage: Stage = .codegen;
         var emit_llvm = false;
+        var preserve_temp = false;
 
         var next_opt: ?Next = null;
 
@@ -86,6 +89,8 @@ pub const Args = union(enum) {
                     return ParseError.UnknownStage;
             } else if (std.mem.eql(u8, arg, "--emit-llvm")) {
                 emit_llvm = true;
+            } else if (std.mem.eql(u8, arg, "--preserve-temp")) {
+                preserve_temp = true;
             } else if (std.mem.startsWith(u8, arg, "-")) {
                 return ParseError.UnknownOption;
             } else if (next_opt) |next| {
@@ -114,6 +119,7 @@ pub const Args = union(enum) {
             .tokens_dump_path = tokens_dump_path,
             .ast_dump_path = ast_dump_path,
             .emit_llvm = emit_llvm,
+            .preserve_temp = preserve_temp,
             .last_stage = last_stage,
             .output_path = output_path orelse if (emit_llvm) "a.ll" else "a.out",
         } };
