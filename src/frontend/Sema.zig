@@ -143,9 +143,10 @@ fn visitNode(self: *Self, node_index: Ast.Node.Index) (std.mem.Allocator.Error |
             return .{};
         },
         .assign => {
-            const dest_info = try self.visitNode(node.data.node_node.@"0");
+            const dest_index = node.data.node_node.@"0";
+            const dest_info = try self.visitNode(dest_index);
             if (!dest_info.is_assignable) {
-                try self.report(self.spanByNode(node_index), "expression is not assignable", .{});
+                try self.report(self.spanByNode(dest_index), "expression is not assignable", .{});
             }
 
             _ = try self.visitNode(node.data.node_node.@"1");
