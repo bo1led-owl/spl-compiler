@@ -11,7 +11,6 @@ jobs:
     strategy:
       matrix:
         grammar: [1]
-        stage: ["lexer", "parser", "compiler", "run"]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -41,5 +40,5 @@ jobs:
       - name: Build compiler
         run: zig build --release=fast -DllvmIncludeDir=$(llvm-config --includedir) -DllvmLibDir=$(llvm-config --libdir) -DllvmLibName=$(llvm-config --libs x86)
 
-      - name: Run tests for grammar ${{ matrix.grammar }} stage ${{ matrix.stage }}
-        run: python3 test/run_tests.py test --grammar ${{ matrix.grammar }} --stage=${{ matrix.stage }} --no-build
+      - name: Run tests for grammar ${{ matrix.grammar }}
+        run: python3 test/run_tests.py test --grammar ${{ matrix.grammar }} --no-build
