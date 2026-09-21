@@ -1,96 +1,132 @@
 {
-  "line": 10,
+  "line": 1,
   "column": 1,
   "kind": "Program",
-  "body": [
-{
-  "line": 3,
-  "column": 1,
+  "elems": [
+  {
+    "line": 1,
+    "column": 1,
     "kind": "FuncDecl",
-    "name": "noop",
-    "params": [],
-    "body": {
-  "line": 3,
-  "column": 1,
+    "elems": [
+    {
+      "line": 1,
+      "column": 5,
+      "kind": "Ident",
+      "elems": []
+    },
+    {
+      "line": 1,
+      "column": 12,
       "kind": "Block",
-      "body": [
-{
-  "line": 2,
-  "column": 13,
+      "elems": [
+      {
+        "line": 2,
+        "column": 5,
         "kind": "Return",
-        "value": {
-  "line": 2,
-  "column": 12,
+        "elems": [
+        {
+          "line": 2,
+          "column": 12,
           "kind": "IntLiteral",
-          "value": 0
+          "elems": []
         }
+        ]
       }
-    ]}
+      ]
+    }
+    ]
   },
-{
-  "line": 5,
-  "column": 18,
+  {
+    "line": 5,
+    "column": 1,
     "kind": "ExternDecl",
-    "name": "foo",
-    "params": [{
-  "line": 5,
-  "column": 16,
-  "kind": "Ident",
-  "name": "x"
-}]
+    "elems": [
+    {
+      "line": 5,
+      "column": 12,
+      "kind": "Ident",
+      "elems": []
+    },
+    {
+      "line": 5,
+      "column": 16,
+      "kind": "Ident",
+      "elems": []
+    }
+    ]
   },
-{
-  "line": 10,
-  "column": 1,
+  {
+    "line": 7,
+    "column": 1,
     "kind": "FuncDecl",
-    "name": "main",
-    "params": [],
-    "body": {
-  "line": 10,
-  "column": 1,
+    "elems": [
+    {
+      "line": 7,
+      "column": 5,
+      "kind": "Ident",
+      "elems": []
+    },
+    {
+      "line": 7,
+      "column": 12,
       "kind": "Block",
-      "body": [
-{
-  "line": 8,
-  "column": 24,
+      "elems": [
+      {
+        "line": 8,
+        "column": 5,
         "kind": "Declare",
         "mut": "var",
-        "name": "a",
-        "init": {
-  "line": 8,
-  "column": 23,
+        "elems": [
+        {
+          "line": 8,
+          "column": 9,
+          "kind": "Ident",
+          "elems": []
+        },
+        {
+          "line": 8,
+          "column": 16,
           "kind": "Call",
-          "callee": {
-  "line": 8,
-  "column": 13,
+          "elems": [
+          {
+            "line": 8,
+            "column": 13,
             "kind": "Ident",
-            "name": "foo"
+            "elems": []
           },
-          "args": [{
-  "line": 8,
-  "column": 22,
-  "kind": "Call",
-  "callee": {
-  "line": 8,
-  "column": 17,
-    "kind": "Ident",
-    "name": "noop"
-  },
-  "args": []
-}]
+          {
+            "line": 8,
+            "column": 21,
+            "kind": "Call",
+            "elems": [
+            {
+              "line": 8,
+              "column": 17,
+              "kind": "Ident",
+              "elems": []
+            }
+            ]
+          }
+          ]
         }
+        ]
       },
-{
-  "line": 9,
-  "column": 13,
+      {
+        "line": 9,
+        "column": 5,
         "kind": "Return",
-        "value": {
-  "line": 9,
-  "column": 12,
+        "elems": [
+        {
+          "line": 9,
+          "column": 12,
           "kind": "IntLiteral",
-          "value": 0
+          "elems": []
         }
+        ]
       }
-    ]}
+      ]
+    }
+    ]
   }
-]}
+  ]
+}

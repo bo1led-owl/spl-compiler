@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "schemas/ast.schema.json",
+  "title": "Test ast.json",
+  "description": "Schema for test case AST files (ast.json) in the SysProLang compiler test suite.",
+  "definitions": {
+    "astNode": {
+      "description": "A recursive AST node. Every node has at least line, column, kind and elems. Other fields (value, name, op, body, elems, …) are allowed.",
+      "type": "object",
+      "properties": {
+        "line": {
+          "description": "Line number (1-based) where the node starts in the source file.",
+          "type": "integer",
+          "minimum": 1
+        },
+        "column": {
+          "description": "Column number (1-based) where the node starts in the source line.",
+          "type": "integer",
+          "minimum": 1
+        },
+        "kind": {
+          "description": "AST node kind (e.g., Program, Declare, IntLiteral, BinOp, …).",
+          "type": "string"
+        },
+        "elems": {
+          "description": "Ordered list of child nodes (alternative to named fields like body, left, right, etc.).",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/astNode"
+          }
+        }
+      },
+      "required": ["line", "column", "kind", "elems"],
+      "additionalProperties": true
+    }
+  },
+  "$ref": "#/definitions/astNode"
+}

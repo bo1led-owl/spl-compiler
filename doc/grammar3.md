@@ -5,7 +5,16 @@ Version: 3
 ## Grammar
 
 ```bnf
-program ::= { externDeclaration } { funcDeclaration } { statement } EOF
+program ::= { topDeclaration } EOF
+
+topDeclaration ::= externDeclaration
+                 | funcDeclaration
+
+externDeclaration ::= "extern" "def" IDENT "(" [ paramList ] ")" ";"
+
+funcDeclaration ::= "def" IDENT "(" [ paramList ] ")" block
+
+paramList ::= IDENT { "," IDENT }
 
 statement ::=
     returnStatement
@@ -38,12 +47,6 @@ whileStatement ::= "while" "(" expression ")" statement
 breakStatement ::= "break" ";"
 
 continueStatement ::= "continue" ";"
-
-externDeclaration ::= "extern" "def" IDENT "(" [ paramList ] ")" ";"
-
-funcDeclaration ::= "def" IDENT "(" [ paramList ] ")" block
-
-paramList ::= IDENT { "," IDENT }
 
 
 ; Expression definitions go from lowest operator precedence
@@ -141,17 +144,48 @@ All semantic rules from grammar 2 apply, plus:
 - **Function definitions** use `def name(params) { body }`. Parameters are passed
   by value. A function must have a `return` statement if it returns a value.
 - **Functions are visible anywhere** in the program after they are defined (forward
-  references are allowed — the compiler can collect all function definitions before
+  references are allowed --- the compiler can collect all function definitions before
   codegen).
 - **`extern` declarations** declare a C function with no body. These are linked
   with the compiled program at the end. The calling convention is the C ABI.
 - **Function calls** are expressions. A call evaluates all arguments, then transfers
   control to the function. The function's return value is the result of the call
   expression.
-- **Top-level statements** (outside any function) form the body of the implicit
-  `main()` function. Top-level statements are executed in order when the program
-  starts. A `return` at the top level returns from `main()`.
-- **All values remain `Int64`** — no type system yet. Functions take `Int64`
+- **All values remain `Int64`** --- no type system yet. Functions take `Int64`
   parameters and return `Int64`.
+- **A `main` function must be explicitly defined** Top-level statements are not allowed.
 - **Error recovery**: see [`doc/error-handling.md`](error-handling.md) for the
   recommended error recovery strategy.
+
+## Token kinds (new in grammar 3)
+
+These `"kind"` values appear in `tokens.json` golden files, in addition to those from grammar 1–2:
+
+| Token kind | Grammar source | Notes |
+|---|---|---|
+| `DEF` | `def` | Keyword |
+| `EXTERN` | `extern` | Keyword |
+| `COMMA` | `,` | Parameter/argument separator |
+
+All tokens from grammar 1–2 also apply.
+
+### Example
+
+> TODO
+
+## AST node kinds (new in grammar 3)
+
+These `"kind"` values appear in `ast.json` golden files, in addition to those from grammar 1–2:
+
+| AST kind  | `elems[]` children | Notes |
+|---|---|---|
+| `ExternDecl` | `[name, params...]` | `external def` function declaration |
+| `FuncDecl` | `[name, params..., body]` | `def` function declaration with body as `Block` node |
+| `Param` | `[name]` | Name is an `Ident` node |
+| `Call` | `[callee, args...]` | Callee is an `Ident` node followed by argument expressions |
+
+All AST kinds from grammar 1–2 also apply.
+
+### Example
+
+> TODO

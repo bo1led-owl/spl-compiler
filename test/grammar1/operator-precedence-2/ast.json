@@ -1,91 +1,105 @@
 {
-  "line": 2,
-  "column": 9,
+  "line": 1,
+  "column": 1,
   "kind": "Program",
-  "body": [
+  "elems": [
   {
     "line": 1,
-    "column": 30,
+    "column": 1,
     "kind": "Declare",
     "mut": "var",
-    "name": "x",
-    "init": {
+    "elems": [
+    {
       "line": 1,
-      "column": 29,
+      "column": 5,
+      "kind": "Ident",
+      "elems": []
+    },
+    {
+      "line": 1,
+      "column": 23,
       "kind": "BinOp",
-      "op": "+",
-      "left": {
+      "elems": [
+      {
         "line": 1,
-        "column": 21,
+        "column": 19,
         "kind": "BinOp",
-        "op": "+",
-        "left": {
+        "elems": [
+        {
           "line": 1,
-          "column": 17,
+          "column": 15,
           "kind": "BinOp",
-          "op": "*",
-          "left": {
+          "elems": [
+          {
             "line": 1,
-            "column": 13,
+            "column": 11,
             "kind": "BinOp",
-            "op": "*",
-            "left": {
+            "elems": [
+            {
               "line": 1,
               "column": 9,
               "kind": "IntLiteral",
-              "value": 1
+              "elems": []
             },
-            "right": {
+            {
               "line": 1,
               "column": 13,
               "kind": "IntLiteral",
-              "value": 2
+              "elems": []
             }
+            ]
           },
-          "right": {
+          {
             "line": 1,
             "column": 17,
             "kind": "IntLiteral",
-            "value": 3
+            "elems": []
           }
+          ]
         },
-        "right": {
+        {
           "line": 1,
           "column": 21,
           "kind": "IntLiteral",
-          "value": 4
+          "elems": []
         }
+        ]
       },
-      "right": {
+      {
         "line": 1,
-        "column": 29,
+        "column": 27,
         "kind": "BinOp",
-        "op": "*",
-        "left": {
+        "elems": [
+        {
           "line": 1,
           "column": 25,
           "kind": "IntLiteral",
-          "value": 5
+          "elems": []
         },
-        "right": {
+        {
           "line": 1,
           "column": 29,
           "kind": "IntLiteral",
-          "value": 6
+          "elems": []
         }
+        ]
       }
+      ]
     }
+    ]
   },
   {
     "line": 2,
-    "column": 9,
+    "column": 1,
     "kind": "Return",
-    "value": {
+    "elems": [
+    {
       "line": 2,
       "column": 8,
       "kind": "Ident",
-      "name": "x"
+      "elems": []
     }
+    ]
   }
   ]
 }

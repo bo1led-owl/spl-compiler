@@ -1,228 +1,338 @@
 {
-  "line": 18,
+  "line": 1,
   "column": 1,
   "kind": "Program",
-  "body": [
-{
-  "line": 4,
-  "column": 1,
+  "elems": [
+  {
+    "line": 1,
+    "column": 1,
     "kind": "StructDecl",
-    "name": "Point",
-    "fields": [
-{
-  "line": 2,
-  "column": 13,
-      "kind": "Declare",
-      "mut": "val",
-      "type": "Int64",
-      "name": "x",
-      "init": null
+    "elems": [
+    {
+      "line": 1,
+      "column": 8,
+      "kind": "Ident",
+      "elems": []
     },
-{
-  "line": 3,
-  "column": 13,
+    {
+      "line": 2,
+      "column": 5,
       "kind": "Declare",
       "mut": "val",
       "type": "Int64",
-      "name": "y",
-      "init": null
-    }
-  ]},
-{
-  "line": 11,
-  "column": 1,
-    "kind": "FuncDecl",
-    "name": "makePoint",
-    "returnType": "Point",
-    "params": [{
-  "line": 6,
-  "column": 19,
-  "kind": "Param",
-  "name": "px",
-  "type": "Int64"
-}, {
-  "line": 6,
-  "column": 30,
-  "kind": "Param",
-  "name": "py",
-  "type": "Int64"
-}],
-    "body": {
-  "line": 11,
-  "column": 1,
-      "kind": "Block",
-      "body": [
-{
-  "line": 7,
-  "column": 17,
-        "kind": "Declare",
-        "mut": "var",
-        "type": "Point",
-        "name": "p",
-        "init": null
-      },
-{
-  "line": 8,
-  "column": 13,
-        "kind": "Assign",
-        "target": {
-  "line": 8,
-  "column": 7,
-          "kind": "FieldAccess",
-          "base": {
-  "line": 8,
-  "column": 5,
-            "kind": "Ident",
-            "name": "p"
-          },
-          "field": "x"
-        },
-        "value": {
-  "line": 8,
-  "column": 11,
-          "kind": "Ident",
-          "name": "px"
-        }
-      },
-{
-  "line": 9,
-  "column": 13,
-        "kind": "Assign",
-        "target": {
-  "line": 9,
-  "column": 7,
-          "kind": "FieldAccess",
-          "base": {
-  "line": 9,
-  "column": 5,
-            "kind": "Ident",
-            "name": "p"
-          },
-          "field": "y"
-        },
-        "value": {
-  "line": 9,
-  "column": 11,
-          "kind": "Ident",
-          "name": "py"
-        }
-      },
-{
-  "line": 10,
-  "column": 13,
-        "kind": "Return",
-        "value": {
-  "line": 10,
-  "column": 12,
-          "kind": "Ident",
-          "name": "p"
-        }
+      "elems": [
+      {
+        "line": 2,
+        "column": 5,
+        "kind": "Ident",
+        "elems": []
       }
-    ]}
+      ]
+    },
+    {
+      "line": 3,
+      "column": 5,
+      "kind": "Declare",
+      "mut": "val",
+      "type": "Int64",
+      "elems": [
+      {
+        "line": 3,
+        "column": 5,
+        "kind": "Ident",
+        "elems": []
+      }
+      ]
+    }
+    ]
   },
-{
-  "line": 18,
-  "column": 1,
+  {
+    "line": 6,
+    "column": 1,
     "kind": "FuncDecl",
-    "name": "main",
-    "returnType": "Int64",
-    "params": [],
-    "body": {
-  "line": 18,
-  "column": 1,
+    "returnType": "Point",
+    "elems": [
+    {
+      "line": 6,
+      "column": 5,
+      "kind": "Ident",
+      "elems": []
+    },
+    {
+      "line": 6,
+      "column": 15,
+      "kind": "Param",
+      "type": "Int64",
+      "elems": [
+      {
+        "line": 6,
+        "column": 15,
+        "kind": "Ident",
+        "elems": []
+      }
+      ]
+    },
+    {
+      "line": 6,
+      "column": 26,
+      "kind": "Param",
+      "type": "Int64",
+      "elems": [
+      {
+        "line": 6,
+        "column": 26,
+        "kind": "Ident",
+        "elems": []
+      }
+      ]
+    },
+    {
+      "line": 6,
+      "column": 44,
       "kind": "Block",
-      "body": [
-{
-  "line": 14,
-  "column": 18,
+      "elems": [
+      {
+        "line": 7,
+        "column": 5,
         "kind": "Declare",
         "mut": "var",
         "type": "Point",
-        "name": "pt",
-        "init": null
-      },
-{
-  "line": 15,
-  "column": 25,
-        "kind": "Assign",
-        "target": {
-  "line": 15,
-  "column": 5,
+        "elems": [
+        {
+          "line": 7,
+          "column": 9,
           "kind": "Ident",
-          "name": "pt"
-        },
-        "value": {
-  "line": 15,
-  "column": 24,
-          "kind": "Call",
-          "callee": {
-  "line": 15,
-  "column": 10,
-            "kind": "Ident",
-            "name": "makePoint"
-          },
-          "args": [{
-  "line": 15,
-  "column": 20,
-  "kind": "IntLiteral",
-  "value": 3
-}, {
-  "line": 15,
-  "column": 23,
-  "kind": "IntLiteral",
-  "value": 4
-}]
+          "elems": []
         }
+        ]
       },
-{
-  "line": 16,
-  "column": 36,
+      {
+        "line": 8,
+        "column": 6,
+        "kind": "Assign",
+        "elems": [
+        {
+          "line": 8,
+          "column": 6,
+          "kind": "FieldAccess",
+          "elems": [
+          {
+            "line": 8,
+            "column": 5,
+            "kind": "Ident",
+            "elems": []
+          },
+          {
+            "line": 8,
+            "column": 7,
+            "kind": "Ident",
+            "elems": []
+          }
+          ]
+        },
+        {
+          "line": 8,
+          "column": 11,
+          "kind": "Ident",
+          "elems": []
+        }
+        ]
+      },
+      {
+        "line": 9,
+        "column": 6,
+        "kind": "Assign",
+        "elems": [
+        {
+          "line": 9,
+          "column": 6,
+          "kind": "FieldAccess",
+          "elems": [
+          {
+            "line": 9,
+            "column": 5,
+            "kind": "Ident",
+            "elems": []
+          },
+          {
+            "line": 9,
+            "column": 7,
+            "kind": "Ident",
+            "elems": []
+          }
+          ]
+        },
+        {
+          "line": 9,
+          "column": 11,
+          "kind": "Ident",
+          "elems": []
+        }
+        ]
+      },
+      {
+        "line": 10,
+        "column": 5,
+        "kind": "Return",
+        "elems": [
+        {
+          "line": 10,
+          "column": 12,
+          "kind": "Ident",
+          "elems": []
+        }
+        ]
+      }
+      ]
+    }
+    ]
+  },
+  {
+    "line": 13,
+    "column": 1,
+    "kind": "FuncDecl",
+    "returnType": "Int64",
+    "elems": [
+    {
+      "line": 13,
+      "column": 5,
+      "kind": "Ident",
+      "elems": []
+    },
+    {
+      "line": 13,
+      "column": 19,
+      "kind": "Block",
+      "elems": [
+      {
+        "line": 14,
+        "column": 5,
+        "kind": "Declare",
+        "mut": "var",
+        "type": "Point",
+        "elems": [
+        {
+          "line": 14,
+          "column": 9,
+          "kind": "Ident",
+          "elems": []
+        }
+        ]
+      },
+      {
+        "line": 15,
+        "column": 5,
+        "kind": "Assign",
+        "elems": [
+        {
+          "line": 15,
+          "column": 5,
+          "kind": "Ident",
+          "elems": []
+        },
+        {
+          "line": 15,
+          "column": 19,
+          "kind": "Call",
+          "elems": [
+          {
+            "line": 15,
+            "column": 10,
+            "kind": "Ident",
+            "elems": []
+          },
+          {
+            "line": 15,
+            "column": 20,
+            "kind": "IntLiteral",
+            "elems": []
+          },
+          {
+            "line": 15,
+            "column": 23,
+            "kind": "IntLiteral",
+            "elems": []
+          }
+          ]
+        }
+        ]
+      },
+      {
+        "line": 16,
+        "column": 5,
         "kind": "Declare",
         "mut": "val",
         "type": "Int64",
-        "name": "result",
-        "init": {
-  "line": 16,
-  "column": 35,
-          "kind": "BinOp",
-          "op": "+",
-          "left": {
-  "line": 16,
-  "column": 28,
-            "kind": "FieldAccess",
-            "base": {
-  "line": 16,
-  "column": 25,
-              "kind": "Ident",
-              "name": "pt"
-            },
-            "field": "x"
-          },
-          "right": {
-  "line": 16,
-  "column": 35,
-            "kind": "FieldAccess",
-            "base": {
-  "line": 16,
-  "column": 32,
-              "kind": "Ident",
-              "name": "pt"
-            },
-            "field": "y"
-          }
-        }
-      },
-{
-  "line": 17,
-  "column": 18,
-        "kind": "Return",
-        "value": {
-  "line": 17,
-  "column": 12,
+        "elems": [
+        {
+          "line": 16,
+          "column": 9,
           "kind": "Ident",
-          "name": "result"
+          "elems": []
+        },
+        {
+          "line": 16,
+          "column": 30,
+          "kind": "BinOp",
+          "elems": [
+          {
+            "line": 16,
+            "column": 27,
+            "kind": "FieldAccess",
+            "elems": [
+            {
+              "line": 16,
+              "column": 25,
+              "kind": "Ident",
+              "elems": []
+            },
+            {
+              "line": 16,
+              "column": 28,
+              "kind": "Ident",
+              "elems": []
+            }
+            ]
+          },
+          {
+            "line": 16,
+            "column": 34,
+            "kind": "FieldAccess",
+            "elems": [
+            {
+              "line": 16,
+              "column": 32,
+              "kind": "Ident",
+              "elems": []
+            },
+            {
+              "line": 16,
+              "column": 35,
+              "kind": "Ident",
+              "elems": []
+            }
+            ]
+          }
+          ]
         }
+        ]
+      },
+      {
+        "line": 17,
+        "column": 5,
+        "kind": "Return",
+        "elems": [
+        {
+          "line": 17,
+          "column": 12,
+          "kind": "Ident",
+          "elems": []
+        }
+        ]
       }
-    ]}
+      ]
+    }
+    ]
   }
-]}
+  ]
+}

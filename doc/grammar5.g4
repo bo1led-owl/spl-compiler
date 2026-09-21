@@ -13,7 +13,27 @@ grammar grammar5;
 // lexer runs a single-line comment to end-of-line, a generated line comment
 // must always end with a newline (whitespace.py guarantees this).
 
-program : structDeclaration* externDeclaration* funcDeclaration* EOF;
+program : topDeclaration* EOF;
+
+topDeclaration
+    : externDeclaration
+    | funcDeclaration
+    | structDeclaration
+
+// extern declaration for C interop with typed parameters and return type.
+externDeclaration : 'extern' 'def' IDENT '(' typedParamList? ')' ':' type ';';
+
+// Function declaration with typed parameters and return type.
+funcDeclaration : 'def' IDENT '(' typedParamList? ')' ':' type block;
+
+// Type annotation on each parameter.
+typedParamList : IDENT ':' type (',' IDENT ':' type)*;
+
+// Types: primitive types, struct type (identifier), array type.
+type : INT8 | INT16 | INT32 | INT64 | BOOL | STRING
+     | IDENT
+     | type '[' INTEGER_LITERAL ']'
+     ;
 
 statement
     : returnStatement
@@ -58,21 +78,6 @@ whileStatement : 'while' '(' expression ')' statement;
 breakStatement : 'break' ';';
 
 continueStatement : 'continue' ';';
-
-// extern declaration for C interop with typed parameters and return type.
-externDeclaration : 'extern' 'def' IDENT '(' typedParamList? ')' ':' type ';';
-
-// Function declaration with typed parameters and return type.
-funcDeclaration : 'def' IDENT '(' typedParamList? ')' ':' type block;
-
-// Type annotation on each parameter.
-typedParamList : IDENT ':' type (',' IDENT ':' type)*;
-
-// Types: primitive types, struct type (identifier), array type.
-type : INT8 | INT16 | INT32 | INT64 | BOOL | STRING
-     | IDENT
-     | type '[' INTEGER_LITERAL ']'
-     ;
 
 // Expression definitions go from lowest operator precedence
 // to the highest, allowing for straightforward expression parsing.

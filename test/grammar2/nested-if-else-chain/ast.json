@@ -1,79 +1,93 @@
 {
-  "line": 7,
+  "line": 1,
   "column": 1,
   "kind": "Program",
-  "body": [
-{
-  "line": 7,
-  "column": 1,
+  "elems": [
+  {
+    "line": 1,
+    "column": 1,
     "kind": "If",
-    "cond": {
-  "line": 1,
-  "column": 5,
+    "elems": [
+    {
+      "line": 1,
+      "column": 5,
       "kind": "IntLiteral",
-      "value": 1
+      "elems": []
     },
-    "then": {
-  "line": 3,
-  "column": 1,
+    {
+      "line": 1,
+      "column": 8,
       "kind": "Block",
-      "body": [
-{
-  "line": 2,
-  "column": 11,
+      "elems": [
+      {
+        "line": 2,
+        "column": 3,
         "kind": "Return",
-        "value": {
-  "line": 2,
-  "column": 10,
+        "elems": [
+        {
+          "line": 2,
+          "column": 10,
           "kind": "IntLiteral",
-          "value": 1
+          "elems": []
         }
+        ]
       }
-    ]},
-    "else": {
-  "line": 7,
-  "column": 1,
+      ]
+    },
+    {
+      "line": 3,
+      "column": 8,
       "kind": "If",
-      "cond": {
-  "line": 3,
-  "column": 12,
+      "elems": [
+      {
+        "line": 3,
+        "column": 12,
         "kind": "IntLiteral",
-        "value": 0
+        "elems": []
       },
-      "then": {
-  "line": 5,
-  "column": 1,
+      {
+        "line": 3,
+        "column": 15,
         "kind": "Block",
-        "body": [
-{
-  "line": 4,
-  "column": 11,
+        "elems": [
+        {
+          "line": 4,
+          "column": 3,
           "kind": "Return",
-          "value": {
-  "line": 4,
-  "column": 10,
+          "elems": [
+          {
+            "line": 4,
+            "column": 10,
             "kind": "IntLiteral",
-            "value": 2
+            "elems": []
           }
+          ]
         }
-      ]},
-      "else": {
-  "line": 7,
-  "column": 1,
+        ]
+      },
+      {
+        "line": 5,
+        "column": 8,
         "kind": "Block",
-        "body": [
-{
-  "line": 6,
-  "column": 11,
+        "elems": [
+        {
+          "line": 6,
+          "column": 3,
           "kind": "Return",
-          "value": {
-  "line": 6,
-  "column": 10,
+          "elems": [
+          {
+            "line": 6,
+            "column": 10,
             "kind": "IntLiteral",
-            "value": 3
+            "elems": []
           }
+          ]
         }
-      ]}
+        ]
+      }
+      ]
     }
+    ]
   }
-]}
+  ]
+}

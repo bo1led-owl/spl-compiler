@@ -1,85 +1,117 @@
 {
-  "line": 6,
+  "line": 1,
   "column": 1,
   "kind": "Program",
-  "body": [
-{
-  "line": 6,
-  "column": 1,
+  "elems": [
+  {
+    "line": 1,
+    "column": 1,
     "kind": "FuncDecl",
-    "name": "main",
     "returnType": "Int64",
-    "params": [],
-    "body": {
-  "line": 6,
-  "column": 1,
+    "elems": [
+    {
+      "line": 1,
+      "column": 5,
+      "kind": "Ident",
+      "elems": []
+    },
+    {
+      "line": 1,
+      "column": 19,
       "kind": "Block",
-      "body": [
-{
-  "line": 2,
-  "column": 22,
+      "elems": [
+      {
+        "line": 2,
+        "column": 5,
         "kind": "Declare",
         "mut": "val",
         "type": "Int64",
-        "name": "x",
-        "init": {
-  "line": 2,
-  "column": 20,
+        "elems": [
+        {
+          "line": 2,
+          "column": 9,
+          "kind": "Ident",
+          "elems": []
+        },
+        {
+          "line": 2,
+          "column": 20,
           "kind": "IntLiteral",
-          "value": 42
+          "elems": []
         }
+        ]
       },
-{
-  "line": 3,
-  "column": 22,
+      {
+        "line": 3,
+        "column": 5,
         "kind": "Declare",
         "mut": "val",
         "type": "Int64",
-        "name": "y",
-        "init": {
-  "line": 3,
-  "column": 20,
+        "elems": [
+        {
+          "line": 3,
+          "column": 9,
+          "kind": "Ident",
+          "elems": []
+        },
+        {
+          "line": 3,
+          "column": 20,
           "kind": "IntLiteral",
-          "value": 10
+          "elems": []
         }
+        ]
       },
-{
-  "line": 4,
-  "column": 27,
+      {
+        "line": 4,
+        "column": 5,
         "kind": "Declare",
         "mut": "var",
         "type": "Int64",
-        "name": "sum",
-        "init": {
-  "line": 4,
-  "column": 26,
-          "kind": "BinOp",
-          "op": "+",
-          "left": {
-  "line": 4,
-  "column": 22,
-            "kind": "Ident",
-            "name": "x"
-          },
-          "right": {
-  "line": 4,
-  "column": 26,
-            "kind": "Ident",
-            "name": "y"
-          }
-        }
-      },
-{
-  "line": 5,
-  "column": 15,
-        "kind": "Return",
-        "value": {
-  "line": 5,
-  "column": 12,
+        "elems": [
+        {
+          "line": 4,
+          "column": 9,
           "kind": "Ident",
-          "name": "sum"
+          "elems": []
+        },
+        {
+          "line": 4,
+          "column": 24,
+          "kind": "BinOp",
+          "elems": [
+          {
+            "line": 4,
+            "column": 22,
+            "kind": "Ident",
+            "elems": []
+          },
+          {
+            "line": 4,
+            "column": 26,
+            "kind": "Ident",
+            "elems": []
+          }
+          ]
         }
+        ]
+      },
+      {
+        "line": 5,
+        "column": 5,
+        "kind": "Return",
+        "elems": [
+        {
+          "line": 5,
+          "column": 12,
+          "kind": "Ident",
+          "elems": []
+        }
+        ]
       }
-    ]}
+      ]
+    }
+    ]
   }
-]}
+  ]
+}

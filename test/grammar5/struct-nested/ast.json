@@ -1,163 +1,256 @@
 {
-  "line": 14,
+  "line": 1,
   "column": 1,
   "kind": "Program",
-  "body": [
-{
-  "line": 3,
-  "column": 1,
+  "elems": [
+  {
+    "line": 1,
+    "column": 1,
     "kind": "StructDecl",
-    "name": "Inner",
-    "fields": [
-{
-  "line": 2,
-  "column": 17,
+    "elems": [
+    {
+      "line": 1,
+      "column": 8,
+      "kind": "Ident",
+      "elems": []
+    },
+    {
+      "line": 2,
+      "column": 5,
       "kind": "Declare",
       "mut": "val",
       "type": "Int64",
-      "name": "value",
-      "init": null
+      "elems": [
+      {
+        "line": 2,
+        "column": 5,
+        "kind": "Ident",
+        "elems": []
+      }
+      ]
     }
-  ]},
-{
-  "line": 7,
-  "column": 1,
+    ]
+  },
+  {
+    "line": 4,
+    "column": 1,
     "kind": "StructDecl",
-    "name": "Outer",
-    "fields": [
-{
-  "line": 5,
-  "column": 17,
+    "elems": [
+    {
+      "line": 4,
+      "column": 8,
+      "kind": "Ident",
+      "elems": []
+    },
+    {
+      "line": 5,
+      "column": 5,
       "kind": "Declare",
       "mut": "val",
       "type": "Inner",
-      "name": "inner",
-      "init": null
+      "elems": [
+      {
+        "line": 5,
+        "column": 5,
+        "kind": "Ident",
+        "elems": []
+      }
+      ]
     },
-{
-  "line": 6,
-  "column": 17,
+    {
+      "line": 6,
+      "column": 5,
       "kind": "Declare",
       "mut": "val",
       "type": "Int64",
-      "name": "extra",
-      "init": null
+      "elems": [
+      {
+        "line": 6,
+        "column": 5,
+        "kind": "Ident",
+        "elems": []
+      }
+      ]
     }
-  ]},
-{
-  "line": 14,
-  "column": 1,
+    ]
+  },
+  {
+    "line": 9,
+    "column": 1,
     "kind": "FuncDecl",
-    "name": "main",
     "returnType": "Int64",
-    "params": [],
-    "body": {
-  "line": 14,
-  "column": 1,
+    "elems": [
+    {
+      "line": 9,
+      "column": 5,
+      "kind": "Ident",
+      "elems": []
+    },
+    {
+      "line": 9,
+      "column": 19,
       "kind": "Block",
-      "body": [
-{
-  "line": 10,
-  "column": 17,
+      "elems": [
+      {
+        "line": 10,
+        "column": 5,
         "kind": "Declare",
         "mut": "var",
         "type": "Outer",
-        "name": "o",
-        "init": null
-      },
-{
-  "line": 11,
-  "column": 23,
-        "kind": "Assign",
-        "target": {
-  "line": 11,
-  "column": 13,
-          "kind": "FieldAccess",
-          "base": {
-  "line": 11,
-  "column": 7,
-            "kind": "FieldAccess",
-            "base": {
-  "line": 11,
-  "column": 5,
-              "kind": "Ident",
-              "name": "o"
-            },
-            "field": "inner"
-          },
-          "field": "value"
-        },
-        "value": {
-  "line": 11,
-  "column": 21,
-          "kind": "IntLiteral",
-          "value": 42
+        "elems": [
+        {
+          "line": 10,
+          "column": 9,
+          "kind": "Ident",
+          "elems": []
         }
+        ]
       },
-{
-  "line": 12,
-  "column": 16,
+      {
+        "line": 11,
+        "column": 12,
         "kind": "Assign",
-        "target": {
-  "line": 12,
-  "column": 7,
+        "elems": [
+        {
+          "line": 11,
+          "column": 12,
           "kind": "FieldAccess",
-          "base": {
-  "line": 12,
-  "column": 5,
+          "elems": [
+          {
+            "line": 11,
+            "column": 6,
+            "kind": "FieldAccess",
+            "elems": [
+            {
+              "line": 11,
+              "column": 5,
+              "kind": "Ident",
+              "elems": []
+            },
+            {
+              "line": 11,
+              "column": 7,
+              "kind": "Ident",
+              "elems": []
+            }
+            ]
+          },
+          {
+            "line": 11,
+            "column": 13,
             "kind": "Ident",
-            "name": "o"
-          },
-          "field": "extra"
-        },
-        "value": {
-  "line": 12,
-  "column": 15,
-          "kind": "IntLiteral",
-          "value": 7
-        }
-      },
-{
-  "line": 13,
-  "column": 35,
-        "kind": "Return",
-        "value": {
-  "line": 13,
-  "column": 30,
-          "kind": "BinOp",
-          "op": "+",
-          "left": {
-  "line": 13,
-  "column": 20,
-            "kind": "FieldAccess",
-            "base": {
-  "line": 13,
-  "column": 14,
-              "kind": "FieldAccess",
-              "base": {
-  "line": 13,
-  "column": 12,
-                "kind": "Ident",
-                "name": "o"
-              },
-              "field": "inner"
-            },
-            "field": "value"
-          },
-          "right": {
-  "line": 13,
-  "column": 30,
-            "kind": "FieldAccess",
-            "base": {
-  "line": 13,
-  "column": 28,
-              "kind": "Ident",
-              "name": "o"
-            },
-            "field": "extra"
+            "elems": []
           }
+          ]
+        },
+        {
+          "line": 11,
+          "column": 21,
+          "kind": "IntLiteral",
+          "elems": []
         }
+        ]
+      },
+      {
+        "line": 12,
+        "column": 6,
+        "kind": "Assign",
+        "elems": [
+        {
+          "line": 12,
+          "column": 6,
+          "kind": "FieldAccess",
+          "elems": [
+          {
+            "line": 12,
+            "column": 5,
+            "kind": "Ident",
+            "elems": []
+          },
+          {
+            "line": 12,
+            "column": 7,
+            "kind": "Ident",
+            "elems": []
+          }
+          ]
+        },
+        {
+          "line": 12,
+          "column": 15,
+          "kind": "IntLiteral",
+          "elems": []
+        }
+        ]
+      },
+      {
+        "line": 13,
+        "column": 5,
+        "kind": "Return",
+        "elems": [
+        {
+          "line": 13,
+          "column": 26,
+          "kind": "BinOp",
+          "elems": [
+          {
+            "line": 13,
+            "column": 19,
+            "kind": "FieldAccess",
+            "elems": [
+            {
+              "line": 13,
+              "column": 13,
+              "kind": "FieldAccess",
+              "elems": [
+              {
+                "line": 13,
+                "column": 12,
+                "kind": "Ident",
+                "elems": []
+              },
+              {
+                "line": 13,
+                "column": 14,
+                "kind": "Ident",
+                "elems": []
+              }
+              ]
+            },
+            {
+              "line": 13,
+              "column": 20,
+              "kind": "Ident",
+              "elems": []
+            }
+            ]
+          },
+          {
+            "line": 13,
+            "column": 29,
+            "kind": "FieldAccess",
+            "elems": [
+            {
+              "line": 13,
+              "column": 28,
+              "kind": "Ident",
+              "elems": []
+            },
+            {
+              "line": 13,
+              "column": 30,
+              "kind": "Ident",
+              "elems": []
+            }
+            ]
+          }
+          ]
+        }
+        ]
       }
-    ]}
+      ]
+    }
+    ]
   }
-]}
+  ]
+}

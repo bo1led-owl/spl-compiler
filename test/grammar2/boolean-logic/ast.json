@@ -1,75 +1,100 @@
 {
-  "line": 3,
-  "column": 21,
+  "line": 1,
+  "column": 1,
   "kind": "Program",
-  "body": [
-{
-  "line": 1,
-  "column": 13,
+  "elems": [
+  {
+    "line": 1,
+    "column": 1,
     "kind": "Declare",
     "mut": "var",
-    "name": "a",
-    "init": {
-  "line": 1,
-  "column": 9,
+    "elems": [
+    {
+      "line": 1,
+      "column": 5,
+      "kind": "Ident",
+      "elems": []
+    },
+    {
+      "line": 1,
+      "column": 9,
       "kind": "BoolLiteral",
-      "value": true
+      "elems": []
     }
+    ]
   },
-{
-  "line": 2,
-  "column": 14,
+  {
+    "line": 2,
+    "column": 1,
     "kind": "Declare",
     "mut": "var",
-    "name": "b",
-    "init": {
-  "line": 2,
-  "column": 9,
+    "elems": [
+    {
+      "line": 2,
+      "column": 5,
+      "kind": "Ident",
+      "elems": []
+    },
+    {
+      "line": 2,
+      "column": 9,
       "kind": "BoolLiteral",
-      "value": false
+      "elems": []
     }
+    ]
   },
-{
-  "line": 3,
-  "column": 21,
+  {
+    "line": 3,
+    "column": 1,
     "kind": "Declare",
     "mut": "var",
-    "name": "c",
-    "init": {
-  "line": 3,
-  "column": 20,
+    "elems": [
+    {
+      "line": 3,
+      "column": 5,
+      "kind": "Ident",
+      "elems": []
+    },
+    {
+      "line": 3,
+      "column": 16,
       "kind": "BinOp",
-      "op": "||",
-      "left": {
-  "line": 3,
-  "column": 14,
+      "elems": [
+      {
+        "line": 3,
+        "column": 11,
         "kind": "BinOp",
-        "op": "&&",
-        "left": {
-  "line": 3,
-  "column": 9,
+        "elems": [
+        {
+          "line": 3,
+          "column": 9,
           "kind": "Ident",
-          "name": "a"
+          "elems": []
         },
-        "right": {
-  "line": 3,
-  "column": 14,
+        {
+          "line": 3,
+          "column": 14,
           "kind": "Ident",
-          "name": "b"
+          "elems": []
         }
+        ]
       },
-      "right": {
-  "line": 3,
-  "column": 20,
+      {
+        "line": 3,
+        "column": 19,
         "kind": "Unary",
-        "op": "!",
-        "operand": {
-  "line": 3,
-  "column": 20,
+        "elems": [
+        {
+          "line": 3,
+          "column": 20,
           "kind": "Ident",
-          "name": "a"
+          "elems": []
         }
+        ]
       }
+      ]
     }
+    ]
   }
-]}
+  ]
+}

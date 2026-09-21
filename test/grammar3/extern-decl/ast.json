@@ -1,42 +1,59 @@
 {
-  "line": 5,
+  "line": 1,
   "column": 1,
   "kind": "Program",
-  "body": [
-{
-  "line": 1,
-  "column": 22,
+  "elems": [
+  {
+    "line": 1,
+    "column": 1,
     "kind": "ExternDecl",
-    "name": "putchar",
-    "params": [{
-  "line": 1,
-  "column": 20,
-  "kind": "Ident",
-  "name": "c"
-}]
+    "elems": [
+    {
+      "line": 1,
+      "column": 12,
+      "kind": "Ident",
+      "elems": []
+    },
+    {
+      "line": 1,
+      "column": 20,
+      "kind": "Ident",
+      "elems": []
+    }
+    ]
   },
-{
-  "line": 5,
-  "column": 1,
+  {
+    "line": 3,
+    "column": 1,
     "kind": "FuncDecl",
-    "name": "main",
-    "params": [],
-    "body": {
-  "line": 5,
-  "column": 1,
+    "elems": [
+    {
+      "line": 3,
+      "column": 5,
+      "kind": "Ident",
+      "elems": []
+    },
+    {
+      "line": 3,
+      "column": 12,
       "kind": "Block",
-      "body": [
-{
-  "line": 4,
-  "column": 13,
+      "elems": [
+      {
+        "line": 4,
+        "column": 5,
         "kind": "Return",
-        "value": {
-  "line": 4,
-  "column": 12,
+        "elems": [
+        {
+          "line": 4,
+          "column": 12,
           "kind": "IntLiteral",
-          "value": 0
+          "elems": []
         }
+        ]
       }
-    ]}
+      ]
+    }
+    ]
   }
-]}
+  ]
+}

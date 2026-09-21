@@ -1,34 +1,40 @@
 {
-  "line": 3,
+  "line": 1,
   "column": 1,
   "kind": "Program",
-  "body": [
-{
-  "line": 3,
-  "column": 1,
+  "elems": [
+  {
+    "line": 1,
+    "column": 1,
     "kind": "If",
-    "cond": {
-  "line": 1,
-  "column": 5,
+    "elems": [
+    {
+      "line": 1,
+      "column": 5,
       "kind": "IntLiteral",
-      "value": 1
+      "elems": []
     },
-    "then": {
-  "line": 3,
-  "column": 1,
+    {
+      "line": 1,
+      "column": 8,
       "kind": "Block",
-      "body": [
-{
-  "line": 2,
-  "column": 14,
+      "elems": [
+      {
+        "line": 2,
+        "column": 5,
         "kind": "Return",
-        "value": {
-  "line": 2,
-  "column": 12,
+        "elems": [
+        {
+          "line": 2,
+          "column": 12,
           "kind": "IntLiteral",
-          "value": 42
+          "elems": []
         }
+        ]
       }
-    ]}
+      ]
+    }
+    ]
   }
-]}
+  ]
+}

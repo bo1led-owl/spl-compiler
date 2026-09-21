@@ -5,7 +5,29 @@ Version: 5
 ## Grammar
 
 ```bnf
-program ::= { structDeclaration } { externDeclaration } { funcDeclaration } { statement } EOF
+program ::= { topDeclaration } EOF
+
+topDeclaration ::= externDeclaration
+                 | funcDeclaration
+                 | structDeclaration
+
+externDeclaration ::=
+    "extern" "def" IDENT "(" [ typedParamList ] ")" ":" type ";"
+
+funcDeclaration ::=
+    "def" IDENT "(" [ typedParamList ] ")" ":" type block
+
+typedParamList ::= IDENT ":" type { "," IDENT ":" type }
+
+
+; Type definitions
+
+type ::= "Int8" | "Int16" | "Int32" | "Int64"
+       | "Bool"
+       | "String"
+       | IDENT                          ; struct type (name)
+       | type "[" INTEGER_LITERAL "]"   ; array type
+
 
 statement ::=
     returnStatement
@@ -47,24 +69,6 @@ whileStatement ::= "while" "(" expression ")" statement
 breakStatement ::= "break" ";"
 
 continueStatement ::= "continue" ";"
-
-externDeclaration ::=
-    "extern" "def" IDENT "(" [ typedParamList ] ")" ":" type ";"
-
-funcDeclaration ::=
-    "def" IDENT "(" [ typedParamList ] ")" ":" type block
-
-typedParamList ::= IDENT ":" type { "," IDENT ":" type }
-
-
-; Type definitions
-
-type ::= "Int8" | "Int16" | "Int32" | "Int64"
-       | "Bool"
-       | "String"
-       | IDENT                          ; struct type (name)
-       | type "[" INTEGER_LITERAL "]"   ; array type
-
 
 ; Expression definitions go from lowest operator precedence
 ; to the highest, allowing for straightforward expression parsing.
@@ -201,5 +205,64 @@ All semantic rules from grammar 4 apply, plus:
 - **Arrays are value types**: an array assignment (`a = b`) copies all elements by
   value (LLVM `memcpy`). Arrays are stack-allocated in their declaring scope and
   cannot be passed to or returned from functions.
+- **Variables can be declared without an initializer**: `var x: Int64;` means the variable
+  is zero-initialized.
+- **Assignment targets** can be complex lvalues (field access, array subscript, or
+  chains thereof), not just simple identifiers.
 - **Error recovery**: see [`doc/error-handling.md`](error-handling.md) for the
   recommended error recovery strategy.
+
+## Token kinds (new in grammar 5)
+
+These `"kind"` values appear in `tokens.json` golden files, in addition to those from grammar 1–4:
+
+| Token kind | Grammar source | Notes |
+|---|---|---|
+| `STRUCT` | `struct` | Keyword |
+| `LBRACKET` | `[` | Array subscript / type opening bracket |
+| `RBRACKET` | `]` | Array subscript / type closing bracket |
+| `DOT` | `.` | Field access operator |
+
+All tokens from grammar 1–4 also apply.
+
+### Example
+
+> TODO
+
+## AST node kinds (new in grammar 5)
+
+These `"kind"` values appear in `ast.json` golden files, in addition to those from grammar 1–4:
+
+| AST kind | `elems[]` children | Notes |
+|---|---|---|
+| `StructDecl` | `[name, fields...]` | Name is an `Ident` node and each field is a `Declare` node |
+| `FieldAccess` | `[base, name]` | Dot-access to a struct field, name is an `Ident` |
+| `Subscript` | `[base, index]` | Array index access |
+
+### Type annotations
+
+> TODO
+
+### Declaration without initializer (grammar 5)
+
+Grammar 5 allows variable declarations without an initializer:
+```
+var x: Int64;
+```
+In the AST, `Declare.elems` will be `[]` (empty) when there is no initializer.
+
+### Assignment target in grammar 5
+
+The assignment target changes from a simple `Ident` to a `postfixExpression`,
+which can be:
+- An `Ident` (simple variable)
+- A `FieldAccess` (e.g., `point.x = 10`)
+- A `Subscript` (e.g., `arr[0] = 5`)
+- A chain of field accesses and subscripts (e.g., `arr[0].x = 1`)
+
+The AST `Assign` node always has `elems[0]` = target and `elems[1]` = value,
+regardless of the target's complexity.
+
+### Example
+
+> TODO

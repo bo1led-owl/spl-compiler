@@ -1,0 +1,28 @@
+struct Point {
+    x: Int64;
+    y: Int64;
+}
+
+extern def foo(p: Point): Int64;
+
+def bar(): Int64 {
+    return 42;
+}
+
+struct Line {
+    start: Point;
+    end: Int64;
+}
+
+extern def baz(x: Int64): Int64;
+
+def makePoint(x: Int64, y: Int64): Point {
+    var p: Point;
+    p.x = x;
+    p.y = y;
+    return p;
+}
+
+def main(): Int64 {
+    return 0;
+}

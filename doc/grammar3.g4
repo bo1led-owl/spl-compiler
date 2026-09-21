@@ -13,7 +13,21 @@ grammar grammar3;
 // lexer runs a single-line comment to end-of-line, a generated line comment
 // must always end with a newline (whitespace.py guarantees this).
 
-program : externDeclaration* funcDeclaration* EOF;
+program : topDeclaration* EOF;
+
+topDeclaration
+    : externDeclaration
+    | funcDeclaration
+
+// extern declaration for C interop.
+// Example: extern def foo(a, b);
+externDeclaration : 'extern' 'def' IDENT '(' paramList? ')' ';';
+
+// Function declaration with optional parameters.
+// Example: def add(a, b) { return a + b; }
+funcDeclaration : 'def' IDENT '(' paramList? ')' block;
+
+paramList : IDENT (',' IDENT)*;
 
 statement
     : returnStatement
@@ -49,16 +63,6 @@ whileStatement : 'while' '(' expression ')' statement;
 breakStatement : 'break' ';';
 
 continueStatement : 'continue' ';';
-
-// extern declaration for C interop.
-// Example: extern def foo(a, b);
-externDeclaration : 'extern' 'def' IDENT '(' paramList? ')' ';';
-
-// Function declaration with optional parameters.
-// Example: def add(a, b) { return a + b; }
-funcDeclaration : 'def' IDENT '(' paramList? ')' block;
-
-paramList : IDENT (',' IDENT)*;
 
 // Expression definitions go from lowest operator precedence
 // to the highest, allowing for straightforward expression parsing.

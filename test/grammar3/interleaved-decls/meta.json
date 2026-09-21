@@ -1,0 +1,7 @@
+{
+  "grammar": {
+    "lexer": ">=3",
+    "parser": ["3"]
+  },
+  "stages": ["parser"]
+}

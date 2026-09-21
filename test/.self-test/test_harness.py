@@ -128,8 +128,8 @@ def test_list_lists_tests(harness, run):
     cfg = harness.write_config(stages=lexer_stage(["kind", "line", "column"]))
     rc, out = run(["list", "--config", cfg])
     assert rc == 0
-    assert "lexer/a" in out
-    assert "lexer/b" in out
+    assert "  a" in out
+    assert "  b" in out
 
 
 def test_stage_and_name_filters(harness, run):
@@ -142,10 +142,10 @@ def test_stage_and_name_filters(harness, run):
     })
     rc, out = run(["list", "--config", cfg, "--stage", "lexer"])
     assert rc == 0
-    assert "lexer/alpha" in out and "parser/gamma" not in out
+    assert "  alpha" in out and "=== PARSER ===" not in out
     rc, out = run(["list", "--config", cfg, "--test", "beta"])
     assert rc == 0
-    assert "lexer/beta" in out and "lexer/alpha" not in out
+    assert "  beta" in out and "  alpha" not in out
 
 
 def test_grammar_version_filter(harness, run):
@@ -154,12 +154,12 @@ def test_grammar_version_filter(harness, run):
     add_lexer(harness, "any")
     cfg = harness.write_config(stages=lexer_stage(["kind"]))
     rc, out = run(["list", "--config", cfg, "--grammar", "1"])
-    assert "lexer/v1" in out and "lexer/v2" not in out and "lexer/any" in out
+    assert "  v1" in out and "  v2" not in out and "  any" in out
     rc, out = run(["list", "--config", cfg, "--grammar", "2"])
-    assert "lexer/v2" in out and "lexer/v1" not in out
+    assert "  v2" in out and "  v1" not in out
     add_lexer(harness, "v2plus", meta={"grammar": ">=2"})
     rc, out = run(["list", "--config", cfg, "--grammar", "2"])
-    assert "lexer/v2plus" in out
+    assert "  v2plus" in out
 
 
 def test_nested_test_paths(harness, run):
@@ -169,8 +169,8 @@ def test_nested_test_paths(harness, run):
     cfg = harness.write_config(stages=lexer_stage(["kind"]))
     rc, out = run(["list", "--config", cfg])
     assert rc == 0
-    assert "lexer/grammar2/booleans/if-else" in out
-    assert "lexer/grammar3/functions/calls/nested" in out
+    assert "  grammar2/booleans/if-else" in out
+    assert "  grammar3/functions/calls/nested" in out
 
 
 def test_exclude_boolean_skips_test(harness, run):
@@ -180,8 +180,8 @@ def test_exclude_boolean_skips_test(harness, run):
     cfg = harness.write_config(stages=lexer_stage(["kind", "line", "column"]))
     rc, out = run(["list", "--config", cfg])
     assert rc == 0
-    assert "lexer/should-run" in out
-    assert "lexer/should-skip" not in out
+    assert "  should-run" in out
+    assert "  should-skip" not in out
 
 
 def test_exclude_false_runs_test(harness, run):
@@ -190,7 +190,7 @@ def test_exclude_false_runs_test(harness, run):
     cfg = harness.write_config(stages=lexer_stage(["kind", "line", "column"]))
     rc, out = run(["list", "--config", cfg])
     assert rc == 0
-    assert "lexer/runs" in out
+    assert "  runs" in out
 
 
 def test_exclude_shown_in_summary(harness, run):
@@ -202,7 +202,7 @@ def test_exclude_shown_in_summary(harness, run):
     assert rc == 0
     assert "EXCLUDED  hidden" in out
     assert "1 EXCLUDED" in out
-    assert "PASS  lexer/active" in out
+    assert "PASS  active" in out
 
 
 def test_grammar_list_constraint(harness, run):
@@ -210,11 +210,11 @@ def test_grammar_list_constraint(harness, run):
     add_lexer(harness, "v12", meta={"grammar": ["1", "2"]})
     cfg = harness.write_config(stages=lexer_stage(["kind"]))
     rc, out = run(["list", "--config", cfg, "--grammar", "1"])
-    assert "lexer/v12" in out
+    assert "  v12" in out
     rc, out = run(["list", "--config", cfg, "--grammar", "2"])
-    assert "lexer/v12" in out
+    assert "  v12" in out
     rc, out = run(["list", "--config", cfg, "--grammar", "3"])
-    assert "lexer/v12" not in out
+    assert "  v12" not in out
 
 
 def test_compare_tolerance_edges(harness, run):
@@ -259,7 +259,7 @@ def test_golden_pass(harness, run):
     cfg = harness.write_config(stages=lexer_stage(["kind", "line", "column"]))
     rc, out = run(["test", "--config", cfg])
     assert rc == 0
-    assert "PASS  lexer/ok" in out
+    assert "PASS  ok" in out
 
 
 def test_golden_fail_prints_diff(harness, run):
@@ -267,7 +267,7 @@ def test_golden_fail_prints_diff(harness, run):
     cfg = harness.write_config(stages=lexer_stage(["kind"]))
     rc, out = run(["test", "--config", cfg])
     assert rc == 1
-    assert "FAIL  lexer/bad" in out
+    assert "FAIL  bad" in out
     assert "diff" in out
 
 
@@ -286,7 +286,7 @@ def test_exit_only_nonzero_no_golden(harness, run):
     cfg = harness.write_config(stages=lexer_stage(["kind"]))
     rc, out = run(["test", "--config", cfg])
     assert rc == 0
-    assert "PASS  lexer/neg" in out
+    assert "PASS  neg" in out
 
 
 def test_exit_only_exact_code_auto_discover(harness, run):
@@ -296,7 +296,7 @@ def test_exit_only_exact_code_auto_discover(harness, run):
     cfg = harness.write_config(stages=lexer_stage(["kind"]))
     rc, out = run(["test", "--config", cfg])
     assert rc == 0
-    assert "PASS  lexer/exit5" in out
+    assert "PASS  exit5" in out
 
 
 def test_exit_only_stages_list_skips(harness, run):
@@ -306,15 +306,7 @@ def test_exit_only_stages_list_skips(harness, run):
     cfg = harness.write_config(stages=lexer_stage(["kind"]))
     rc, out = run(["test", "--config", cfg])
     assert rc == 0
-    assert "SKIP  lexer/skipme" in out
-
-
-def test_nonzero_exit_negative_pass(harness, run):
-    add_lexer(harness, "neg", src="// exit: 3\n", meta={"exit": "nonzero"})
-    cfg = harness.write_config(stages=lexer_stage(["kind"]))
-    rc, out = run(["test", "--config", cfg])
-    assert rc == 0
-    assert "PASS  lexer/neg" in out
+    assert "SKIP  skipme" in out
 
 
 def test_crash_fails(harness, run):
@@ -322,7 +314,7 @@ def test_crash_fails(harness, run):
     cfg = harness.write_config(stages=lexer_stage(["kind"]))
     rc, out = run(["test", "--config", cfg])
     assert rc == 1
-    assert "FAIL  lexer/crash" in out
+    assert "FAIL  crash" in out
 
 
 def test_timeout_fails(harness, run):
@@ -340,7 +332,7 @@ def test_missing_stage_skips(harness, run):
     cfg = harness.write_config(stages={})  # no stages configured
     rc, out = run(["test", "--config", cfg])
     assert rc == 0
-    assert "SKIP  lexer/x" in out
+    assert "SKIP  x" in out
     assert "not configured" in out
 
 
@@ -358,7 +350,7 @@ def test_update_regenerates_golden(harness, run):
     assert golden.exists()
     # Re-running now passes against the regenerated golden.
     rc, out = run(["test", "--config", cfg])
-    assert rc == 0 and "PASS  lexer/u" in out
+    assert rc == 0 and "PASS  u" in out
 
 
 def test_update_no_output_fails(harness, run):
@@ -404,12 +396,12 @@ def test_fuzz_creates_tests_and_orders_after_committed(harness, run):
     cfg = harness.write_config(stages=lexer_stage(["kind", "line", "column"]), fuzz=make_fuzz_config())
     rc, out = run(["test", "--fuzz", "--fuzz-count", "3", "--fuzz-seed", "7", "--config", cfg])
     assert rc == 0
-    committed_pos = out.index("lexer/committed")
+    committed_pos = out.index("PASS  committed")
     fuzz_pos = out.index("---- fuzz tests ----")
     assert committed_pos < fuzz_pos
     assert "fuzz: grammar version(s) 1" in out
     assert "generated in" in out and "seed 7" in out
-    assert "PASS  lexer/fuzz_0000" in out
+    assert "PASS  fuzz_0000" in out
 
 
 def test_stop_on_fail_skips_fuzz(harness, run):
@@ -428,8 +420,8 @@ def test_parallel_keeps_order(harness, run):
     rc, out = run(["test", "-j", "8", "--config", cfg])
     assert rc == 0
     for i in range(20):
-        assert out.index(f"lexer/t{i:02d}")
-    names = [line.split()[1] for line in out.splitlines() if "lexer/t" in line]
+        assert f"PASS  t{i:02d}" in out
+    names = [line.split()[1] for line in out.splitlines() if line.startswith("PASS") or line.startswith("FAIL")]
     assert names == sorted(names)  # deterministic ordering
 
 
@@ -459,7 +451,7 @@ def test_malformed_meta_fails(harness, run):
     cfg = harness.write_config(stages=lexer_stage(["kind"]))
     rc, out = run(["test", "--config", cfg])
     assert rc == 1
-    assert "FAIL  lexer/bad" in out
+    assert "FAIL  bad" in out
 
 
 # ---------------------------------------------------------------------------
@@ -476,7 +468,7 @@ def compiler_config(compile_cmd, run_cmd, run_preprocess=None):
     run = {"cmd": run_cmd}
     if run_preprocess:
         run["preprocess"] = run_preprocess
-    return {"compile": {"cmd": compile_cmd}, "run": run}
+    return {"compiler": {"cmd": compile_cmd}, "run": run}
 
 
 def test_compiler_run_end_to_end_pass(harness, run):
@@ -484,7 +476,7 @@ def test_compiler_run_end_to_end_pass(harness, run):
     cfg = harness.write_config(
         stages=compiler_config(compile_exe('print("hello")'), ["python3", "{exe}"]))
     rc, out = run(["test", "--config", cfg])
-    assert rc == 0 and "PASS  compiler/hw" in out
+    assert rc == 0 and "PASS  hw" in out
 
 
 def test_compiler_stdin_and_run_preprocess(harness, run):
@@ -497,17 +489,17 @@ def test_compiler_stdin_and_run_preprocess(harness, run):
     )
     cfg = harness.write_config(stages=stages)
     rc, out = run(["test", "--config", cfg])
-    assert rc == 0 and "PASS  compiler/hw" in out
+    assert rc == 0 and "PASS  hw" in out
 
 
 def test_compiler_compile_failure(harness, run):
     harness.add_test("cbad", src="// exit: 3\n", meta={"stages": ["compiler"]})
-    stages = {"compile": {"cmd": ["{root}/mock_compiler.py", "{input}"]},
+    stages = {"compiler": {"cmd": ["{root}/mock_compiler.py", "{input}"]},
               "run": {"cmd": ["python3", "{exe}"]}}
     cfg = harness.write_config(stages=stages)
     rc, out = run(["test", "--config", cfg])
     assert rc == 1
-    assert "FAIL  compiler/cbad" in out
+    assert "FAIL  cbad" in out
     assert "compile failed (exit 3)" in out
 
 
@@ -517,34 +509,38 @@ def test_compiler_tolerance_pass_and_diff_fail(harness, run):
     harness.add_test("hw", src="0;", stdout=golden)
     harness.add_test("hw", src="0;", stdout=golden, meta={"tolerance": 0.1})
     rc, out = run(["test", "--config", harness.write_config(stages=stages)])
-    assert rc == 0 and "PASS  compiler/hw" in out
+    assert rc == 0 and "PASS  hw" in out
     # Second run with same test but no tolerance in meta -> will fail because
     # the golden differs from actual output. But meta doesn't have tolerance,
     # so we create the test without tolerance meta.
     harness.add_test("hw2", src="0;", stdout=golden)
     rc, out = run(["test", "--config", harness.write_config(stages=stages)])
-    assert rc == 1 and "FAIL  compiler/hw2" in out
+    assert rc == 1 and "FAIL  hw2" in out
 
 
 def test_compiler_exit_contract(harness, run):
-    stages = compiler_config(compile_exe("import sys;sys.exit(5)"), ["python3", "{exe}"])
-    harness.add_test("hw", src="0;", meta={"exit": "nonzero", "stages": ["compiler"]})
+    # Use mock_compiler which exits 5 for // exit: 5 source
+    harness.write("hw", "test.spl", "// exit: 5\n")
+    harness.write("hw", "meta.json", json.dumps({"exit": "nonzero", "stages": ["compiler"]}))
+    stages = {"compiler": {"cmd": ["{root}/mock_compiler.py", "{input}"]}}
     rc, out = run(["test", "--config", harness.write_config(stages=stages)])
-    assert rc == 0 and "PASS  compiler/hw" in out
+    assert rc == 0 and "PASS  hw" in out
 
     # Exact 0 contract with a golden -> fails on exit mismatch
     harness.add_test("hw2", src="0;", stdout="unused\n", meta={"exit": 0})
-    rc, out = run(["test", "--config", harness.write_config(stages=stages)])
+    # For the run stage we need both compiler and run config
+    stages2 = compiler_config(compile_exe("import sys;sys.exit(5)"), ["python3", "{exe}"])
+    rc, out = run(["test", "--config", harness.write_config(stages=stages2)])
     assert rc == 1 and "exit: expected 0, got 5" in out
 
 
 def test_compiler_update_regenerates_and_exit_warning(harness, run):
-    stages = compiler_config(compile_exe("import sys;sys.exit(5)"), ["python3", "{exe}"])
+    stages = compiler_config(compile_exe("import sys;print('hello');sys.exit(5)"), ["python3", "{exe}"])
     harness.add_test("hw", src="0;", meta={"exit": 0, "stages": ["compiler"]})
     cfg = harness.write_config(stages=stages)
     rc, out = run(["update", "--config", cfg])
     assert rc == 0
-    assert "UPD  compiler/hw" in out
+    assert "UPD  hw" in out
     assert "exit contract not met" in out
     golden = harness.root / "hw" / "stdout"
     assert golden.exists()
@@ -562,7 +558,7 @@ def test_out_defaults_to_stdout_mode(harness, run):
     stage = {"cmd": ["python3", "-S", "-c", "print('STDX')"]}  # no "out" key
     cfg = harness.write_config(stages={"lexer": stage})
     rc, out = run(["test", "--config", cfg, "--keep", "all"])
-    assert rc == 0 and "PASS  lexer/a" in out
+    assert rc == 0 and "PASS  a" in out
     raw = harness.out_dir / "lexer" / "a" / "lexer.raw"
     assert raw.exists() and raw.read_text() == "STDX\n"
 
@@ -575,7 +571,7 @@ def test_stage_out_file_not_produced_fails(harness, run):
     cfg = harness.write_config(stages={"lexer": stage})
     rc, out = run(["test", "--config", cfg])
     assert rc == 1
-    assert "FAIL  lexer/a" in out
+    assert "FAIL  a" in out
     assert "stage wrote no output to" in out
 
 
@@ -642,7 +638,7 @@ def test_preprocess_regex_and_exec(harness, run):
     }
     cfg = harness.write_config(stages={"lexer": stage})
     rc, out = run(["test", "--config", cfg])
-    assert rc == 0 and "PASS  lexer/a" in out
+    assert rc == 0 and "PASS  a" in out
 
 
 def test_preprocess_regex_delete_lines(harness, run):
@@ -659,7 +655,7 @@ def test_preprocess_regex_delete_lines(harness, run):
     }
     cfg = harness.write_config(stages={"lexer": stage})
     rc, out = run(["test", "--config", cfg])
-    assert rc == 0 and "PASS  lexer/a" in out
+    assert rc == 0 and "PASS  a" in out
 
 
 def test_malformed_preprocess_exec_fails(harness, run):
@@ -690,7 +686,7 @@ def test_preprocess_json_drop(harness, run):
     cfg = harness.write_config(stages={"lexer": stage})
     rc, out = run(["test", "--config", cfg])
     assert rc == 0
-    assert "PASS  lexer/a" in out
+    assert "PASS  a" in out
 
 
 def test_preprocess_llvm_step(harness, run):
@@ -708,7 +704,88 @@ def test_preprocess_llvm_step(harness, run):
     cfg = harness.write_config(stages={"llvm": stage})
     rc, out = run(["test", "--config", cfg, "--check-ir"])
     assert rc == 0
-    assert "PASS  llvm/ll" in out
+    assert "PASS  ll" in out
+
+
+def test_compiler_stages_auto_adds_run_backward_compat(harness, run):
+    """Backward compat: meta with stages=["compiler"] auto-adds "run" stage."""
+    harness.add_test("hw", src="0;", stdout="hello\n")
+    # Only compiler in stages, no run - run should be auto-added
+    harness.write("hw", "meta.json", json.dumps({"stages": ["compiler"], "exit": 0}))
+    stages = {"compiler": {"cmd": compile_exe('print("hello")')},
+              "run": {"cmd": ["python3", "{exe}"]}}
+    cfg = harness.write_config(stages=stages)
+    rc, out = run(["test", "--config", cfg])
+    assert rc == 0
+    assert "PASS  hw" in out
+
+
+def test_exit_dict_run_falls_back_to_compiler(harness, run):
+    """Backward compat: exit dict for 'run' stage falls back to 'compiler' key."""
+    harness.add_test("hw", src="0;", stdout="x\n")
+    # Use stages list that triggers only the run stage (no compiler stage discovery)
+    # We test the backward compat by setting exit: {"compiler": 5} and having
+    # the run stage check: for stage="run", exit_spec should return 5
+    harness.write("hw", "meta.json", json.dumps({
+        "exit": {"compiler": 5},
+        "tolerance": 10.0,  # numeric tolerance to avoid string diff
+    }))
+    stages = compiler_config(compile_exe("import sys;print('x');sys.exit(5)"), ["python3", "{exe}"])
+    cfg = harness.write_config(stages=stages)
+    rc, out = run(["test", "--config", cfg])
+    assert rc == 0 and "PASS  hw" in out
+
+
+def test_run_update_empty_stdout_removes_golden(harness, run):
+    """run_exec update with empty stdout removes golden and reports."""
+    harness.add_test("hw", src="0;", stdout="unused\n")
+    stages = compiler_config(compile_exe(""), ["python3", "{exe}"])
+    cfg = harness.write_config(stages=stages)
+    golden = harness.root / "hw" / "stdout"
+    assert golden.exists()
+    rc, out = run(["update", "--config", cfg])
+    assert rc == 0
+    assert "UPD  hw" in out
+    assert "stdout empty; no golden written" in out
+    # Golden file should have been removed
+    assert not golden.exists()
+
+
+def test_llvm_skip_without_check_ir(harness, run):
+    """LLVM stage golden comparison is skipped without --check-ir."""
+    harness.add_test("ll", src="0;", out_ll="%v0 = alloca i32\n")
+    # Use mock_compiler which writes nothing for -o, so golden won't match
+    stage = {
+        "cmd": ["{root}/mock_compiler.py", "-o", "{llvm_out}", "{input}"],
+        "out": "{llvm_out}",
+    }
+    cfg = harness.write_config(stages={"llvm": stage})
+    # Without --check-ir: llvm test runs command but skips golden comparison -> PASS
+    # (mock exits 0 and no golden check is done for llvm without flag)
+    rc, out = run(["test", "--config", cfg])
+    assert rc == 0
+    assert "PASS  ll" in out
+    # With --check-ir: llvm test tries to compare golden, but mock wrote no output -> FAIL
+    rc, out = run(["test", "--config", cfg, "--check-ir"])
+    assert rc == 1
+    assert "FAIL  ll" in out
+
+
+def test_list_fuzz_tests_format(harness, run):
+    """Fuzz tests in list output use different format (stage/name under FUZZ)."""
+    add_lexer(harness, "committed")
+    cfg = harness.write_config(stages=lexer_stage(["kind", "line", "column"]), fuzz={
+        "grammar": {"1": "doc/grammar1.g4"},
+        "count": 2,
+        "max_tokens": 30,
+        "exit": {"lexer": 0},
+    })
+    rc, out = run(["list", "--fuzz", "--fuzz-count", "2", "--fuzz-seed", "7", "--config", cfg])
+    assert rc == 0
+    assert "=== LEXER ===" in out
+    assert "  committed" in out
+    assert "=== FUZZ ===" in out
+    assert "lexer/fuzz_0000" in out
 
 
 def test_preprocess_json_no_keep_drop_rejected(harness, run):

@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "schemas/tokens.schema.json",
+  "title": "Test tokens.json",
+  "description": "Schema for test case token lists (tokens.json) in the SysProLang compiler test suite.",
+  "type": "array",
+  "items": {
+    "title": "Token",
+    "description": "A single token produced by the lexer.",
+    "type": "object",
+    "properties": {
+      "kind": {
+        "description": "Token kind identifier (e.g., IDENT, INT, PLUS, SEMI, EOF, …).",
+        "type": "string"
+      },
+      "line": {
+        "description": "Line number (1-based) where the token starts in the source file.",
+        "type": "integer",
+        "minimum": 1
+      },
+      "column": {
+        "description": "Column number (1-based) where the token starts in the source line.",
+        "type": "integer",
+        "minimum": 1
+      }
+    },
+    "required": ["kind", "line", "column"]
+  },
+  "minItems": 1
+}

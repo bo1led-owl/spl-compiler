@@ -1,0 +1,358 @@
+{
+  "line": 1,
+  "column": 1,
+  "kind": "Program",
+  "elems": [
+  {
+    "line": 1,
+    "column": 1,
+    "kind": "StructDecl",
+    "elems": [
+    {
+      "line": 1,
+      "column": 8,
+      "kind": "Ident",
+      "elems": []
+    },
+    {
+      "line": 2,
+      "column": 5,
+      "kind": "Declare",
+      "mut": "val",
+      "type": "Int64",
+      "elems": [
+      {
+        "line": 2,
+        "column": 5,
+        "kind": "Ident",
+        "elems": []
+      }
+      ]
+    },
+    {
+      "line": 3,
+      "column": 5,
+      "kind": "Declare",
+      "mut": "val",
+      "type": "Int64",
+      "elems": [
+      {
+        "line": 3,
+        "column": 5,
+        "kind": "Ident",
+        "elems": []
+      }
+      ]
+    }
+    ]
+  },
+  {
+    "line": 6,
+    "column": 1,
+    "kind": "ExternDecl",
+    "returnType": "Int64",
+    "elems": [
+    {
+      "line": 6,
+      "column": 12,
+      "kind": "Ident",
+      "elems": []
+    },
+    {
+      "line": 6,
+      "column": 16,
+      "kind": "Param",
+      "type": "Point",
+      "elems": [
+      {
+        "line": 6,
+        "column": 16,
+        "kind": "Ident",
+        "elems": []
+      }
+      ]
+    }
+    ]
+  },
+  {
+    "line": 8,
+    "column": 1,
+    "kind": "FuncDecl",
+    "returnType": "Int64",
+    "elems": [
+    {
+      "line": 8,
+      "column": 5,
+      "kind": "Ident",
+      "elems": []
+    },
+    {
+      "line": 8,
+      "column": 18,
+      "kind": "Block",
+      "elems": [
+      {
+        "line": 9,
+        "column": 5,
+        "kind": "Return",
+        "elems": [
+        {
+          "line": 9,
+          "column": 12,
+          "kind": "IntLiteral",
+          "elems": []
+        }
+        ]
+      }
+      ]
+    }
+    ]
+  },
+  {
+    "line": 12,
+    "column": 1,
+    "kind": "StructDecl",
+    "elems": [
+    {
+      "line": 12,
+      "column": 8,
+      "kind": "Ident",
+      "elems": []
+    },
+    {
+      "line": 13,
+      "column": 5,
+      "kind": "Declare",
+      "mut": "val",
+      "type": "Point",
+      "elems": [
+      {
+        "line": 13,
+        "column": 5,
+        "kind": "Ident",
+        "elems": []
+      }
+      ]
+    },
+    {
+      "line": 14,
+      "column": 5,
+      "kind": "Declare",
+      "mut": "val",
+      "type": "Int64",
+      "elems": [
+      {
+        "line": 14,
+        "column": 5,
+        "kind": "Ident",
+        "elems": []
+      }
+      ]
+    }
+    ]
+  },
+  {
+    "line": 17,
+    "column": 1,
+    "kind": "ExternDecl",
+    "returnType": "Int64",
+    "elems": [
+    {
+      "line": 17,
+      "column": 12,
+      "kind": "Ident",
+      "elems": []
+    },
+    {
+      "line": 17,
+      "column": 16,
+      "kind": "Param",
+      "type": "Int64",
+      "elems": [
+      {
+        "line": 17,
+        "column": 16,
+        "kind": "Ident",
+        "elems": []
+      }
+      ]
+    }
+    ]
+  },
+  {
+    "line": 19,
+    "column": 1,
+    "kind": "FuncDecl",
+    "returnType": "Point",
+    "elems": [
+    {
+      "line": 19,
+      "column": 5,
+      "kind": "Ident",
+      "elems": []
+    },
+    {
+      "line": 19,
+      "column": 15,
+      "kind": "Param",
+      "type": "Int64",
+      "elems": [
+      {
+        "line": 19,
+        "column": 15,
+        "kind": "Ident",
+        "elems": []
+      }
+      ]
+    },
+    {
+      "line": 19,
+      "column": 25,
+      "kind": "Param",
+      "type": "Int64",
+      "elems": [
+      {
+        "line": 19,
+        "column": 25,
+        "kind": "Ident",
+        "elems": []
+      }
+      ]
+    },
+    {
+      "line": 19,
+      "column": 42,
+      "kind": "Block",
+      "elems": [
+      {
+        "line": 20,
+        "column": 5,
+        "kind": "Declare",
+        "mut": "var",
+        "type": "Point",
+        "elems": [
+        {
+          "line": 20,
+          "column": 9,
+          "kind": "Ident",
+          "elems": []
+        }
+        ]
+      },
+      {
+        "line": 21,
+        "column": 6,
+        "kind": "Assign",
+        "elems": [
+        {
+          "line": 21,
+          "column": 6,
+          "kind": "FieldAccess",
+          "elems": [
+          {
+            "line": 21,
+            "column": 5,
+            "kind": "Ident",
+            "elems": []
+          },
+          {
+            "line": 21,
+            "column": 7,
+            "kind": "Ident",
+            "elems": []
+          }
+          ]
+        },
+        {
+          "line": 21,
+          "column": 11,
+          "kind": "Ident",
+          "elems": []
+        }
+        ]
+      },
+      {
+        "line": 22,
+        "column": 6,
+        "kind": "Assign",
+        "elems": [
+        {
+          "line": 22,
+          "column": 6,
+          "kind": "FieldAccess",
+          "elems": [
+          {
+            "line": 22,
+            "column": 5,
+            "kind": "Ident",
+            "elems": []
+          },
+          {
+            "line": 22,
+            "column": 7,
+            "kind": "Ident",
+            "elems": []
+          }
+          ]
+        },
+        {
+          "line": 22,
+          "column": 11,
+          "kind": "Ident",
+          "elems": []
+        }
+        ]
+      },
+      {
+        "line": 23,
+        "column": 5,
+        "kind": "Return",
+        "elems": [
+        {
+          "line": 23,
+          "column": 12,
+          "kind": "Ident",
+          "elems": []
+        }
+        ]
+      }
+      ]
+    }
+    ]
+  },
+  {
+    "line": 26,
+    "column": 1,
+    "kind": "FuncDecl",
+    "returnType": "Int64",
+    "elems": [
+    {
+      "line": 26,
+      "column": 5,
+      "kind": "Ident",
+      "elems": []
+    },
+    {
+      "line": 26,
+      "column": 19,
+      "kind": "Block",
+      "elems": [
+      {
+        "line": 27,
+        "column": 5,
+        "kind": "Return",
+        "elems": [
+        {
+          "line": 27,
+          "column": 12,
+          "kind": "IntLiteral",
+          "elems": []
+        }
+        ]
+      }
+      ]
+    }
+    ]
+  }
+  ]
+}

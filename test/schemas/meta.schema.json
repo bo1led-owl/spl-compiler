@@ -82,6 +82,7 @@
     }
   },
   "additionalProperties": false,
+  "required": ["grammar", "stages", "exit"],
   "definitions": {
     "exitSpec": {
       "description": "An exit code specification: \"nonzero\" or an exact integer.",

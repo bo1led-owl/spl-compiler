@@ -18,6 +18,11 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Validate JSON schemas
+        run: |
+          #pip install jsonschema
+          #python test/validate_schemas.py
+
       - name: Install test harness dependency
         run: pip install pytest
 

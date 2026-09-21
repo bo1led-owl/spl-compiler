@@ -1,48 +1,59 @@
 {
-  "line": 3,
-  "column": 9,
+  "line": 1,
+  "column": 1,
   "kind": "Program",
-  "body": [
+  "elems": [
   {
     "line": 1,
-    "column": 11,
+    "column": 1,
     "kind": "Declare",
     "mut": "val",
-    "name": "x",
-    "init": {
+    "elems": [
+    {
+      "line": 1,
+      "column": 5,
+      "kind": "Ident",
+      "elems": []
+    },
+    {
       "line": 1,
       "column": 9,
       "kind": "IntLiteral",
-      "value": 10
+      "elems": []
     }
+    ]
   },
   {
     "line": 2,
-    "column": 7,
+    "column": 1,
     "kind": "Assign",
-    "target": {
+    "elems": [
+    {
       "line": 2,
       "column": 1,
       "kind": "Ident",
-      "name": "x"
+      "elems": []
     },
-    "value": {
+    {
       "line": 2,
       "column": 5,
       "kind": "IntLiteral",
-      "value": 20
+      "elems": []
     }
+    ]
   },
   {
     "line": 3,
-    "column": 9,
+    "column": 1,
     "kind": "Return",
-    "value": {
+    "elems": [
+    {
       "line": 3,
       "column": 8,
       "kind": "Ident",
-      "name": "x"
+      "elems": []
     }
+    ]
   }
   ]
 }

@@ -1,0 +1,15 @@
+def bar(): Int64 {
+    return 42;
+}
+
+extern def foo(x: Int64): Int64;
+
+def baz(y: Int64): Int64 {
+    return y;
+}
+
+extern def qux(): Int64;
+
+def main(): Int64 {
+    return 0;
+}

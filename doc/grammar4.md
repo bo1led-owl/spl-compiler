@@ -5,7 +5,26 @@ Version: 4
 ## Grammar
 
 ```bnf
-program ::= { externDeclaration } { funcDeclaration } { statement } EOF
+program ::= { topDeclaration } EOF
+
+topDeclaration ::= externDeclaration
+                 | funcDeclaration
+
+externDeclaration ::=
+    "extern" "def" IDENT "(" [ typedParamList ] ")" ":" type ";"
+
+funcDeclaration ::=
+    "def" IDENT "(" [ typedParamList ] ")" ":" type block
+
+typedParamList ::= IDENT ":" type { "," IDENT ":" type }
+
+
+; Type definitions
+
+type ::= "Int8" | "Int16" | "Int32" | "Int64"
+       | "Bool"
+       | "String"
+
 
 statement ::=
     returnStatement
@@ -39,22 +58,6 @@ whileStatement ::= "while" "(" expression ")" statement
 breakStatement ::= "break" ";"
 
 continueStatement ::= "continue" ";"
-
-externDeclaration ::=
-    "extern" "def" IDENT "(" [ typedParamList ] ")" ":" type ";"
-
-funcDeclaration ::=
-    "def" IDENT "(" [ typedParamList ] ")" ":" type block
-
-typedParamList ::= IDENT ":" type { "," IDENT ":" type }
-
-
-; Type definitions
-
-type ::= "Int8" | "Int16" | "Int32" | "Int64"
-       | "Bool"
-       | "String"
-
 
 ; Expression definitions go from lowest operator precedence
 ; to the highest, allowing for straightforward expression parsing.
@@ -173,7 +176,7 @@ All semantic rules from grammar 3 apply, plus:
 - **`cast<Type>(expr)** supports:
   - Integer widening: `Int8` → `Int16` → `Int32` → `Int64` (LLVM: `sext`)
   - Integer narrowing: `Int64` → `Int32` → `Int16` → `Int8` (LLVM: `trunc`)
-  - `Bool` to integer: `Bool` → `Int8`/`Int16`/`Int32`/`Int64` (LLVM: `zext` — zero extension, not `sext`)
+  - `Bool` to integer: `Bool` → `Int8`/`Int16`/`Int32`/`Int64` (LLVM: `zext` --- zero extension, not `sext`)
   - Integer to `Bool`: `Int8`/`Int16`/`Int32`/`Int64` → `Bool` (LLVM: `icmp ne %val, 0` or `trunc` to `i1`)
 - **String literals** are of type `String`. A string literal is a null-terminated
   byte array compiled as a global constant. `String` maps to `ptr` in LLVM IR.
@@ -198,3 +201,42 @@ All semantic rules from grammar 3 apply, plus:
 - **Extern functions** must specify parameter and return types: `extern def foo(x: Int64): Int64;`
 - **Error recovery**: see [`doc/error-handling.md`](error-handling.md) for the
   recommended error recovery strategy.
+
+## Token kinds (new in grammar 4)
+
+These `"kind"` values appear in `tokens.json` golden files, in addition to those from grammar 1–3:
+
+| Token kind | Grammar source | Notes |
+|---|---|---|
+| `INT8` | `Int8` | Type keyword |
+| `INT16` | `Int16` | Type keyword |
+| `INT32` | `Int32` | Type keyword |
+| `INT64` | `Int64` | Type keyword |
+| `BOOL` | `Bool` | Type keyword |
+| `STRING` | `String` | Type keyword |
+| `CAST` | `cast` | Type conversion keyword |
+| `COLON` | `:` | Type annotation separator |
+| `STR` | `STRING_LITERAL` | String literal content |
+
+All tokens from grammar 1–3 also apply.
+
+### Example
+
+> TODO
+
+## AST node kinds (new in grammar 4)
+
+These `"kind"` values appear in `ast.json` golden files, in addition to those from grammar 1–3:
+
+| AST kind | `elems[]` children | Notes |
+|---|---|---|
+| `StringLiteral` | `[]` | |
+| `Cast` | `[value]` | Has additional `type` property with the target type name |
+
+### Type annotations
+
+> TODO
+
+### Example
+
+> TODO

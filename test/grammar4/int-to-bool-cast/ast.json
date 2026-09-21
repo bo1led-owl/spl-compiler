@@ -1,99 +1,131 @@
 {
-  "line": 9,
+  "line": 1,
   "column": 1,
   "kind": "Program",
-  "body": [
-{
-  "line": 9,
-  "column": 1,
+  "elems": [
+  {
+    "line": 1,
+    "column": 1,
     "kind": "FuncDecl",
-    "name": "main",
     "returnType": "Int64",
-    "params": [],
-    "body": {
-  "line": 9,
-  "column": 1,
+    "elems": [
+    {
+      "line": 1,
+      "column": 5,
+      "kind": "Ident",
+      "elems": []
+    },
+    {
+      "line": 1,
+      "column": 19,
       "kind": "Block",
-      "body": [
-{
-  "line": 2,
-  "column": 21,
+      "elems": [
+      {
+        "line": 2,
+        "column": 5,
         "kind": "Declare",
         "mut": "var",
         "type": "Int64",
-        "name": "x",
-        "init": {
-  "line": 2,
-  "column": 20,
+        "elems": [
+        {
+          "line": 2,
+          "column": 9,
+          "kind": "Ident",
+          "elems": []
+        },
+        {
+          "line": 2,
+          "column": 20,
           "kind": "IntLiteral",
-          "value": 1
+          "elems": []
         }
+        ]
       },
-{
-  "line": 3,
-  "column": 32,
+      {
+        "line": 3,
+        "column": 5,
         "kind": "Declare",
         "mut": "var",
         "type": "Bool",
-        "name": "y",
-        "init": {
-  "line": 3,
-  "column": 31,
+        "elems": [
+        {
+          "line": 3,
+          "column": 9,
+          "kind": "Ident",
+          "elems": []
+        },
+        {
+          "line": 3,
+          "column": 19,
           "kind": "Cast",
           "type": "Bool",
-          "value": {
-  "line": 3,
-  "column": 30,
+          "elems": [
+          {
+            "line": 3,
+            "column": 30,
             "kind": "Ident",
-            "name": "x"
+            "elems": []
           }
+          ]
         }
+        ]
       },
-{
-  "line": 8,
-  "column": 5,
+      {
+        "line": 4,
+        "column": 5,
         "kind": "If",
-        "cond": {
-  "line": 4,
-  "column": 9,
+        "elems": [
+        {
+          "line": 4,
+          "column": 9,
           "kind": "Ident",
-          "name": "y"
+          "elems": []
         },
-        "then": {
-  "line": 6,
-  "column": 5,
+        {
+          "line": 4,
+          "column": 12,
           "kind": "Block",
-          "body": [
-{
-  "line": 5,
-  "column": 17,
+          "elems": [
+          {
+            "line": 5,
+            "column": 9,
             "kind": "Return",
-            "value": {
-  "line": 5,
-  "column": 16,
+            "elems": [
+            {
+              "line": 5,
+              "column": 16,
               "kind": "IntLiteral",
-              "value": 1
+              "elems": []
             }
+            ]
           }
-        ]},
-        "else": {
-  "line": 8,
-  "column": 5,
+          ]
+        },
+        {
+          "line": 6,
+          "column": 12,
           "kind": "Block",
-          "body": [
-{
-  "line": 7,
-  "column": 17,
+          "elems": [
+          {
+            "line": 7,
+            "column": 9,
             "kind": "Return",
-            "value": {
-  "line": 7,
-  "column": 16,
+            "elems": [
+            {
+              "line": 7,
+              "column": 16,
               "kind": "IntLiteral",
-              "value": 0
+              "elems": []
             }
+            ]
           }
-        ]}
+          ]
+        }
+        ]
       }
-    ]}
+      ]
+    }
+    ]
   }
-]}
+  ]
+}

@@ -1,42 +1,39 @@
 {
-  "line": 4,
-  "column": 2,
+  "line": 1,
+  "column": 1,
   "kind": "Program",
-  "body": [
+  "elems": [
   {
-    "line": 4,
-    "column": 2,
-    "kind": "ExprStmt",
-    "value": {
-      "line": 4,
-      "column": 2,
+    "line": 2,
+    "column": 3,
+    "kind": "BinOp",
+    "elems": [
+    {
+      "line": 1,
+      "column": 1,
+      "kind": "IntLiteral",
+      "elems": []
+    },
+    {
+      "line": 3,
+      "column": 4,
       "kind": "BinOp",
-      "op": "+",
-      "left": {
-        "line": 1,
+      "elems": [
+      {
+        "line": 3,
         "column": 1,
         "kind": "IntLiteral",
-        "value": 123
+        "elems": []
       },
-      "right": {
+      {
         "line": 4,
         "column": 2,
-        "kind": "BinOp",
-        "op": "*",
-        "left": {
-          "line": 3,
-          "column": 1,
-          "kind": "IntLiteral",
-          "value": 42
-        },
-        "right": {
-          "line": 4,
-          "column": 2,
-          "kind": "Ident",
-          "name": "abc"
-        }
+        "kind": "Ident",
+        "elems": []
       }
+      ]
     }
+    ]
   }
   ]
 }

@@ -1,0 +1,15 @@
+def bar() {
+    return 42;
+}
+
+extern def foo(x);
+
+def baz(y) {
+    return y;
+}
+
+extern def qux();
+
+def main() {
+    return 0;
+}
