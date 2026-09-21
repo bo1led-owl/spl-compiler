@@ -1,59 +1,64 @@
 {
+  "kind": "Program",
   "line": 1,
   "column": 1,
-  "kind": "Program",
   "elems": [
-  {
-    "line": 1,
-    "column": 1,
-    "kind": "Declare",
-    "mut": "val",
-    "elems": [
     {
+      "kind": "Declare",
       "line": 1,
-      "column": 5,
-      "kind": "Ident",
-      "elems": []
-    },
-    {
-      "line": 1,
-      "column": 9,
-      "kind": "IntLiteral",
-      "elems": []
-    }
-    ]
-  },
-  {
-    "line": 2,
-    "column": 1,
-    "kind": "Assign",
-    "elems": [
-    {
-      "line": 2,
       "column": 1,
-      "kind": "Ident",
-      "elems": []
+      "mut": false,
+      "elems": [
+        {
+          "kind": "Ident",
+          "name": "x",
+          "elems": [],
+          "line": 1,
+          "column": 5
+        },
+        {
+          "kind": "IntLiteral",
+          "line": 1,
+          "column": 9,
+          "value": 10,
+          "elems": []
+        }
+      ]
     },
     {
+      "kind": "Assign",
       "line": 2,
-      "column": 5,
-      "kind": "IntLiteral",
-      "elems": []
-    }
-    ]
-  },
-  {
-    "line": 3,
-    "column": 1,
-    "kind": "Return",
-    "elems": [
+      "column": 3,
+      "elems": [
+        {
+          "kind": "Ident",
+          "line": 2,
+          "column": 1,
+          "name": "x",
+          "elems": []
+        },
+        {
+          "kind": "IntLiteral",
+          "line": 2,
+          "column": 5,
+          "value": 20,
+          "elems": []
+        }
+      ]
+    },
     {
+      "kind": "Return",
       "line": 3,
-      "column": 8,
-      "kind": "Ident",
-      "elems": []
+      "column": 1,
+      "elems": [
+        {
+          "kind": "Ident",
+          "line": 3,
+          "column": 8,
+          "name": "x",
+          "elems": []
+        }
+      ]
     }
-    ]
-  }
   ]
 }

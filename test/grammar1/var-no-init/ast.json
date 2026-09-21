@@ -1,27 +1,42 @@
 {
+  "kind": "Program",
   "line": 1,
   "column": 1,
-  "kind": "Program",
   "elems": [
-  {
-    "line": 1,
-    "column": 1,
-    "kind": "Declare",
-    "mut": "var",
-    "elems": [
     {
+      "kind": "Declare",
       "line": 1,
-      "column": 5,
-      "kind": "Ident",
-      "elems": []
+      "column": 1,
+      "mut": true,
+      "elems": [
+        {
+          "kind": "Ident",
+          "name": "x",
+          "elems": [],
+          "line": 1,
+          "column": 5
+        },
+        {
+          "kind": "Error",
+          "line": 1,
+          "column": 6,
+          "elems": []
+        }
+      ]
     },
     {
+      "kind": "Return",
       "line": 2,
-      "column": 8,
-      "kind": "Error",
-      "elems": []
+      "column": 1,
+      "elems": [
+        {
+          "kind": "IntLiteral",
+          "line": 2,
+          "column": 8,
+          "value": 0,
+          "elems": []
+        }
+      ]
     }
-    ]
-  }
   ]
 }

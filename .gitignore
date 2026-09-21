@@ -1,6 +1,16 @@
 # Build artifacts
 build/
 test/build/
+.zig-cache/
+zig-out/
+
+# Temporaries and binaries
+*.ll
+*.bc
+*.o
+a.out
+
+!test/**/*.ll
 
 # IDE / editor
 .cache
