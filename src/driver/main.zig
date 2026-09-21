@@ -86,15 +86,6 @@ fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: cli.Args.Full) u8 {
             std.log.err("failed to dump AST: {s}", .{@errorName(err)});
     }
 
-    if (args.last_stage == .parser) {
-        if (error_bundle.nonEmpty()) {
-            error_bundle.sort();
-            error_bundle.renderToStderr(io, source, null) catch {};
-            return 1;
-        }
-        return 0;
-    }
-
     var sema = frontend.Sema.init(gpa, source, tokens, ast, &error_bundle);
     sema.run() catch |err| {
         std.log.err("failed to run semantic analysis: {s}", .{@errorName(err)});
@@ -106,6 +97,10 @@ fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: cli.Args.Full) u8 {
         error_bundle.sort();
         error_bundle.renderToStderr(io, source, null) catch {};
         return 1;
+    }
+
+    if (args.last_stage == .parser) {
+        return 0;
     }
 
     const llvm_output_path = if (args.emit_llvm)
@@ -283,32 +278,24 @@ fn dumpAstNode(
         .unary => "Unary",
         .binary => "BinOp",
         .assign => "Assign",
-        .recovery => "ERROR",
+        .recovery => "Error",
     });
 
+    const loc = source.locationFromOffset(tokens.items(.offset)[node.token]);
+    try jws.objectField("line");
+    try jws.write(loc.line);
+    try jws.objectField("column");
+    try jws.write(loc.column);
+
+    // everything except `kind` and `elems`
     switch (node.kind) {
-        .root => {
-            const body = ast.extractExtras(node.data.extra_range);
-
-            try jws.objectField("body");
-            try jws.beginArray();
-
-            for (body) |i| {
-                try dumpAstNode(jws, source, tokens, ast, @enumFromInt(i));
-            }
-
-            try jws.endArray();
-        },
+        .root => {},
         .recovery => {},
+        .@"return" => {},
+        .assign => {},
         .var_decl => {
             try jws.objectField("mut");
             try jws.write(tokens.items(.kind)[node.token] == .kw_var);
-
-            try jws.objectField("name");
-            try jws.write(source.tokenLiteral(tokens.get(node.token + 1)));
-
-            try jws.objectField("value");
-            try dumpAstNode(jws, source, tokens, ast, node.data.node);
         },
         .name_ref => {
             try jws.objectField("name");
@@ -320,34 +307,71 @@ fn dumpAstNode(
             try jws.writer.writeAll(source.tokenLiteral(tokens.get(node.token)));
             jws.endWriteRaw();
         },
-        .@"return" => {
-            try jws.objectField("value");
-            try dumpAstNode(jws, source, tokens, ast, node.data.node);
-        },
         .unary => {
             try jws.objectField("op");
             try jws.write(tokens.items(.kind)[node.token]);
-
-            try jws.objectField("operand");
-            try dumpAstNode(jws, source, tokens, ast, node.data.node);
         },
         .binary => {
             try jws.objectField("op");
             try jws.write(tokens.items(.kind)[node.token]);
+        },
+    }
 
-            try jws.objectField("lhs");
+    try jws.objectField("elems");
+    try jws.beginArray();
+
+    switch (node.kind) {
+        .recovery => {},
+        .name_ref => {},
+        .number => {},
+        .root => {
+            const body = ast.extractExtras(node.data.extra_range);
+            for (body) |i| {
+                try dumpAstNode(jws, source, tokens, ast, @enumFromInt(i));
+            }
+        },
+        .var_decl => {
+            {
+                // no `Ident` node in var decl, so we have to make it ourselves
+                const name_token = tokens.get(node.token + 1);
+                try jws.beginObject();
+
+                try jws.objectField("kind");
+                try jws.write("Ident");
+                try jws.objectField("name");
+                try jws.write(source.tokenLiteral(name_token));
+
+                try jws.objectField("elems");
+                try jws.beginArray();
+                try jws.endArray();
+
+                const name_loc = source.locationFromOffset(name_token.offset);
+                try jws.objectField("line");
+                try jws.write(name_loc.line);
+                try jws.objectField("column");
+                try jws.write(name_loc.column);
+
+                try jws.endObject();
+            }
+
+            try dumpAstNode(jws, source, tokens, ast, node.data.node);
+        },
+        .@"return" => {
+            try dumpAstNode(jws, source, tokens, ast, node.data.node);
+        },
+        .unary => {
+            try dumpAstNode(jws, source, tokens, ast, node.data.node);
+        },
+        .binary => {
             try dumpAstNode(jws, source, tokens, ast, node.data.node_node.@"0");
-
-            try jws.objectField("rhs");
             try dumpAstNode(jws, source, tokens, ast, node.data.node_node.@"1");
         },
         .assign => {
-            try jws.objectField("dest");
             try dumpAstNode(jws, source, tokens, ast, node.data.node_node.@"0");
-            try jws.objectField("src");
             try dumpAstNode(jws, source, tokens, ast, node.data.node_node.@"1");
         },
     }
 
+    try jws.endArray();
     try jws.endObject();
 }

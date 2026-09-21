@@ -103,15 +103,18 @@ fn visitNode(self: *Self, node_index: Ast.Node.Index) (std.mem.Allocator.Error |
         .name_ref => {
             const name_token = self.tokens.get(node.token);
             const name = self.source.tokenLiteral(name_token);
-            if (!self.vars.contains(name)) {
+
+            const var_opt = self.vars.get(name);
+            if (var_opt) |v| {
+                return .{ .is_assignable = v.mut };
+            } else {
                 try self.report(
                     self.source.spanByToken(name_token),
                     "reference to undefined variable `{s}`",
                     .{name},
                 );
+                return .{ .is_assignable = true };
             }
-
-            return .{ .is_assignable = true };
         },
         .number => {
             const token = self.tokens.get(node.token);
