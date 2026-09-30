@@ -16,6 +16,12 @@ pub const Options = struct {
     emit_llvm: bool = false,
 };
 
+pub const Error = error{
+    FailedToGetTarget,
+    FailedToEmitObjectFile,
+    FailedToDumpIr,
+};
+
 gpa: std.mem.Allocator,
 source: Source,
 tokens: lex.TokenList,
@@ -56,49 +62,25 @@ pub fn deinit(self: *Self) void {
 }
 
 pub fn run(self: *Self, output_file: [:0]const u8, options: Options) !void {
-    _ = try self.gen(.root);
+    _ = c.LLVMInitializeX86TargetInfo();
+    _ = c.LLVMInitializeX86Target();
+    _ = c.LLVMInitializeX86TargetMC();
+    _ = c.LLVMInitializeX86AsmPrinter();
 
-    if (options.emit_llvm) {
-        self.printModule(output_file);
-    } else {
-        self.makeBinaryFile(output_file);
-    }
-}
-
-fn printModule(self: Self, output_file: [:0]const u8) void {
-    var err_msg: [*:0]u8 = undefined;
-    const failed = c.LLVMPrintModuleToFile(self.module, output_file, @ptrCast(&err_msg)) != 0;
-
-    if (failed) {
-        std.log.err("failed dumping LLVM IR: {s}", .{@as([*:0]u8, @ptrCast(&err_msg))});
-        c.LLVMDisposeMessage(err_msg);
-    }
-}
-
-fn makeBinaryFile(self: Self, output_file: [:0]const u8) void {
-    _ = c.LLVMInitializeNativeTarget();
-    _ = c.LLVMInitializeNativeAsmPrinter();
-
-    const triple = c.LLVMGetDefaultTargetTriple();
-    defer c.LLVMDisposeMessage(triple);
-
+    const triple = "x86_64-unknown-linux-gnu";
     c.LLVMSetTarget(self.module, triple);
 
     var target: c.LLVMTargetRef = undefined;
-    {
-        var err_msg: [*:0]u8 = undefined;
-        const failed = c.LLVMGetTargetFromTriple(triple, &target, @ptrCast(&err_msg)) != 0;
-        if (failed) {
-            std.log.err("failed to get target: {s}", .{err_msg});
-            c.LLVMDisposeMessage(err_msg);
-            return;
-        }
-    }
+    try checkLlvmBool(
+        c.LLVMGetTargetFromTriple,
+        .{ triple, &target },
+        Error.FailedToGetTarget,
+    );
 
     const target_machine = c.LLVMCreateTargetMachine(
         target,
         triple,
-        "generic",
+        "x86-64",
         "",
         c.LLVMCodeGenLevelDefault,
         c.LLVMRelocDefault,
@@ -106,20 +88,33 @@ fn makeBinaryFile(self: Self, output_file: [:0]const u8) void {
     );
     defer c.LLVMDisposeTargetMachine(target_machine);
 
-    {
-        var err_msg: [*:0]u8 = undefined;
-        const failed = c.LLVMTargetMachineEmitToFile(
-            target_machine,
-            self.module,
-            output_file,
-            c.LLVMObjectFile,
-            @ptrCast(&err_msg),
-        ) != 0;
-        if (failed) {
-            std.log.err("failed to emit object file: {s}", .{err_msg});
-            c.LLVMDisposeMessage(err_msg);
-            return;
-        }
+    const data_layout = c.LLVMCreateTargetDataLayout(target_machine);
+    c.LLVMSetModuleDataLayout(self.module, data_layout);
+
+    _ = try self.gen(.root);
+
+    if (options.emit_llvm) {
+        try checkLlvmBool(
+            c.LLVMPrintModuleToFile,
+            .{ self.module, output_file },
+            Error.FailedToDumpIr,
+        );
+    } else {
+        try checkLlvmBool(
+            c.LLVMTargetMachineEmitToFile,
+            .{ target_machine, self.module, output_file, c.LLVMObjectFile },
+            Error.FailedToEmitObjectFile,
+        );
+    }
+}
+
+fn checkLlvmBool(comptime function: anytype, args: anytype, err: anyerror) !void {
+    var err_msg: [*c]u8 = undefined;
+    const result: c.LLVMBool = @call(.auto, function, args ++ .{&err_msg});
+    if (result != 0) {
+        std.log.warn("LLVM error message: {s}", .{err_msg});
+        c.LLVMDisposeMessage(@ptrCast(err_msg));
+        return err;
     }
 }
 
@@ -197,14 +192,14 @@ fn gen(self: *Self, node_index: Ast.Node.Index) !c.LLVMValueRef {
             }
         },
         .assign => {
-            const dest = try self.genStorable(node.data.node_node.@"0");
+            const dest = self.genStorable(node.data.node_node.@"0");
             const src = try self.gen(node.data.node_node.@"1");
             return c.LLVMBuildStore(self.builder, src, dest);
         },
     }
 }
 
-fn genStorable(self: *Self, node_index: Ast.Node.Index) !c.LLVMValueRef {
+fn genStorable(self: *Self, node_index: Ast.Node.Index) c.LLVMValueRef {
     const node = self.ast.nodes.get(@intFromEnum(node_index));
 
     // to be extended when structs and arrays are added

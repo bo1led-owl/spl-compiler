@@ -1,4 +1,5 @@
 const std = @import("std");
+const builtin = @import("builtin");
 const frontend = @import("frontend");
 const cli = @import("cli.zig");
 
@@ -6,7 +7,16 @@ var stdout_buffer: [4096]u8 align(std.heap.page_size_min) = undefined;
 var dump_buffer: [4096]u8 align(std.heap.page_size_min) = undefined;
 
 pub fn main(init: std.process.Init.Minimal) u8 {
-    const gpa = std.heap.smp_allocator;
+    var allocator = if (builtin.mode == .Debug)
+        std.heap.DebugAllocator(.{}).init
+    else
+        std.heap.smp_allocator;
+    defer if (builtin.mode == .Debug) {
+        const res = allocator.deinit();
+        std.debug.assert(res == .ok);
+    };
+
+    const gpa = if (builtin.mode == .Debug) allocator.allocator() else allocator;
 
     var io_impl = std.Io.Threaded.init(gpa, .{
         .argv0 = .init(init.args),
@@ -73,13 +83,13 @@ fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: cli.Args.Full) u8 {
     defer error_bundle.deinit(gpa);
 
     var parser = frontend.Parser.init(gpa, source, tokens, &error_bundle);
+    defer parser.deinit();
+
     var ast = parser.run() catch |err| {
         std.log.err("failed to parse: {s}", .{@errorName(err)});
         return 1;
     };
     defer ast.deinit(gpa);
-
-    parser.deinit();
 
     if (args.ast_dump_path) |dump_path| {
         dumpAst(io, source, tokens, ast, dump_path) catch |err|
@@ -87,11 +97,11 @@ fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: cli.Args.Full) u8 {
     }
 
     var sema = frontend.Sema.init(gpa, source, tokens, ast, &error_bundle);
+    defer sema.deinit();
     sema.run() catch |err| {
         std.log.err("failed to run semantic analysis: {s}", .{@errorName(err)});
         return 1;
     };
-    sema.deinit();
 
     if (error_bundle.nonEmpty()) {
         error_bundle.sort();
@@ -114,11 +124,11 @@ fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: cli.Args.Full) u8 {
     defer if (!args.emit_llvm) gpa.free(llvm_output_path);
 
     var codegen = frontend.Codegen.init(gpa, source, tokens, ast);
+    defer codegen.deinit();
     codegen.run(llvm_output_path, .{ .emit_llvm = args.emit_llvm }) catch |err| {
         std.log.err("failed to generate code: {s}", .{@errorName(err)});
         return 1;
     };
-    codegen.deinit();
 
     if (args.emit_llvm) {
         return 0;
