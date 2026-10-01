@@ -66,7 +66,7 @@ fn linkLlvm(b: *std.Build, mod: *std.Build.Module) void {
         b.option([]const u8, "llvmLibDir", "LLVM library dir") orelse
         "/usr/lib";
 
-    var llvm_lib_name = b.option([]const u8, "llvmLibName", "LLVM library name") orelse "LLVM-22";
+    var llvm_lib_name = b.option([]const u8, "llvmLibName", "LLVM library name") orelse "LLVM-23";
     if (std.mem.startsWith(u8, llvm_lib_name, "-l")) {
         llvm_lib_name = llvm_lib_name[2..];
     }
