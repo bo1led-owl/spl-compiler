@@ -7,6 +7,6 @@ define i64 @main() {
 entry:
   %x = alloca i64, align 8
   store i64 40, ptr %x, align 8
-  %x1 = load i64, ptr %x, align 8
-  ret i64 %x1
+  %0 = load i64, ptr %x, align 8
+  ret i64 %0
 }

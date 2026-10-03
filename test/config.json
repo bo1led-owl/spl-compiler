@@ -6,28 +6,28 @@
   "out_dir": "{root}/test/build",
   "stages": {
     "lexer": {
-      "cmd": ["{root}/build/splc", "-g", "{grammar}", "-t", "{tokens_in}", "{input}"],
+      "cmd": ["{root}/zig-out/bin/splc", "-t", "{tokens_in}", "--last-stage=lexer", "{input}"],
       "out": "{tokens_out}",
       "preprocess": [
         {"type": "json", "keep": ["kind", "line", "column"]}
       ]
     },
     "parser": {
-      "cmd": ["{root}/build/splc", "-g", "{grammar}", "-a", "{ast_in}", "{input}"],
+      "cmd": ["{root}/zig-out/bin/splc", "-a", "{ast_in}", "--last-stage=parser", "{input}"],
       "out": "{ast_out}",
       "preprocess": [
         {"type": "json", "keep": ["kind", "line", "column", "elems"]}
       ]
     },
     "llvm": {
-      "cmd": ["{root}/build/splc", "-g", "{grammar}", "-o", "{llvm_out}", "{input}"],
+      "cmd": ["{root}/zig-out/bin/splc", "-o", "{llvm_out}", "--emit-llvm", "{input}"],
       "out": "{llvm_out}",
       "preprocess": [
         {"type": "llvm"}
       ]
     },
     "compiler": {
-      "cmd": ["{root}/build/splc", "-g", "{grammar}", "-o", "{exe}", "{input}"]
+      "cmd": ["{root}/zig-out/bin/splc", "-o", "{exe}", "{input}"]
     },
     "run": {
       "cmd": ["{exe}"],
