@@ -108,7 +108,7 @@
       },
       {
         "line": 8,
-        "column": 6,
+        "column": 9,
         "kind": "Assign",
         "elems": [
         {
@@ -140,7 +140,7 @@
       },
       {
         "line": 9,
-        "column": 6,
+        "column": 9,
         "kind": "Assign",
         "elems": [
         {
@@ -221,7 +221,7 @@
       },
       {
         "line": 15,
-        "column": 5,
+        "column": 8,
         "kind": "Assign",
         "elems": [
         {

@@ -25,19 +25,38 @@
   },
   {
     "line": 2,
-    "column": 1,
-    "kind": "While",
+    "column": 3,
+    "kind": "Assign",
     "elems": [
     {
       "line": 2,
-      "column": 8,
+      "column": 1,
+      "kind": "Ident",
+      "elems": []
+    },
+    {
+      "line": 2,
+      "column": 5,
+      "kind": "IntLiteral",
+      "elems": []
+    }
+    ]
+  },
+  {
+    "line": 3,
+    "column": 3,
+    "kind": "Assign",
+    "elems": [
+    {
+      "line": 3,
+      "column": 1,
       "kind": "Ident",
       "elems": []
     },
     {
       "line": 3,
       "column": 7,
-      "kind": "Assign",
+      "kind": "BinOp",
       "elems": [
       {
         "line": 3,
@@ -47,24 +66,24 @@
       },
       {
         "line": 3,
-        "column": 11,
-        "kind": "BinOp",
-        "elems": [
-        {
-          "line": 3,
-          "column": 9,
-          "kind": "Ident",
-          "elems": []
-        },
-        {
-          "line": 3,
-          "column": 13,
-          "kind": "IntLiteral",
-          "elems": []
-        }
-        ]
+        "column": 9,
+        "kind": "IntLiteral",
+        "elems": []
       }
       ]
+    }
+    ]
+  },
+  {
+    "line": 4,
+    "column": 1,
+    "kind": "Return",
+    "elems": [
+    {
+      "line": 4,
+      "column": 8,
+      "kind": "Ident",
+      "elems": []
     }
     ]
   }

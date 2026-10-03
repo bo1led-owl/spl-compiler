@@ -74,7 +74,7 @@
       "elems": [
       {
         "line": 4,
-        "column": 5,
+        "column": 7,
         "kind": "Assign",
         "elems": [
         {
@@ -145,7 +145,7 @@
       },
       {
         "line": 8,
-        "column": 5,
+        "column": 7,
         "kind": "Assign",
         "elems": [
         {

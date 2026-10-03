@@ -37,7 +37,7 @@
       },
       {
         "line": 3,
-        "column": 14,
+        "column": 18,
         "kind": "Assign",
         "elems": [
         {
@@ -82,7 +82,7 @@
       },
       {
         "line": 4,
-        "column": 14,
+        "column": 18,
         "kind": "Assign",
         "elems": [
         {
@@ -127,7 +127,7 @@
       },
       {
         "line": 5,
-        "column": 14,
+        "column": 18,
         "kind": "Assign",
         "elems": [
         {
@@ -172,7 +172,7 @@
       },
       {
         "line": 6,
-        "column": 14,
+        "column": 18,
         "kind": "Assign",
         "elems": [
         {
@@ -217,7 +217,7 @@
       },
       {
         "line": 7,
-        "column": 14,
+        "column": 18,
         "kind": "Assign",
         "elems": [
         {
@@ -262,7 +262,7 @@
       },
       {
         "line": 8,
-        "column": 14,
+        "column": 18,
         "kind": "Assign",
         "elems": [
         {

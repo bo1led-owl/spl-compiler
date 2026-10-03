@@ -241,7 +241,7 @@
       },
       {
         "line": 21,
-        "column": 6,
+        "column": 9,
         "kind": "Assign",
         "elems": [
         {
@@ -273,7 +273,7 @@
       },
       {
         "line": 22,
-        "column": 6,
+        "column": 9,
         "kind": "Assign",
         "elems": [
         {

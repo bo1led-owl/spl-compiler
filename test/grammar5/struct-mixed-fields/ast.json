@@ -140,7 +140,7 @@
       },
       {
         "line": 12,
-        "column": 6,
+        "column": 9,
         "kind": "Assign",
         "elems": [
         {
@@ -172,7 +172,7 @@
       },
       {
         "line": 13,
-        "column": 6,
+        "column": 9,
         "kind": "Assign",
         "elems": [
         {
@@ -204,7 +204,7 @@
       },
       {
         "line": 14,
-        "column": 6,
+        "column": 9,
         "kind": "Assign",
         "elems": [
         {
@@ -236,7 +236,7 @@
       },
       {
         "line": 15,
-        "column": 6,
+        "column": 9,
         "kind": "Assign",
         "elems": [
         {
@@ -268,7 +268,7 @@
       },
       {
         "line": 16,
-        "column": 6,
+        "column": 9,
         "kind": "Assign",
         "elems": [
         {
@@ -300,7 +300,7 @@
       },
       {
         "line": 17,
-        "column": 6,
+        "column": 9,
         "kind": "Assign",
         "elems": [
         {
@@ -347,7 +347,7 @@
       },
       {
         "line": 19,
-        "column": 5,
+        "column": 12,
         "kind": "Assign",
         "elems": [
         {

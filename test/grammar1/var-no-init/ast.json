@@ -25,18 +25,23 @@
       ]
     },
     {
-      "kind": "Return",
+      "line": 1,
+      "column": 6,
+      "kind": "Error",
+      "elems": []
+    }
+    ]
+  },
+  {
+    "line": 2,
+    "column": 1,
+    "kind": "Return",
+    "elems": [
+    {
       "line": 2,
-      "column": 1,
-      "elems": [
-        {
-          "kind": "IntLiteral",
-          "line": 2,
-          "column": 8,
-          "value": 0,
-          "elems": []
-        }
-      ]
+      "column": 8,
+      "kind": "IntLiteral",
+      "elems": []
     }
   ]
 }

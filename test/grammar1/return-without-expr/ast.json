@@ -6,15 +6,9 @@
     {
       "kind": "Return",
       "line": 1,
-      "column": 1,
-      "elems": [
-        {
-          "kind": "Error",
-          "line": 1,
-          "column": 7,
-          "elems": []
-        }
-      ]
+      "column": 7,
+      "kind": "Error",
+      "elems": []
     }
   ]
 }

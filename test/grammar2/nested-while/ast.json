@@ -103,7 +103,7 @@
           "elems": [
           {
             "line": 5,
-            "column": 9,
+            "column": 11,
             "kind": "Assign",
             "elems": [
             {
@@ -139,7 +139,7 @@
       },
       {
         "line": 7,
-        "column": 5,
+        "column": 7,
         "kind": "Assign",
         "elems": [
         {

@@ -3,6 +3,11 @@
   "line": 1,
   "column": 1,
   "elems": [
+  {
+    "line": 1,
+    "column": 3,
+    "kind": "Assign",
+    "elems": [
     {
       "kind": "Assign",
       "line": 1,
