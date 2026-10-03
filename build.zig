@@ -10,7 +10,7 @@ pub fn build(b: *std.Build) void {
         .c_source_file = b.path("src/c.h"),
         .target = target,
         .optimize = optimize,
-        .link_system_libs = &.{.{ .name = "LLVM", .options = .{} }},
+        .link_system_libs = &.{.{ .name = "LLVM-23", .options = .{} }},
     });
 
     const llvm_config_output = b.run(&.{ "llvm-config", "--cflags" });
