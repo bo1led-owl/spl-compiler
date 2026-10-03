@@ -10,6 +10,9 @@ pub fn build(b: *std.Build) void {
         .c_source_file = b.path("src/c.h"),
         .target = target,
         .optimize = optimize,
+        .link_system_libs = &.{
+            .{.name = "LLVM", .options = .{}}
+        }
     });
 
     const frontend = b.addModule("frontend", .{
@@ -22,7 +25,6 @@ pub fn build(b: *std.Build) void {
             },
         },
     });
-    linkLlvm(b, frontend);
 
     const exe = b.addExecutable(.{
         .name = "splc",
@@ -53,22 +55,4 @@ pub fn build(b: *std.Build) void {
     const test_step = b.step("test", "Run tests");
     test_step.dependOn(&run_mod_tests.step);
     test_step.dependOn(&run_exe_tests.step);
-}
-
-fn linkLlvm(b: *std.Build, mod: *std.Build.Module) void {
-    const llvm_include_dir =
-        b.option([]const u8, "llvmIncludeDir", "LLVM include dir") orelse
-        "/usr/include";
-    const llvm_lib_dir =
-        b.option([]const u8, "llvmLibDir", "LLVM library dir") orelse
-        "/usr/lib";
-
-    var llvm_lib_name = b.option([]const u8, "llvmLibName", "LLVM library name") orelse "LLVM-23";
-    if (std.mem.startsWith(u8, llvm_lib_name, "-l")) {
-        llvm_lib_name = llvm_lib_name[2..];
-    }
-
-    mod.addIncludePath(.{ .cwd_relative = llvm_include_dir });
-    mod.addLibraryPath(.{ .cwd_relative = llvm_lib_dir });
-    mod.linkSystemLibrary(llvm_lib_name, .{});
 }
