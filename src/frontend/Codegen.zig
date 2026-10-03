@@ -1,12 +1,7 @@
 const Self = @This();
 
 const std = @import("std");
-const c = @cImport({
-    @cInclude("llvm-c/Core.h");
-    @cInclude("llvm-c/BitWriter.h");
-    @cInclude("llvm-c/Target.h");
-    @cInclude("llvm-c/TargetMachine.h");
-});
+const c = @import("c");
 
 const Source = @import("Source.zig");
 const Ast = @import("Ast.zig");
@@ -123,7 +118,7 @@ fn i64Type(self: Self) c.LLVMTypeRef {
 }
 
 fn gen(self: *Self, node_index: Ast.Node.Index) !c.LLVMValueRef {
-    const node = self.ast.nodes.get(@intFromEnum(node_index));
+    const node = self.ast.nodes.get(@backingInt(node_index));
 
     switch (node.kind) {
         .recovery => unreachable,
@@ -134,7 +129,7 @@ fn gen(self: *Self, node_index: Ast.Node.Index) !c.LLVMValueRef {
             c.LLVMPositionBuilderAtEnd(self.builder, entry);
 
             for (self.ast.extractExtras(node.data.extra_range)) |i| {
-                _ = try self.gen(@enumFromInt(i));
+                _ = try self.gen(@fromBackingInt(i));
             }
 
             return function;
@@ -200,7 +195,7 @@ fn gen(self: *Self, node_index: Ast.Node.Index) !c.LLVMValueRef {
 }
 
 fn genStorable(self: *Self, node_index: Ast.Node.Index) c.LLVMValueRef {
-    const node = self.ast.nodes.get(@intFromEnum(node_index));
+    const node = self.ast.nodes.get(@backingInt(node_index));
 
     // to be extended when structs and arrays are added
     switch (node.kind) {

@@ -7,16 +7,19 @@ var stdout_buffer: [4096]u8 align(std.heap.page_size_min) = undefined;
 var dump_buffer: [4096]u8 align(std.heap.page_size_min) = undefined;
 
 pub fn main(init: std.process.Init.Minimal) u8 {
-    var allocator = if (builtin.mode == .Debug)
-        std.heap.DebugAllocator(.{}).init
+    const smp = std.heap.smp_allocator;
+
+    var safe_allocator = if (builtin.mode == .debug)
+        std.heap.SafeAllocator.init(smp, .{})
     else
-        std.heap.smp_allocator;
-    defer if (builtin.mode == .Debug) {
-        const res = allocator.deinit();
-        std.debug.assert(res == .ok);
+        void;
+
+    defer if (builtin.mode == .debug) {
+        const leaks = safe_allocator.deinit();
+        std.debug.assert(leaks == 0);
     };
 
-    const gpa = if (builtin.mode == .Debug) allocator.allocator() else allocator;
+    const gpa = if (builtin.mode == .debug) safe_allocator.allocator() else smp;
 
     var io_impl = std.Io.Threaded.init(gpa, .{
         .argv0 = .init(init.args),
@@ -274,7 +277,7 @@ fn dumpAstNode(
     ast: frontend.Ast,
     node_index: frontend.Ast.Node.Index,
 ) !void {
-    const node = ast.nodes.get(@intFromEnum(node_index));
+    const node = ast.nodes.get(@backingInt(node_index));
 
     try jws.beginObject();
 
@@ -337,7 +340,7 @@ fn dumpAstNode(
         .root => {
             const body = ast.extractExtras(node.data.extra_range);
             for (body) |i| {
-                try dumpAstNode(jws, source, tokens, ast, @enumFromInt(i));
+                try dumpAstNode(jws, source, tokens, ast, @fromBackingInt(i));
             }
         },
         .var_decl => {

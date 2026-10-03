@@ -59,10 +59,10 @@ pub const Args = union(enum) {
 
         const stages = std.StaticStringMap(Stage).initComptime(comptime init: {
             // iterate over all variants of the enum and make pairs like `("foo", .foo)`
-            const fields = @typeInfo(Stage).@"enum".fields;
-            var res: [fields.len]struct { []const u8, Stage } = undefined;
-            for (fields, &res) |field, *res_item| {
-                res_item.* = .{ field.name, @as(Stage, @enumFromInt(field.value)) };
+            const info = @typeInfo(Stage).@"enum";
+            var res: [info.field_names.len]struct { []const u8, Stage } = undefined;
+            for (info.field_names, info.field_values, &res) |field_name, field_value, *res_item| {
+                res_item.* = .{ field_name, @as(Stage, @fromBackingInt(field_value)) };
             }
             break :init res;
         });

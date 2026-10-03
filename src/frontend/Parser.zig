@@ -82,7 +82,7 @@ pub fn run(self: *Self) (std.mem.Allocator.Error || std.Io.Writer.Error)!Ast {
 
     _ = self.expectToken(.eof) catch {};
 
-    self.nodes.items(.data)[@intFromEnum(Node.Index.root)] = .{ .extra_range = .{
+    self.nodes.items(.data)[@backingInt(Node.Index.root)] = .{ .extra_range = .{
         .begin = @intCast(self.extras.items.len),
         .end = @intCast(self.extras.items.len + self.scratch.items.len),
     } };
@@ -98,7 +98,7 @@ pub fn run(self: *Self) (std.mem.Allocator.Error || std.Io.Writer.Error)!Ast {
 fn addNode(self: *Self, node: Node) !Node.Index {
     const result: u32 = @intCast(self.nodes.len);
     try self.nodes.append(self.gpa, node);
-    return @enumFromInt(result);
+    return @fromBackingInt(result);
 }
 
 fn addRecoveryNode(self: *Self) !Node.Index {
@@ -125,11 +125,11 @@ fn nextToken(self: *Self) Token.Index {
 inline fn formatExpectedList(comptime list: anytype) []const u8 {
     var result: []const u8 = "";
 
-    const fields = std.meta.fields(@TypeOf(list));
+    const info = @typeInfo(@TypeOf(list)).@"struct";
+    const fields = info.field_names.len;
 
-    for (0..fields.len) |i| {
-        const field = fields[i];
-        const value = @field(list, field.name);
+    for (info.field_names, info.field_types, 0..) |field_name, field_type, i| {
+        const value = @field(list, field_name);
 
         if (i > 0 and i + 2 < fields.len) {
             result = result ++ ", ";
@@ -138,10 +138,10 @@ inline fn formatExpectedList(comptime list: anytype) []const u8 {
         }
 
         result = result ++
-            if (field.type == Token.Kind)
+            if (field_type == Token.Kind)
                 value.toString()
-            else switch (@typeInfo(field.type)) {
-                .pointer => |info| switch (info.size) {
+            else switch (@typeInfo(field_type)) {
+                .pointer => |field_info| switch (field_info.size) {
                     .one, .slice => @as([]const u8, value),
                     .many, .c => @as([:0]const u8, std.mem.span(value)),
                 },

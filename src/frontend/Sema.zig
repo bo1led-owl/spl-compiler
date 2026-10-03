@@ -48,7 +48,7 @@ const NodeInfo = packed struct(u1) {
 };
 
 fn visitNode(self: *Self, node_index: Ast.Node.Index) (std.mem.Allocator.Error || ErrorBundle.ReportError)!NodeInfo {
-    const node = self.ast.nodes.get(@intFromEnum(node_index));
+    const node = self.ast.nodes.get(@backingInt(node_index));
 
     switch (node.kind) {
         .recovery => return .{},
@@ -64,13 +64,13 @@ fn visitNode(self: *Self, node_index: Ast.Node.Index) (std.mem.Allocator.Error |
             }
 
             for (body) |i| {
-                _ = try self.visitNode(@enumFromInt(i));
+                _ = try self.visitNode(@fromBackingInt(i));
             }
 
             const last_node = self.ast.nodes.get(body[body.len - 1]);
             if (last_node.kind != .@"return") {
                 try self.report(
-                    self.spanByNode(@enumFromInt(body[body.len - 1])),
+                    self.spanByNode(@fromBackingInt(body[body.len - 1])),
                     "last statement must be a `return`",
                     .{},
                 );
@@ -157,7 +157,7 @@ fn visitNode(self: *Self, node_index: Ast.Node.Index) (std.mem.Allocator.Error |
 }
 
 fn spanByNode(self: *Self, node_index: Ast.Node.Index) Source.Span {
-    const node = self.ast.nodes.get(@intFromEnum(node_index));
+    const node = self.ast.nodes.get(@backingInt(node_index));
     return switch (node.kind) {
         .recovery => self.source.spanByToken(self.tokens.get(node.token)),
         .root => .{ .begin = 0, .end = @intCast(self.source.text.len) },
