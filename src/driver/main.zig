@@ -9,10 +9,11 @@ var dump_buffer: [4096]u8 align(std.heap.page_size_min) = undefined;
 pub fn main(init: std.process.Init.Minimal) u8 {
     const smp = std.heap.smp_allocator;
 
-    var safe_allocator: std.heap.SafeAllocator = if (builtin.mode == .debug)
-        .init(smp, .{})
-    else
-        undefined;
+    var safe_allocator: std.heap.SafeAllocator =
+        if (builtin.mode == .debug)
+            .init(smp, .{})
+        else
+            undefined;
 
     defer if (builtin.mode == .debug) {
         const leaks = safe_allocator.deinit();

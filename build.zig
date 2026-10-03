@@ -10,10 +10,17 @@ pub fn build(b: *std.Build) void {
         .c_source_file = b.path("src/c.h"),
         .target = target,
         .optimize = optimize,
-        .link_system_libs = &.{
-            .{.name = "LLVM", .options = .{}}
-        }
+        .link_system_libs = &.{.{ .name = "LLVM", .options = .{} }},
     });
+
+    const llvm_config_output = b.run(&.{ "llvm-config", "--cflags" });
+    var args = std.mem.splitAny(u8, llvm_config_output, &std.ascii.whitespace);
+    while (args.next()) |arg| {
+        if (arg.len == 0) {
+            continue;
+        }
+        translator.run.addArg(arg);
+    }
 
     const frontend = b.addModule("frontend", .{
         .root_source_file = b.path("src/frontend/root.zig"),
