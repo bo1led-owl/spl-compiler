@@ -10,7 +10,9 @@ pub fn build(b: *std.Build) void {
         .c_source_file = b.path("src/c.h"),
         .target = target,
         .optimize = optimize,
-        .link_system_libs = &.{.{ .name = "LLVM-23", .options = .{} }},
+        .link_system_libs = &.{
+            .{ .name = "LLVM-23", .options = .{} },
+        },
     });
 
     const llvm_config_output = b.run(&.{ "llvm-config", "--cflags" });
@@ -26,10 +28,7 @@ pub fn build(b: *std.Build) void {
         .root_source_file = b.path("src/frontend/root.zig"),
         .target = target,
         .imports = &.{
-            .{
-                .name = "c",
-                .module = translator.mod,
-            },
+            .{ .name = "c", .module = translator.mod },
         },
     });
 

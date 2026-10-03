@@ -36,10 +36,7 @@ pub fn main(init: std.process.Init.Minimal) u8 {
 
     switch (args) {
         .help => {
-            std.Io.File.stdout().writeStreamingAll(io, cli.help_msg) catch |err| {
-                std.log.err("failed to write help message: {s}", .{@errorName(err)});
-                return 1;
-            };
+            std.Io.File.stdout().writeStreamingAll(io, cli.help_msg) catch return 1;
             return 0;
         },
         .full => |full_args| return mainArgs(io, gpa, full_args),
