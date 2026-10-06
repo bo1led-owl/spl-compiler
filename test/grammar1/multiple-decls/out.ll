@@ -11,10 +11,10 @@ entry:
   store i64 2, ptr %b, align 8
   %c = alloca i64, align 8
   store i64 3, ptr %c, align 8
-  %a1 = load i64, ptr %a, align 8
-  %b2 = load i64, ptr %b, align 8
-  %addtmp = add i64 %a1, %b2
-  %c3 = load i64, ptr %c, align 8
-  %addtmp4 = add i64 %addtmp, %c3
-  ret i64 %addtmp4
+  %0 = load i64, ptr %a, align 8
+  %1 = load i64, ptr %b, align 8
+  %2 = add i64 %0, %1
+  %3 = load i64, ptr %c, align 8
+  %4 = add i64 %2, %3
+  ret i64 %4
 }
