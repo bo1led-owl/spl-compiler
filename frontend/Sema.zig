@@ -48,8 +48,9 @@ fn report(self: *Self, span: Source.Span, comptime fmt: []const u8, args: anytyp
     try self.errors.report(self.gpa, span, fmt, args);
 }
 
-const NodeInfo = packed struct(u1) {
+const NodeInfo = packed struct(u2) {
     is_assignable: bool = false,
+    is_terminator: bool = false,
 };
 
 fn enterScope(self: *Self) !void {
@@ -75,8 +76,14 @@ fn visitNode(self: *Self, node_index: Ast.Node.Index) (std.mem.Allocator.Error |
                 return .{};
             }
 
+            var seen_terminator = false;
             for (body) |i| {
-                _ = try self.visitNode(@fromBackingInt(i));
+                if (seen_terminator) {
+                    try self.report(self.spanByNode(@fromBackingInt(i)), "unreachable code", .{});
+                }
+
+                const info = try self.visitNode(@fromBackingInt(i));
+                seen_terminator |= info.is_terminator;
             }
 
             const last_node = self.ast.nodes.get(body[body.len - 1]);
@@ -93,11 +100,19 @@ fn visitNode(self: *Self, node_index: Ast.Node.Index) (std.mem.Allocator.Error |
         },
         .block => {
             try self.enterScope();
+
+            var seen_terminator = false;
             for (self.ast.extractExtras(self.ast.nodeData(node_index).extra_range)) |i| {
-                _ = try self.visitNode(@fromBackingInt(i));
+                if (seen_terminator) {
+                    try self.report(self.spanByNode(@fromBackingInt(i)), "unreachable code", .{});
+                }
+
+                const info = try self.visitNode(@fromBackingInt(i));
+                seen_terminator |= info.is_terminator;
             }
+
             self.leaveScope();
-            return .{};
+            return .{ .is_terminator = seen_terminator };
         },
         .if_full, .if_simple => {
             const info = Ast.info.ifAny(self.ast, node_index);
@@ -135,13 +150,13 @@ fn visitNode(self: *Self, node_index: Ast.Node.Index) (std.mem.Allocator.Error |
             if (!self.inside_loop) {
                 try self.report(self.spanByNode(node_index), "`continue` outside of a loop", .{});
             }
-            return .{};
+            return .{ .is_terminator = true };
         },
         .@"break" => {
             if (!self.inside_loop) {
                 try self.report(self.spanByNode(node_index), "`break` outside of a loop", .{});
             }
-            return .{};
+            return .{ .is_terminator = true };
         },
         .var_decl => {
             const info = Ast.info.varDecl(self.ast, node_index);
@@ -203,7 +218,7 @@ fn visitNode(self: *Self, node_index: Ast.Node.Index) (std.mem.Allocator.Error |
         },
         .@"return" => {
             _ = try self.visitNode(self.ast.nodeData(node_index).node);
-            return .{};
+            return .{ .is_terminator = true };
         },
         .unary => {
             _ = try self.visitNode(self.ast.nodeData(node_index).node);

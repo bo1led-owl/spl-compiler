@@ -18,13 +18,22 @@ pub const Error = error{
 };
 
 gpa: std.mem.Allocator,
+
 source: Source,
 tokens: lex.TokenList,
 ast: Ast,
+
+i64Type: c.LLVMTypeRef,
 context: c.LLVMContextRef,
 module: c.LLVMModuleRef,
 builder: c.LLVMBuilderRef,
+function: c.LLVMValueRef,
+
 vars: std.StringHashMapUnmanaged(c.LLVMValueRef),
+loop_stack: std.ArrayList(struct {
+    header: c.LLVMBasicBlockRef,
+    exit_block: c.LLVMBasicBlockRef,
+}),
 
 pub fn init(
     gpa: std.mem.Allocator,
@@ -33,18 +42,25 @@ pub fn init(
     ast: Ast,
 ) Self {
     const context = c.LLVMContextCreate();
-    const module = c.LLVMModuleCreateWithName("spl");
+    const module = c.LLVMModuleCreateWithName("spl"); // "spl" may be replaced with actual filename
     const builder = c.LLVMCreateBuilderInContext(context);
+    const i64Type = c.LLVMInt64TypeInContext(context);
 
     return .{
         .gpa = gpa,
+
         .source = source,
         .tokens = tokens,
         .ast = ast,
+
+        .i64Type = i64Type,
         .context = context,
         .module = module,
         .builder = builder,
+        .function = c.LLVMAddFunction(module, "main", c.LLVMFunctionType(i64Type, null, 0, 0)),
+
         .vars = .empty,
+        .loop_stack = .empty,
     };
 }
 
@@ -53,6 +69,7 @@ pub fn deinit(self: *Self) void {
     c.LLVMDisposeModule(self.module);
     c.LLVMContextDispose(self.context);
     self.vars.deinit(self.gpa);
+    self.loop_stack.deinit(self.gpa);
     self.* = undefined;
 }
 
@@ -113,26 +130,140 @@ fn checkLlvmBool(comptime function: anytype, args: anytype, err: anyerror) !void
     }
 }
 
-fn i64Type(self: Self) c.LLVMTypeRef {
-    return c.LLVMInt64TypeInContext(self.context);
+fn getCurrentBlock(self: Self) c.LLVMBasicBlockRef {
+    return c.LLVMGetInsertBlock(self.builder);
 }
 
-fn gen(self: *Self, node_index: Ast.Node.Index) !c.LLVMValueRef {
+fn newBasicBlock(self: *Self, name: [*:0]const u8) c.LLVMBasicBlockRef {
+    return c.LLVMAppendBasicBlock(self.function, name);
+}
+
+fn positionBuilderAtEnd(self: *Self, bb: c.LLVMBasicBlockRef) void {
+    c.LLVMPositionBuilderAtEnd(self.builder, bb);
+}
+
+const GenResult = struct {
+    value: c.LLVMValueRef = null,
+    is_terminator: bool = false,
+
+    pub const terminator: GenResult = .{ .is_terminator = true };
+};
+
+fn gen(self: *Self, node_index: Ast.Node.Index) !GenResult {
     const node = self.ast.nodes.get(@backingInt(node_index));
 
     switch (node.kind) {
         .recovery => unreachable,
         .root => {
-            const function_type: c.LLVMTypeRef = c.LLVMFunctionType(self.i64Type(), null, 0, 0);
-            const function: c.LLVMValueRef = c.LLVMAddFunction(self.module, "main", function_type);
-            const entry: c.LLVMBasicBlockRef = c.LLVMAppendBasicBlock(function, "entry");
-            c.LLVMPositionBuilderAtEnd(self.builder, entry);
+            const entry = self.newBasicBlock("entry");
+            self.positionBuilderAtEnd(entry);
 
             for (self.ast.extractExtras(node.data.extra_range)) |i| {
                 _ = try self.gen(@fromBackingInt(i));
             }
 
-            return function;
+            return .{};
+        },
+        .block => {
+            var seen_terminator = false;
+            for (self.ast.extractExtras(node.data.extra_range)) |i| {
+                const info = try self.gen(@fromBackingInt(i));
+                seen_terminator |= info.is_terminator;
+            }
+
+            return .{ .is_terminator = seen_terminator };
+        },
+        .if_simple, .if_full => {
+            const then_block = self.newBasicBlock("");
+            const meet_block = self.newBasicBlock("");
+
+            const info = Ast.info.ifAny(self.ast, node_index);
+            const cond = (try self.gen(info.cond)).value;
+            const header = self.getCurrentBlock();
+
+            self.positionBuilderAtEnd(then_block);
+            const then_info = try self.gen(info.then_node);
+            if (!then_info.is_terminator) {
+                _ = c.LLVMBuildBr(self.builder, meet_block);
+            }
+
+            const else_block = if (info.else_node.toIndex()) |else_node| else_present: {
+                const else_block = self.newBasicBlock("");
+                self.positionBuilderAtEnd(else_block);
+                const else_info = try self.gen(else_node);
+                if (!else_info.is_terminator) {
+                    _ = c.LLVMBuildBr(self.builder, meet_block);
+                }
+                break :else_present else_block;
+            } else null;
+
+            self.positionBuilderAtEnd(header);
+            _ = c.LLVMBuildCondBr(
+                self.builder,
+                c.LLVMBuildICmp(
+                    self.builder,
+                    c.LLVMIntNE,
+                    cond,
+                    c.LLVMConstInt(self.i64Type, 0, @intFromBool(false)),
+                    "",
+                ),
+                then_block,
+                else_block orelse meet_block,
+            );
+
+            self.positionBuilderAtEnd(meet_block);
+            return .{};
+        },
+        .@"while" => {
+            const cond_node, const body_node = self.ast.nodeData(node_index).node_node;
+
+            const header = self.newBasicBlock("");
+            const body = self.newBasicBlock("");
+            const exit_block = self.newBasicBlock("");
+
+            // link current block to header
+            _ = c.LLVMBuildBr(self.builder, header);
+
+            self.positionBuilderAtEnd(header);
+            const cond = (try self.gen(cond_node)).value;
+            _ = c.LLVMBuildCondBr(
+                self.builder,
+                c.LLVMBuildICmp(
+                    self.builder,
+                    c.LLVMIntNE,
+                    cond,
+                    c.LLVMConstInt(self.i64Type, 0, @intFromBool(false)),
+                    "",
+                ),
+                body,
+                exit_block,
+            );
+
+            try self.loop_stack.append(self.gpa, .{
+                .header = header,
+                .exit_block = exit_block,
+            });
+
+            self.positionBuilderAtEnd(body);
+            const body_info = try self.gen(body_node);
+            if (!body_info.is_terminator) {
+                _ = c.LLVMBuildBr(self.builder, header);
+            }
+
+            _ = self.loop_stack.pop();
+
+            self.positionBuilderAtEnd(exit_block);
+            return .{};
+        },
+        .@"continue" => {
+            const header = self.loop_stack.last().?.header;
+            _ = c.LLVMBuildBr(self.builder, header);
+            return .terminator;
+        },
+        .@"break" => {
+            const exit_block = self.loop_stack.last().?.exit_block;
+            _ = c.LLVMBuildBr(self.builder, exit_block);
+            return .terminator;
         },
         .var_decl => {
             const name = self.source.tokenLiteral(self.tokens.get(node.token + 1));
@@ -141,55 +272,129 @@ fn gen(self: *Self, node_index: Ast.Node.Index) !c.LLVMValueRef {
             @memcpy(null_terminated_name[0..name.len], name);
             null_terminated_name[name.len] = 0;
 
-            const alloca = c.LLVMBuildAlloca(self.builder, self.i64Type(), &null_terminated_name);
+            const alloca = c.LLVMBuildAlloca(self.builder, self.i64Type, &null_terminated_name);
             try self.vars.put(self.gpa, name, alloca);
 
-            const value = try self.gen(node.data.node);
+            const value = (try self.gen(node.data.node)).value;
             _ = c.LLVMBuildStore(self.builder, value, alloca);
 
-            return alloca;
+            return .{};
         },
         .name_ref => {
             const name = self.source.tokenLiteral(self.tokens.get(node.token));
             const alloca = self.vars.get(name).?;
-            return c.LLVMBuildLoad2(self.builder, self.i64Type(), alloca, "");
+            return .{ .value = c.LLVMBuildLoad2(self.builder, self.i64Type, alloca, "") };
+        },
+        .bool_literal => {
+            const value = self.tokens.items(.kind)[node.token] == .kw_true;
+            return .{ .value = c.LLVMConstInt(self.i64Type, @intFromBool(value), @intFromBool(false)) };
         },
         .number => {
             const literal = self.source.tokenLiteral(self.tokens.get(node.token));
             const value = std.fmt.parseUnsigned(u64, literal, 10) catch
                 @panic("integer literals must be verified before codegen");
-            return c.LLVMConstInt(self.i64Type(), value, @intFromBool(false));
+            return .{ .value = c.LLVMConstInt(self.i64Type, value, @intFromBool(false)) };
         },
         .@"return" => {
-            const value = try self.gen(node.data.node);
-            return c.LLVMBuildRet(self.builder, value);
+            const value = (try self.gen(node.data.node)).value;
+            _ = c.LLVMBuildRet(self.builder, value);
+            return .terminator;
         },
         .unary => {
-            const value = try self.gen(node.data.node);
+            const value = (try self.gen(node.data.node)).value;
 
             const token_kind = self.tokens.items(.kind)[node.token];
             switch (token_kind) {
-                .minus => return c.LLVMBuildNeg(self.builder, value, ""),
+                .minus => return .{ .value = c.LLVMBuildNeg(self.builder, value, "") },
+                .bang => {
+                    const cmp = c.LLVMBuildICmp(
+                        self.builder,
+                        c.LLVMIntEQ,
+                        value,
+                        c.LLVMConstInt(self.i64Type, 0, @intFromBool(false)),
+                        "",
+                    );
+                    return .{ .value = c.LLVMBuildZExt(self.builder, cmp, self.i64Type, "") };
+                },
                 else => unreachable,
             }
         },
         .binary => {
-            const lhs = try self.gen(node.data.node_node.@"0");
-            const rhs = try self.gen(node.data.node_node.@"1");
+            const lhs = (try self.gen(node.data.node_node.@"0")).value;
 
             const token_kind = self.tokens.items(.kind)[node.token];
             switch (token_kind) {
-                .plus => return c.LLVMBuildAdd(self.builder, lhs, rhs, ""),
-                .minus => return c.LLVMBuildSub(self.builder, lhs, rhs, ""),
-                .asterisk => return c.LLVMBuildMul(self.builder, lhs, rhs, ""),
-                .slash => return c.LLVMBuildSDiv(self.builder, lhs, rhs, ""),
+                .plus, .minus, .asterisk, .slash => {
+                    const rhs = (try self.gen(node.data.node_node.@"1")).value;
+                    return .{ .value = switch (token_kind) {
+                        .plus => c.LLVMBuildAdd(self.builder, lhs, rhs, ""),
+                        .minus => c.LLVMBuildSub(self.builder, lhs, rhs, ""),
+                        .asterisk => c.LLVMBuildMul(self.builder, lhs, rhs, ""),
+                        .slash => c.LLVMBuildSDiv(self.builder, lhs, rhs, ""),
+                        else => unreachable,
+                    } };
+                },
+                .eq, .ne, .lt, .gt, .le, .ge => {
+                    const rhs = (try self.gen(node.data.node_node.@"1")).value;
+                    const pred: c.LLVMIntPredicate = switch (token_kind) {
+                        .eq => c.LLVMIntEQ,
+                        .ne => c.LLVMIntNE,
+                        .lt => c.LLVMIntSLT,
+                        .le => c.LLVMIntSLE,
+                        .gt => c.LLVMIntSGT,
+                        .ge => c.LLVMIntSGE,
+                        else => unreachable,
+                    };
+                    const cmp = c.LLVMBuildICmp(self.builder, pred, lhs, rhs, "");
+                    return .{ .value = c.LLVMBuildZExt(self.builder, cmp, self.i64Type, "") };
+                },
+                .logical_and, .logical_or => {
+                    const lhs_block = self.getCurrentBlock();
+
+                    const rhs_block = self.newBasicBlock("");
+                    const next_block = self.newBasicBlock("");
+
+                    _ = c.LLVMBuildCondBr(
+                        self.builder,
+                        c.LLVMBuildICmp(
+                            self.builder,
+                            if (token_kind == .logical_and) c.LLVMIntEQ else c.LLVMIntNE,
+                            lhs,
+                            c.LLVMConstInt(self.i64Type, 0, @intFromBool(false)),
+                            "",
+                        ),
+                        next_block,
+                        rhs_block,
+                    );
+
+                    self.positionBuilderAtEnd(rhs_block);
+                    const rhs = (try self.gen(node.data.node_node.@"1")).value;
+                    _ = c.LLVMBuildBr(self.builder, next_block);
+
+                    self.positionBuilderAtEnd(next_block);
+                    const res = c.LLVMBuildPhi(self.builder, self.i64Type, "");
+
+                    var incoming_values: [2]c.LLVMValueRef = .{
+                        c.LLVMConstInt(
+                            self.i64Type,
+                            @intFromBool(token_kind == .logical_or),
+                            @intFromBool(false),
+                        ),
+                        rhs,
+                    };
+                    var incoming_blocks: [2]c.LLVMBasicBlockRef = .{ lhs_block, rhs_block };
+                    c.LLVMAddIncoming(res, @ptrCast(&incoming_values), @ptrCast(&incoming_blocks), 2);
+
+                    return .{ .value = res };
+                },
                 else => unreachable,
             }
         },
         .assign => {
             const dest = self.genStorable(node.data.node_node.@"0");
-            const src = try self.gen(node.data.node_node.@"1");
-            return c.LLVMBuildStore(self.builder, src, dest);
+            const src = (try self.gen(node.data.node_node.@"1")).value;
+            _ = c.LLVMBuildStore(self.builder, src, dest);
+            return .{};
         },
     }
 }
@@ -211,6 +416,13 @@ fn genStorable(self: *Self, node_index: Ast.Node.Index) c.LLVMValueRef {
         .unary,
         .binary,
         .assign,
+        .@"break",
+        .@"continue",
+        .@"while",
+        .block,
+        .bool_literal,
+        .if_full,
+        .if_simple,
         => unreachable,
     }
 }

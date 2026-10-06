@@ -32,7 +32,7 @@ pub const Args = union(enum) {
     };
 
     pub const Full = struct {
-        source_path: []const u8,
+        source_path: [:0]const u8,
         output_path: [:0]const u8,
         tokens_dump_path: ?[]const u8,
         ast_dump_path: ?[]const u8,
@@ -47,7 +47,7 @@ pub const Args = union(enum) {
     pub fn parse(args: std.process.Args) ParseError!Args {
         const Next = enum { tokens_dump, ast_dump, output };
 
-        var source_path: ?[]const u8 = null;
+        var source_path: ?[:0]const u8 = null;
         var output_path: ?[:0]const u8 = null;
         var tokens_dump_path: ?[]const u8 = null;
         var ast_dump_path: ?[]const u8 = null;

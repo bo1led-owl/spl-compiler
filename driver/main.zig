@@ -6,8 +6,6 @@ const cli = @import("cli.zig");
 var stdout_buffer: [4096]u8 align(std.heap.page_size_min) = undefined;
 var dump_buffer: [4096]u8 align(std.heap.page_size_min) = undefined;
 
-const enable_codegen = false;
-
 pub fn main(init: std.process.Init.Minimal) u8 {
     const smp = std.heap.smp_allocator;
 
@@ -126,37 +124,35 @@ fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: cli.Args.Full) u8 {
 
     defer if (!args.emit_llvm) gpa.free(llvm_output_path);
 
-    if (enable_codegen) {
-        var codegen = frontend.Codegen.init(gpa, source, tokens, ast);
-        defer codegen.deinit();
-        codegen.run(llvm_output_path, .{ .emit_llvm = args.emit_llvm }) catch |err| {
-            std.log.err("failed to generate code: {s}", .{@errorName(err)});
+    var codegen = frontend.Codegen.init(gpa, source, tokens, ast);
+    defer codegen.deinit();
+    codegen.run(llvm_output_path, .{ .emit_llvm = args.emit_llvm }) catch |err| {
+        std.log.err("failed to generate code: {s}", .{@errorName(err)});
+        return 1;
+    };
+
+    if (args.emit_llvm) {
+        return 0;
+    }
+
+    const clang_argv: []const []const u8 = &.{ "clang", llvm_output_path, "-o", args.output_path };
+    const res = std.process.run(gpa, io, .{ .argv = clang_argv }) catch |err| {
+        std.log.err("failed to run clang: {s}", .{@errorName(err)});
+        return 1;
+    };
+    gpa.free(res.stdout);
+    defer gpa.free(res.stderr);
+
+    if (res.term.exited != 0) {
+        std.log.err("clang failed with exit code {d}, stderr:\n{s}", .{ res.term.exited, res.stderr });
+        return 1;
+    }
+
+    if (!args.preserve_temp) {
+        std.Io.Dir.cwd().deleteFile(io, llvm_output_path) catch |err| {
+            std.log.err("failed to delete temporary file: {s}", .{@errorName(err)});
             return 1;
         };
-
-        if (args.emit_llvm) {
-            return 0;
-        }
-
-        const clang_argv: []const []const u8 = &.{ "clang", llvm_output_path, "-o", args.output_path };
-        const res = std.process.run(gpa, io, .{ .argv = clang_argv }) catch |err| {
-            std.log.err("failed to run clang: {s}", .{@errorName(err)});
-            return 1;
-        };
-        gpa.free(res.stdout);
-        defer gpa.free(res.stderr);
-
-        if (res.term.exited != 0) {
-            std.log.err("clang failed with exit code {d}, stderr:\n{s}", .{ res.term.exited, res.stderr });
-            return 1;
-        }
-
-        if (!args.preserve_temp) {
-            std.Io.Dir.cwd().deleteFile(io, llvm_output_path) catch |err| {
-                std.log.err("failed to delete temporary file: {s}", .{@errorName(err)});
-                return 1;
-            };
-        }
     }
 
     return 0;
