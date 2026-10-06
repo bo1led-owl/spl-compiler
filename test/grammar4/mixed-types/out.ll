@@ -6,7 +6,7 @@ target triple = "x86_64-unknown-linux-gnu"
 define i64 @main() {
 entry:
   %i32 = alloca i32, align 4
-  store i32 1000, ptr %i32, align 4
+  store i32 250, ptr %i32, align 4
   %i16 = alloca i16, align 2
   %i321 = load i32, ptr %i32, align 4
   %trunctmp = trunc i32 %i321 to i16

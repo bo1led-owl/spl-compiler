@@ -18,6 +18,7 @@ program : topDeclaration* EOF;
 topDeclaration
     : externDeclaration
     | funcDeclaration
+    ;
 
 // extern declaration for C interop.
 // Example: extern def foo(a, b);

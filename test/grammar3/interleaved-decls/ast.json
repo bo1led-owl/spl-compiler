@@ -49,7 +49,7 @@
     },
     {
       "line": 5,
-      "column": 16,
+      "column": 24,
       "kind": "Ident",
       "elems": []
     }
@@ -104,6 +104,12 @@
       "column": 12,
       "kind": "Ident",
       "elems": []
+    },
+    {
+      "line": 11,
+      "column": 20,
+      "kind": "Ident",
+      "elems": []
     }
     ]
   },
@@ -125,11 +131,81 @@
       "elems": [
       {
         "line": 14,
+        "column": 12,
+        "kind": "Call",
+        "elems": [
+        {
+          "line": 14,
+          "column": 5,
+          "kind": "Ident",
+          "elems": []
+        },
+        {
+          "line": 14,
+          "column": 13,
+          "kind": "IntLiteral",
+          "elems": []
+        }
+        ]
+      },
+      {
+        "line": 15,
+        "column": 12,
+        "kind": "Call",
+        "elems": [
+        {
+          "line": 15,
+          "column": 5,
+          "kind": "Ident",
+          "elems": []
+        },
+        {
+          "line": 15,
+          "column": 13,
+          "kind": "IntLiteral",
+          "elems": []
+        }
+        ]
+      },
+      {
+        "line": 16,
+        "column": 16,
+        "kind": "Call",
+        "elems": [
+        {
+          "line": 16,
+          "column": 5,
+          "kind": "Ident",
+          "elems": []
+        },
+        {
+          "line": 16,
+          "column": 20,
+          "kind": "Call",
+          "elems": [
+          {
+            "line": 16,
+            "column": 17,
+            "kind": "Ident",
+            "elems": []
+          },
+          {
+            "line": 16,
+            "column": 21,
+            "kind": "IntLiteral",
+            "elems": []
+          }
+          ]
+        }
+        ]
+      },
+      {
+        "line": 17,
         "column": 5,
         "kind": "Return",
         "elems": [
         {
-          "line": 14,
+          "line": 17,
           "column": 12,
           "kind": "IntLiteral",
           "elems": []

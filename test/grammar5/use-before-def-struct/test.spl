@@ -1,0 +1,11 @@
+struct Config {
+    size: Int64;
+    name: String;
+}
+
+def main(): Int64 {
+    var c: Config;
+    c.size = 3;
+    c.name = "abc";
+    return c.size + 4;
+}

@@ -5,3 +5,4 @@ if (x == 1) {
 } else {
     y = 3;
 }
+return y;

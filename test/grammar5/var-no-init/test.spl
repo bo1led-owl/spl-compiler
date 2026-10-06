@@ -7,7 +7,7 @@ def main(): Int64 {
     var p: Point;
     var arr: Int64[8];
     p.x = 100;
-    p.y = 200;
+    p.y = 150;
     arr[0] = p.x;
     arr[1] = p.y;
     return arr[0] + arr[1];

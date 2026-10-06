@@ -19,21 +19,29 @@ topDeclaration
     : externDeclaration
     | funcDeclaration
     | structDeclaration
+    ;
 
 // extern declaration for C interop with typed parameters and return type.
-externDeclaration : 'extern' 'def' IDENT '(' typedParamList? ')' ':' type ';';
+externDeclaration : 'extern' 'def' IDENT '(' typedParamList? ')' ':' returnType ';';
 
 // Function declaration with typed parameters and return type.
-funcDeclaration : 'def' IDENT '(' typedParamList? ')' ':' type block;
+funcDeclaration : 'def' IDENT '(' typedParamList? ')' ':' returnType block;
 
 // Type annotation on each parameter.
 typedParamList : IDENT ':' type (',' IDENT ':' type)*;
 
-// Types: primitive types, struct type (identifier), array type.
+// Types: primitive types, struct type (identifier), array type. Void is
+// deliberately excluded: it is only reachable through `returnType` (return
+// position), so any other use is a syntax error.
 type : INT8 | INT16 | INT32 | INT64 | BOOL | STRING
      | IDENT
      | type '[' INTEGER_LITERAL ']'
      ;
+
+// Return type of functions and extern declarations. Listed as a separate
+// top-level alternative so the fuzzer generates Void functions with
+// meaningful probability.
+returnType : VOID | type;
 
 statement
     : returnStatement
@@ -54,7 +62,7 @@ structDeclaration : 'struct' IDENT '{' fieldDeclaration* '}';
 
 fieldDeclaration : IDENT ':' type ';';
 
-returnStatement : 'return' expression ';';
+returnStatement : 'return' expression? ';';
 
 // Type annotations are required. Initializer is optional (zero-initialized
 // defaults) so struct and array variables can be declared without one.
@@ -149,6 +157,7 @@ INT32  : 'Int32';
 INT64  : 'Int64';
 BOOL   : 'Bool';
 STRING : 'String';
+VOID   : 'Void';
 
 INTEGER_LITERAL : '0' | NON_ZERO_DIGIT DIGIT*;
 

@@ -104,9 +104,28 @@
         "elems": [
         {
           "line": 7,
-          "column": 12,
-          "kind": "IntLiteral",
-          "elems": []
+          "column": 15,
+          "kind": "Call",
+          "elems": [
+          {
+            "line": 7,
+            "column": 12,
+            "kind": "Ident",
+            "elems": []
+          },
+          {
+            "line": 7,
+            "column": 16,
+            "kind": "IntLiteral",
+            "elems": []
+          },
+          {
+            "line": 7,
+            "column": 19,
+            "kind": "IntLiteral",
+            "elems": []
+          }
+          ]
         }
         ]
       }

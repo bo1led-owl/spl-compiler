@@ -1,0 +1,18 @@
+def log(msg: String): Void {
+    println_string(msg);
+}
+
+def maybe(skip: Bool): Void {
+    if (skip) {
+        return;
+    }
+    println_string("done");
+}
+
+extern def println_string(s: String): Void;
+
+def main(): Int64 {
+    log("hi");
+    maybe(true);
+    return 0;
+}

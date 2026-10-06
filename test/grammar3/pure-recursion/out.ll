@@ -28,5 +28,6 @@ ifmerge:                                          ; preds = %then, %entry
 
 define i64 @main() {
 entry:
-  ret i64 0
+  %calltmp = call i64 @fact(i64 5)
+  ret i64 %calltmp
 }

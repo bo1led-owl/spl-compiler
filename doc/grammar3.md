@@ -142,7 +142,12 @@ SysProLang uses C-style comments:
 All semantic rules from grammar 2 apply, plus:
 
 - **Function definitions** use `def name(params) { body }`. Parameters are passed
-  by value. A function must have a `return` statement if it returns a value.
+  by value.
+- **Every function must end with a `return` statement** on every control-flow path.
+  A function body that can fall through the closing `}` without executing `return`
+  is a compile-time error (detected by the semantic analysis stage). There is no
+  `void` return type: a function without an explicit `return` (empty body, or a body
+  ending in a non-`return` statement) is rejected.
 - **Functions are visible anywhere** in the program after they are defined (forward
   references are allowed --- the compiler can collect all function definitions before
   codegen).

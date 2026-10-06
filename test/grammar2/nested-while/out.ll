@@ -7,8 +7,6 @@ define i64 @main() {
 entry:
   %i = alloca i64, align 8
   store i64 0, ptr %i, align 8
-  %j = alloca i64, align 8
-  store i64 0, ptr %j, align 8
   br label %while_header
 
 while_header:                                     ; preds = %while_end4, %entry
@@ -19,10 +17,13 @@ while_header:                                     ; preds = %while_end4, %entry
   br i1 %whilecond, label %while_body, label %while_end
 
 while_body:                                       ; preds = %while_header
+  %j = alloca i64, align 8
+  store i64 0, ptr %j, align 8
   br label %while_header2
 
 while_end:                                        ; preds = %while_header
-  ret i64 0
+  %i12 = load i64, ptr %i, align 8
+  ret i64 %i12
 
 while_header2:                                    ; preds = %while_body3, %while_body
   %j5 = load i64, ptr %j, align 8

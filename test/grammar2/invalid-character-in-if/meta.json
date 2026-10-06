@@ -1,4 +1,12 @@
 {
-  "grammar": "2",
-  "exit": "nonzero"
+  "$schema": "../../schemas/meta.schema.json",
+  "grammar": [
+    "2"
+  ],
+  "stages": [
+    "lexer"
+  ],
+  "exit": {
+    "lexer": "nonzero"
+  }
 }

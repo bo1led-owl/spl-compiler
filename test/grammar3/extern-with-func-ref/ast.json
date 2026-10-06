@@ -37,18 +37,18 @@
     ]
   },
   {
-    "line": 5,
+    "line": 6,
     "column": 1,
     "kind": "ExternDecl",
     "elems": [
     {
-      "line": 5,
+      "line": 6,
       "column": 12,
       "kind": "Ident",
       "elems": []
     },
     {
-      "line": 5,
+      "line": 6,
       "column": 16,
       "kind": "Ident",
       "elems": []
@@ -56,51 +56,51 @@
     ]
   },
   {
-    "line": 7,
+    "line": 8,
     "column": 1,
     "kind": "FuncDecl",
     "elems": [
     {
-      "line": 7,
+      "line": 8,
       "column": 5,
       "kind": "Ident",
       "elems": []
     },
     {
-      "line": 7,
+      "line": 8,
       "column": 12,
       "kind": "Block",
       "elems": [
       {
-        "line": 8,
+        "line": 9,
         "column": 5,
         "kind": "Declare",
         "mut": "var",
         "elems": [
         {
-          "line": 8,
+          "line": 9,
           "column": 9,
           "kind": "Ident",
           "elems": []
         },
         {
-          "line": 8,
+          "line": 9,
           "column": 16,
           "kind": "Call",
           "elems": [
           {
-            "line": 8,
+            "line": 9,
             "column": 13,
             "kind": "Ident",
             "elems": []
           },
           {
-            "line": 8,
+            "line": 9,
             "column": 21,
             "kind": "Call",
             "elems": [
             {
-              "line": 8,
+              "line": 9,
               "column": 17,
               "kind": "Ident",
               "elems": []
@@ -112,14 +112,14 @@
         ]
       },
       {
-        "line": 9,
+        "line": 10,
         "column": 5,
         "kind": "Return",
         "elems": [
         {
-          "line": 9,
+          "line": 10,
           "column": 12,
-          "kind": "IntLiteral",
+          "kind": "Ident",
           "elems": []
         }
         ]

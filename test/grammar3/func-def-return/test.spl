@@ -3,5 +3,5 @@ def foo() {
 }
 
 def main() {
-    return 0;
+    return foo();
 }

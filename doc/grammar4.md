@@ -11,10 +11,10 @@ topDeclaration ::= externDeclaration
                  | funcDeclaration
 
 externDeclaration ::=
-    "extern" "def" IDENT "(" [ typedParamList ] ")" ":" type ";"
+    "extern" "def" IDENT "(" [ typedParamList ] ")" ":" returnType ";"
 
 funcDeclaration ::=
-    "def" IDENT "(" [ typedParamList ] ")" ":" type block
+    "def" IDENT "(" [ typedParamList ] ")" ":" returnType block
 
 typedParamList ::= IDENT ":" type { "," IDENT ":" type }
 
@@ -24,6 +24,13 @@ typedParamList ::= IDENT ":" type { "," IDENT ":" type }
 type ::= "Int8" | "Int16" | "Int32" | "Int64"
        | "Bool"
        | "String"
+
+
+; returnType is the return type of functions and extern declarations. Void is
+; allowed only here: it is not part of `type`, so variable declarations,
+; parameter types, and any other type position reject it syntactically.
+returnType ::= "Void"
+           | type
 
 
 statement ::=
@@ -39,7 +46,7 @@ statement ::=
 
 block ::= "{" { statement } "}"
 
-returnStatement ::= "return" expression ";"
+returnStatement ::= "return" [ expression ] ";"
 
 declarationStatement ::=
     "val" IDENT ":" type "=" expression ";"
@@ -163,6 +170,7 @@ SysProLang uses C-style comments:
 - `Int64`
 - `Bool`
 - `String`
+- `Void`
 - `cast`
 
 ### Semantic rules
@@ -171,6 +179,17 @@ All semantic rules from grammar 3 apply, plus:
 
 - **Type annotations are mandatory** on all variable declarations, function parameters,
   and function return types. The syntax is `var name: Type = expr;`.
+- **The `Void` type** may be used only as a function or `extern` return type:
+  `def noop(): Void { ... }`. A `Void` function returns no value. Its body may
+  end without a `return` statement (implicit `return;` at the closing `}`), and it
+  may use the bare `return;` (no expression) to exit early. Grammar 3 requires every
+  function to end with `return`; from grammar 4 on, this requirement applies only to
+  functions whose return type is not `Void`.
+- **Void is not a value type.** A call to a `Void` function produces no value: it
+  cannot be assigned to a variable, used in an expression, or returned from a
+  non-`Void` function. Since `Void` is not part of the `type` production, writing
+  it in a variable declaration, a parameter type, or any other type position is
+  a syntax error.
 - **No implicit conversions**: values of different types cannot be mixed in expressions.
   Use `cast<Type>(expr)` to explicitly convert between types.
 - **`cast<Type>(expr)** supports:
@@ -214,6 +233,7 @@ These `"kind"` values appear in `tokens.json` golden files, in addition to those
 | `INT64` | `Int64` | Type keyword |
 | `BOOL` | `Bool` | Type keyword |
 | `STRING` | `String` | Type keyword |
+| `VOID` | `Void` | Type keyword (return position only) |
 | `CAST` | `cast` | Type conversion keyword |
 | `COLON` | `:` | Type annotation separator |
 | `STR` | `STRING_LITERAL` | String literal content |

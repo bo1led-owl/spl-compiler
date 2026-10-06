@@ -1,7 +1,11 @@
+def bar() {
+    return 1;
+}
+
 def foo() {
-    bar();
+    return bar();
 }
 
 def main() {
-    return 0;
+    return foo();
 }

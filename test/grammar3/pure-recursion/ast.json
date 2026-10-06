@@ -150,9 +150,22 @@
         "elems": [
         {
           "line": 9,
-          "column": 12,
-          "kind": "IntLiteral",
-          "elems": []
+          "column": 16,
+          "kind": "Call",
+          "elems": [
+          {
+            "line": 9,
+            "column": 12,
+            "kind": "Ident",
+            "elems": []
+          },
+          {
+            "line": 9,
+            "column": 17,
+            "kind": "IntLiteral",
+            "elems": []
+          }
+          ]
         }
         ]
       }

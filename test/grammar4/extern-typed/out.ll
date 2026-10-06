@@ -5,15 +5,8 @@ target triple = "x86_64-unknown-linux-gnu"
 
 declare i64 @putchar(i8)
 
-declare i64 @exit(i64)
-
 define i64 @main() {
 entry:
-  %r = alloca i64, align 8
   %calltmp = call i64 @putchar(i8 65)
-  store i64 %calltmp, ptr %r, align 8
-  %code = alloca i64, align 8
-  store i64 0, ptr %code, align 8
-  %code1 = load i64, ptr %code, align 8
-  ret i64 %code1
+  ret i64 0
 }

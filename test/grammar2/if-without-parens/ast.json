@@ -35,6 +35,19 @@
       ]
     }
     ]
+  },
+  {
+    "line": 4,
+    "column": 1,
+    "kind": "Return",
+    "elems": [
+    {
+      "line": 4,
+      "column": 8,
+      "kind": "IntLiteral",
+      "elems": []
+    }
+    ]
   }
   ]
 }

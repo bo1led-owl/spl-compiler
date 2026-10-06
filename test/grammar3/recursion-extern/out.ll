@@ -36,9 +36,6 @@ entry:
   %result = alloca i64, align 8
   %calltmp = call i64 @fib(i64 10)
   store i64 %calltmp, ptr %result, align 8
-  %c = alloca i64, align 8
-  %calltmp1 = call i64 @getchar()
-  store i64 %calltmp1, ptr %c, align 8
-  %result2 = load i64, ptr %result, align 8
-  ret i64 %result2
+  %result1 = load i64, ptr %result, align 8
+  ret i64 %result1
 }

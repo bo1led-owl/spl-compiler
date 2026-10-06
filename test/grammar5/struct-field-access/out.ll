@@ -10,9 +10,9 @@ entry:
   %r = alloca %Rectangle, align 8
   store %Rectangle zeroinitializer, ptr %r, align 8
   %fieldaddr = getelementptr inbounds nuw %Rectangle, ptr %r, i32 0, i32 0
-  store i64 30, ptr %fieldaddr, align 8
+  store i64 15, ptr %fieldaddr, align 8
   %fieldaddr1 = getelementptr inbounds nuw %Rectangle, ptr %r, i32 0, i32 1
-  store i64 15, ptr %fieldaddr1, align 8
+  store i64 10, ptr %fieldaddr1, align 8
   %area = alloca i64, align 8
   %fieldaddr2 = getelementptr inbounds nuw %Rectangle, ptr %r, i32 0, i32 0
   %fieldtmp = load i64, ptr %fieldaddr2, align 8

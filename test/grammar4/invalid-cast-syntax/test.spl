@@ -1,2 +1,4 @@
-val x: Int64 = cast(42);
-return x;
+def main(): Int64 {
+    val x: Int64 = cast(42);
+    return x;
+}

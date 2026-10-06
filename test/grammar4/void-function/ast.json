@@ -1,0 +1,241 @@
+{
+  "line": 1,
+  "column": 1,
+  "kind": "Program",
+  "elems": [
+  {
+    "line": 1,
+    "column": 1,
+    "kind": "FuncDecl",
+    "returnType": "Void",
+    "elems": [
+    {
+      "line": 1,
+      "column": 5,
+      "kind": "Ident",
+      "elems": []
+    },
+    {
+      "line": 1,
+      "column": 9,
+      "kind": "Param",
+      "type": "String",
+      "elems": [
+      {
+        "line": 1,
+        "column": 9,
+        "kind": "Ident",
+        "elems": []
+      }
+      ]
+    },
+    {
+      "line": 1,
+      "column": 28,
+      "kind": "Block",
+      "elems": [
+      {
+        "line": 2,
+        "column": 19,
+        "kind": "Call",
+        "elems": [
+        {
+          "line": 2,
+          "column": 5,
+          "kind": "Ident",
+          "elems": []
+        },
+        {
+          "line": 2,
+          "column": 20,
+          "kind": "Ident",
+          "elems": []
+        }
+        ]
+      }
+      ]
+    }
+    ]
+  },
+  {
+    "line": 5,
+    "column": 1,
+    "kind": "FuncDecl",
+    "returnType": "Void",
+    "elems": [
+    {
+      "line": 5,
+      "column": 5,
+      "kind": "Ident",
+      "elems": []
+    },
+    {
+      "line": 5,
+      "column": 11,
+      "kind": "Param",
+      "type": "Bool",
+      "elems": [
+      {
+        "line": 5,
+        "column": 11,
+        "kind": "Ident",
+        "elems": []
+      }
+      ]
+    },
+    {
+      "line": 5,
+      "column": 29,
+      "kind": "Block",
+      "elems": [
+      {
+        "line": 6,
+        "column": 5,
+        "kind": "If",
+        "elems": [
+        {
+          "line": 6,
+          "column": 9,
+          "kind": "Ident",
+          "elems": []
+        },
+        {
+          "line": 6,
+          "column": 15,
+          "kind": "Block",
+          "elems": [
+          {
+            "line": 7,
+            "column": 9,
+            "kind": "Return",
+            "elems": []
+          }
+          ]
+        }
+        ]
+      },
+      {
+        "line": 9,
+        "column": 19,
+        "kind": "Call",
+        "elems": [
+        {
+          "line": 9,
+          "column": 5,
+          "kind": "Ident",
+          "elems": []
+        },
+        {
+          "line": 9,
+          "column": 20,
+          "kind": "StringLiteral",
+          "elems": []
+        }
+        ]
+      }
+      ]
+    }
+    ]
+  },
+  {
+    "line": 12,
+    "column": 1,
+    "kind": "ExternDecl",
+    "returnType": "Void",
+    "elems": [
+    {
+      "line": 12,
+      "column": 12,
+      "kind": "Ident",
+      "elems": []
+    },
+    {
+      "line": 12,
+      "column": 27,
+      "kind": "Param",
+      "type": "String",
+      "elems": [
+      {
+        "line": 12,
+        "column": 27,
+        "kind": "Ident",
+        "elems": []
+      }
+      ]
+    }
+    ]
+  },
+  {
+    "line": 14,
+    "column": 1,
+    "kind": "FuncDecl",
+    "returnType": "Int64",
+    "elems": [
+    {
+      "line": 14,
+      "column": 5,
+      "kind": "Ident",
+      "elems": []
+    },
+    {
+      "line": 14,
+      "column": 19,
+      "kind": "Block",
+      "elems": [
+      {
+        "line": 15,
+        "column": 8,
+        "kind": "Call",
+        "elems": [
+        {
+          "line": 15,
+          "column": 5,
+          "kind": "Ident",
+          "elems": []
+        },
+        {
+          "line": 15,
+          "column": 9,
+          "kind": "StringLiteral",
+          "elems": []
+        }
+        ]
+      },
+      {
+        "line": 16,
+        "column": 10,
+        "kind": "Call",
+        "elems": [
+        {
+          "line": 16,
+          "column": 5,
+          "kind": "Ident",
+          "elems": []
+        },
+        {
+          "line": 16,
+          "column": 11,
+          "kind": "BoolLiteral",
+          "elems": []
+        }
+        ]
+      },
+      {
+        "line": 17,
+        "column": 5,
+        "kind": "Return",
+        "elems": [
+        {
+          "line": 17,
+          "column": 12,
+          "kind": "IntLiteral",
+          "elems": []
+        }
+        ]
+      }
+      ]
+    }
+    ]
+  }
+  ]
+}

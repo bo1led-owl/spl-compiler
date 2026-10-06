@@ -1,2 +1,4 @@
-val x = 42;
-return x;
+def main(): Int64 {
+    val x = 42;
+    return x;
+}

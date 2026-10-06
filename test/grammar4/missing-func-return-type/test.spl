@@ -1,0 +1,7 @@
+def foo() {
+    return 42;
+}
+
+def main(): Int64 {
+    return 0;
+}

@@ -59,9 +59,16 @@
         "elems": [
         {
           "line": 6,
-          "column": 12,
-          "kind": "IntLiteral",
-          "elems": []
+          "column": 15,
+          "kind": "Call",
+          "elems": [
+          {
+            "line": 6,
+            "column": 12,
+            "kind": "Ident",
+            "elems": []
+          }
+          ]
         }
         ]
       }

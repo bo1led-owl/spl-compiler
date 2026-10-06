@@ -1,0 +1,4 @@
+def main(): Int64 {
+    val s: String = "bad \q escape";
+    return 0;
+}

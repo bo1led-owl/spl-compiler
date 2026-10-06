@@ -1,0 +1,7 @@
+def main(): Int64 {
+    return helper(5);
+}
+
+def helper(x: Int64): Int64 {
+    return x + 1;
+}

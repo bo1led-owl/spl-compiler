@@ -2,9 +2,10 @@ def noop() {
     return 0;
 }
 
+// Expected: linkage error
 extern def foo(x);
 
 def main() {
     var a = foo(noop());
-    return 0;
+    return a;
 }

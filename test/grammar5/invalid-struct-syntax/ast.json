@@ -43,6 +43,21 @@
         "elems": []
       }
       ]
+    },
+    {
+      "line": 5,
+      "column": 5,
+      "kind": "Declare",
+      "mut": "val",
+      "type": "Int64",
+      "elems": [
+      {
+        "line": 5,
+        "column": 5,
+        "kind": "Ident",
+        "elems": []
+      }
+      ]
     }
     ]
   }

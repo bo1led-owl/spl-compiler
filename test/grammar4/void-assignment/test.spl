@@ -1,0 +1,7 @@
+def log(): Void {
+}
+
+def main(): Int64 {
+    var x: Int64 = log();
+    return x;
+}

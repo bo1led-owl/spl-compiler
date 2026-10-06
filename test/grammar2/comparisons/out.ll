@@ -5,8 +5,8 @@ target triple = "x86_64-unknown-linux-gnu"
 
 define i64 @main() {
 entry:
-  %cmp = alloca i64, align 8
-  store i64 0, ptr %cmp, align 8
+  %cmp1 = alloca i64, align 8
+  store i64 0, ptr %cmp1, align 8
   %cmp2 = alloca i64, align 8
   store i64 1, ptr %cmp2, align 8
   %cmp3 = alloca i64, align 8
@@ -17,5 +17,16 @@ entry:
   store i64 1, ptr %cmp5, align 8
   %cmp6 = alloca i64, align 8
   store i64 0, ptr %cmp6, align 8
-  ret i64 0
+  %cmp11 = load i64, ptr %cmp1, align 8
+  %cmp22 = load i64, ptr %cmp2, align 8
+  %addtmp = add i64 %cmp11, %cmp22
+  %cmp33 = load i64, ptr %cmp3, align 8
+  %addtmp4 = add i64 %addtmp, %cmp33
+  %cmp45 = load i64, ptr %cmp4, align 8
+  %addtmp6 = add i64 %addtmp4, %cmp45
+  %cmp57 = load i64, ptr %cmp5, align 8
+  %addtmp8 = add i64 %addtmp6, %cmp57
+  %cmp69 = load i64, ptr %cmp6, align 8
+  %addtmp10 = add i64 %addtmp8, %cmp69
+  ret i64 %addtmp10
 }

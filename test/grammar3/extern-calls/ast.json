@@ -40,67 +40,52 @@
       "elems": [
       {
         "line": 4,
-        "column": 5,
-        "kind": "Declare",
-        "mut": "var",
+        "column": 12,
+        "kind": "Call",
         "elems": [
         {
           "line": 4,
-          "column": 9,
+          "column": 5,
           "kind": "Ident",
           "elems": []
         },
         {
           "line": 4,
-          "column": 20,
-          "kind": "Call",
-          "elems": [
-          {
-            "line": 4,
-            "column": 13,
-            "kind": "Ident",
-            "elems": []
-          },
-          {
-            "line": 4,
-            "column": 21,
-            "kind": "IntLiteral",
-            "elems": []
-          }
-          ]
+          "column": 13,
+          "kind": "IntLiteral",
+          "elems": []
         }
         ]
       },
       {
         "line": 5,
-        "column": 5,
-        "kind": "Declare",
-        "mut": "var",
+        "column": 12,
+        "kind": "Call",
         "elems": [
         {
           "line": 5,
-          "column": 9,
+          "column": 5,
           "kind": "Ident",
           "elems": []
         },
         {
           "line": 5,
-          "column": 20,
-          "kind": "Call",
-          "elems": [
-          {
-            "line": 5,
-            "column": 13,
-            "kind": "Ident",
-            "elems": []
-          },
-          {
-            "line": 5,
-            "column": 21,
-            "kind": "IntLiteral",
-            "elems": []
-          }
-          ]
+          "column": 13,
+          "kind": "IntLiteral",
+          "elems": []
+        }
+        ]
+      },
+      {
+        "line": 6,
+        "column": 5,
+        "kind": "Return",
+        "elems": [
+        {
+          "line": 6,
+          "column": 12,
+          "kind": "IntLiteral",
+          "elems": []
         }
         ]
       }

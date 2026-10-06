@@ -1,0 +1,7 @@
+def foo(): Void {
+}
+
+def main(): Int64 {
+    foo();
+    return 0;
+}

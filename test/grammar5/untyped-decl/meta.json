@@ -1,10 +1,13 @@
 {
-  "grammar": {
-    "lexer": ">=5",
-    "parser": ["5"]
-  },
+  "$schema": "../../schemas/meta.schema.json",
+  "grammar": [
+    "5"
+  ],
+  "stages": [
+    "lexer",
+    "parser"
+  ],
   "exit": {
-    "lexer": 0,
     "parser": "nonzero"
   }
 }

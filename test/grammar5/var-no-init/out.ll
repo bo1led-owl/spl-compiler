@@ -14,7 +14,7 @@ entry:
   %fieldaddr = getelementptr inbounds nuw %Point, ptr %p, i32 0, i32 0
   store i64 100, ptr %fieldaddr, align 8
   %fieldaddr1 = getelementptr inbounds nuw %Point, ptr %p, i32 0, i32 1
-  store i64 200, ptr %fieldaddr1, align 8
+  store i64 150, ptr %fieldaddr1, align 8
   %subsaddr = getelementptr [8 x i64], ptr %arr, i32 0, i64 0
   %fieldaddr2 = getelementptr inbounds nuw %Point, ptr %p, i32 0, i32 0
   %fieldtmp = load i64, ptr %fieldaddr2, align 8

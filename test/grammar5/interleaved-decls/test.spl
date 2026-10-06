@@ -3,26 +3,28 @@ struct Point {
     y: Int64;
 }
 
-extern def foo(p: Point): Int64;
+extern def println_int(v: Int64): Void;
 
 def bar(): Int64 {
     return 42;
 }
 
-struct Line {
-    start: Point;
-    end: Int64;
+extern def putchar(c: Int8): Void;
+
+def baz(p: Point): Int64 {
+    return p.x + p.y;
 }
 
-extern def baz(x: Int64): Int64;
-
-def makePoint(x: Int64, y: Int64): Point {
+def makePoint(px: Int64, py: Int64): Point {
     var p: Point;
-    p.x = x;
-    p.y = y;
+    p.x = px;
+    p.y = py;
     return p;
 }
 
 def main(): Int64 {
-    return 0;
+    putchar(cast<Int8>(66));
+    putchar(cast<Int8>(10));
+    println_int(baz(makePoint(4, 5)));
+    return bar();
 }

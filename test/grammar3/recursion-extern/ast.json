@@ -218,37 +218,10 @@
       {
         "line": 12,
         "column": 5,
-        "kind": "Declare",
-        "mut": "var",
-        "elems": [
-        {
-          "line": 12,
-          "column": 9,
-          "kind": "Ident",
-          "elems": []
-        },
-        {
-          "line": 12,
-          "column": 20,
-          "kind": "Call",
-          "elems": [
-          {
-            "line": 12,
-            "column": 13,
-            "kind": "Ident",
-            "elems": []
-          }
-          ]
-        }
-        ]
-      },
-      {
-        "line": 13,
-        "column": 5,
         "kind": "Return",
         "elems": [
         {
-          "line": 13,
+          "line": 12,
           "column": 12,
           "kind": "Ident",
           "elems": []

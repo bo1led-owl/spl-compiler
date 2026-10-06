@@ -16,5 +16,6 @@ entry:
   %calltmp = call i64 @noop()
   %calltmp1 = call i64 @foo(i64 %calltmp)
   store i64 %calltmp1, ptr %a, align 8
-  ret i64 0
+  %a2 = load i64, ptr %a, align 8
+  ret i64 %a2
 }

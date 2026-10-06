@@ -12,10 +12,10 @@ topDeclaration ::= externDeclaration
                  | structDeclaration
 
 externDeclaration ::=
-    "extern" "def" IDENT "(" [ typedParamList ] ")" ":" type ";"
+    "extern" "def" IDENT "(" [ typedParamList ] ")" ":" returnType ";"
 
 funcDeclaration ::=
-    "def" IDENT "(" [ typedParamList ] ")" ":" type block
+    "def" IDENT "(" [ typedParamList ] ")" ":" returnType block
 
 typedParamList ::= IDENT ":" type { "," IDENT ":" type }
 
@@ -27,6 +27,13 @@ type ::= "Int8" | "Int16" | "Int32" | "Int64"
        | "String"
        | IDENT                          ; struct type (name)
        | type "[" INTEGER_LITERAL "]"   ; array type
+
+
+; returnType is the return type of functions and extern declarations. Void is
+; allowed only here: it is not part of `type`, so variable declarations,
+; parameter types, struct fields, and array element types reject it syntactically.
+returnType ::= "Void"
+           | type
 
 
 statement ::=
@@ -47,7 +54,7 @@ structDeclaration ::=
 
 fieldDeclaration ::= IDENT ":" type ";"
 
-returnStatement ::= "return" expression ";"
+returnStatement ::= "return" [ expression ] ";"
 
 declarationStatement ::=
     "val" IDENT ":" type "=" expression ";"
@@ -179,6 +186,7 @@ SysProLang uses C-style comments:
 - `Int64`
 - `Bool`
 - `String`
+- `Void`
 - `cast`
 - `struct`
 
@@ -186,6 +194,12 @@ SysProLang uses C-style comments:
 
 All semantic rules from grammar 4 apply, plus:
 
+- **The `Void` type** may be used only as a function or `extern` return type, as in
+  grammar 4: a `Void` function returns no value, may fall through its body, and may
+  use the bare `return;`. Since `Void` is not part of the `type` production, writing
+  it in a variable declaration, a parameter type, a struct field, or an array
+  element type is a syntax error. A call to a `Void` function produces no value and
+  cannot be used where a value is expected.
 - **Struct definitions** use `struct Name { field: Type; ... }`. Struct names must
   start with an uppercase letter.
 - **Struct fields** can be any type: `Int8`, `Int16`, `Int32`, `Int64`, `Bool`,

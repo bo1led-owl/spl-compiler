@@ -4,5 +4,5 @@ def add(a, b) {
 }
 
 def main() {
-    return 0;
+    return add(2, 3);
 }

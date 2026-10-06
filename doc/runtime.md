@@ -31,6 +31,19 @@ you will need to create them yourself following the interface below.
 | `print_string` | `void print_string(const char* val)` | Print a string to stdout |
 | `println_string` | `void println_string(const char* val)` | Print a string followed by newline |
 
+From grammar 4 on, these are declared in SysProLang as `Void` functions:
+
+```spl
+extern def print_int(x: Int64): Void;
+extern def println_int(x: Int64): Void;
+extern def println(): Void;
+extern def print_string(s: String): Void;
+extern def println_string(s: String): Void;
+```
+
+> Grammar 3 has no `Void` type: declare runtime functions with an omitted or
+> dummy return type appropriate for your implementation (all values are `Int64`).
+
 These are called via the `extern` mechanism introduced in grammar 3.
 They are compiled as a separate C library and linked with your output.
 

@@ -29,6 +29,19 @@
       ]
     }
     ]
+  },
+  {
+    "line": 2,
+    "column": 1,
+    "kind": "Return",
+    "elems": [
+    {
+      "line": 2,
+      "column": 8,
+      "kind": "Ident",
+      "elems": []
+    }
+    ]
   }
   ]
 }

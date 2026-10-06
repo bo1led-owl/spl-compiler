@@ -1,6 +1,16 @@
 {
-  "grammar": {
-    "lexer": ">=3",
-    "parser": ["3"]
+  "$schema": "../../schemas/meta.schema.json",
+  "grammar": [
+    "3"
+  ],
+  "stages": [
+    "lexer",
+    "parser",
+    "llvm",
+    "compiler",
+    "run"
+  ],
+  "exit": {
+    "run": 10
   }
 }

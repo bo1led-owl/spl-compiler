@@ -122,7 +122,7 @@
           },
           {
             "line": 5,
-            "column": 14,
+            "column": 13,
             "kind": "IntLiteral",
             "elems": []
           }
@@ -130,7 +130,7 @@
         },
         {
           "line": 5,
-          "column": 17,
+          "column": 16,
           "kind": "Block",
           "elems": [
           {
@@ -176,6 +176,19 @@
         ]
       }
       ]
+    }
+    ]
+  },
+  {
+    "line": 10,
+    "column": 1,
+    "kind": "Return",
+    "elems": [
+    {
+      "line": 10,
+      "column": 8,
+      "kind": "Ident",
+      "elems": []
     }
     ]
   }

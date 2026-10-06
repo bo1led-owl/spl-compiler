@@ -10,3 +10,4 @@ if (x) {
 } else {
     z = 3;
 }
+return z;

@@ -20,7 +20,7 @@ jobs:
         run: pip install pytest
       - name: Validate JSON schemas
         run: |
-          #pip install jsonschema
-          #python test/validate_schemas.py
+          pip install jsonschema
+          python test/validate_schemas.py
       - name: Run harness self-tests
         run: python -m pytest test/.self-test -v

@@ -9,6 +9,5 @@ extern def getchar();
 
 def main() {
     var result = fib(10);
-    var c = getchar();
     return result;
 }

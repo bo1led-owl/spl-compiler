@@ -1,0 +1,6 @@
+extern def println_string(s: String): Void;
+
+def main(): Int64 {
+    println_string("hello world");
+    return 0;
+}

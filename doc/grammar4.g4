@@ -19,18 +19,26 @@ program : topDeclaration* EOF;
 topDeclaration
     : externDeclaration
     | funcDeclaration
+    ;
 
 // extern declaration for C interop with typed parameters and return type.
-externDeclaration : 'extern' 'def' IDENT '(' typedParamList? ')' ':' type ';';
+externDeclaration : 'extern' 'def' IDENT '(' typedParamList? ')' ':' returnType ';';
 
 // Function declaration with typed parameters and return type.
-funcDeclaration : 'def' IDENT '(' typedParamList? ')' ':' type block;
+funcDeclaration : 'def' IDENT '(' typedParamList? ')' ':' returnType block;
 
 // Type annotation on each parameter.
 typedParamList : IDENT ':' type (',' IDENT ':' type)*;
 
-// Primitive and built-in types.
+// Primitive and built-in types. Void is deliberately excluded: it is only
+// reachable through `returnType` (return position), so any other use is a
+// syntax error.
 type : INT8 | INT16 | INT32 | INT64 | BOOL | STRING;
+
+// Return type of functions and extern declarations. Listed as a separate
+// top-level alternative so the fuzzer generates Void functions with
+// meaningful probability.
+returnType : VOID | type;
 
 statement
     : returnStatement
@@ -46,7 +54,7 @@ statement
 
 block : '{' statement* '}';
 
-returnStatement : 'return' expression ';';
+returnStatement : 'return' expression? ';';
 
 // Type annotations are required on all declarations.
 declarationStatement : ('val' | 'var') IDENT ':' type '=' expression ';';
@@ -132,6 +140,7 @@ INT32  : 'Int32';
 INT64  : 'Int64';
 BOOL   : 'Bool';
 STRING : 'String';
+VOID   : 'Void';
 
 INTEGER_LITERAL : '0' | NON_ZERO_DIGIT DIGIT*;
 

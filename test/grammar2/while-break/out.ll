@@ -24,7 +24,8 @@ while_body:                                       ; preds = %while_header
   br i1 %ifcond, label %then, label %ifmerge
 
 while_end:                                        ; preds = %then, %while_header
-  ret i64 0
+  %i6 = load i64, ptr %i, align 8
+  ret i64 %i6
 
 then:                                             ; preds = %while_body
   br label %while_end

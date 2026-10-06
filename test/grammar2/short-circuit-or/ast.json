@@ -46,26 +46,46 @@
   {
     "line": 3,
     "column": 1,
-    "kind": "If",
+    "kind": "Declare",
+    "mut": "var",
     "elems": [
     {
       "line": 3,
+      "column": 5,
+      "kind": "Ident",
+      "elems": []
+    },
+    {
+      "line": 3,
+      "column": 9,
+      "kind": "IntLiteral",
+      "elems": []
+    }
+    ]
+  },
+  {
+    "line": 4,
+    "column": 1,
+    "kind": "If",
+    "elems": [
+    {
+      "line": 4,
       "column": 12,
       "kind": "BinOp",
       "elems": [
       {
-        "line": 3,
+        "line": 4,
         "column": 7,
         "kind": "BinOp",
         "elems": [
         {
-          "line": 3,
+          "line": 4,
           "column": 5,
           "kind": "Ident",
           "elems": []
         },
         {
-          "line": 3,
+          "line": 4,
           "column": 10,
           "kind": "IntLiteral",
           "elems": []
@@ -73,18 +93,18 @@
         ]
       },
       {
-        "line": 3,
+        "line": 4,
         "column": 17,
         "kind": "BinOp",
         "elems": [
         {
-          "line": 3,
+          "line": 4,
           "column": 15,
           "kind": "Ident",
           "elems": []
         },
         {
-          "line": 3,
+          "line": 4,
           "column": 20,
           "kind": "IntLiteral",
           "elems": []
@@ -94,44 +114,43 @@
       ]
     },
     {
-      "line": 3,
+      "line": 4,
       "column": 23,
       "kind": "Block",
       "elems": [
       {
-        "line": 4,
-        "column": 3,
-        "kind": "Return",
+        "line": 5,
+        "column": 5,
+        "kind": "Assign",
         "elems": [
         {
-          "line": 4,
-          "column": 10,
+          "line": 5,
+          "column": 3,
+          "kind": "Ident",
+          "elems": []
+        },
+        {
+          "line": 5,
+          "column": 7,
           "kind": "IntLiteral",
           "elems": []
         }
         ]
       }
       ]
-    },
+    }
+    ]
+  },
+  {
+    "line": 7,
+    "column": 1,
+    "kind": "Return",
+    "elems": [
     {
-      "line": 5,
+      "line": 7,
       "column": 8,
-      "kind": "Block",
-      "elems": [
-      {
-        "line": 6,
-        "column": 3,
-        "kind": "Return",
-        "elems": [
-        {
-          "line": 6,
-          "column": 10,
-          "kind": "IntLiteral",
-          "elems": []
-        }
-        ]
-      }
-      ]
+      "kind": "Ident",
+      "elems": []
     }
     ]
   }

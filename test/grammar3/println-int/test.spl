@@ -1,0 +1,13 @@
+extern def println_int(x);
+
+def fact(n) {
+    if (n <= 1) {
+        return 1;
+    }
+    return n * fact(n - 1);
+}
+
+def main() {
+    println_int(fact(5));
+    return 0;
+}

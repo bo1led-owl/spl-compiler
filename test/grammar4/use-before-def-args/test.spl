@@ -1,0 +1,7 @@
+def add3(a: Int64, b: Int64, c: Int64): Int64 {
+    return a + b + c;
+}
+
+def main(): Int64 {
+    return add3(1, 2);
+}

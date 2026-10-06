@@ -50,7 +50,7 @@
     "line": 6,
     "column": 1,
     "kind": "ExternDecl",
-    "returnType": "Int64",
+    "returnType": "Void",
     "elems": [
     {
       "line": 6,
@@ -60,13 +60,13 @@
     },
     {
       "line": 6,
-      "column": 16,
+      "column": 24,
       "kind": "Param",
-      "type": "Point",
+      "type": "Int64",
       "elems": [
       {
         "line": 6,
-        "column": 16,
+        "column": 24,
         "kind": "Ident",
         "elems": []
       }
@@ -111,24 +111,52 @@
   {
     "line": 12,
     "column": 1,
-    "kind": "StructDecl",
+    "kind": "ExternDecl",
+    "returnType": "Void",
     "elems": [
     {
       "line": 12,
-      "column": 8,
+      "column": 12,
       "kind": "Ident",
       "elems": []
     },
     {
-      "line": 13,
+      "line": 12,
+      "column": 20,
+      "kind": "Param",
+      "type": "Int8",
+      "elems": [
+      {
+        "line": 12,
+        "column": 20,
+        "kind": "Ident",
+        "elems": []
+      }
+      ]
+    }
+    ]
+  },
+  {
+    "line": 14,
+    "column": 1,
+    "kind": "FuncDecl",
+    "returnType": "Int64",
+    "elems": [
+    {
+      "line": 14,
       "column": 5,
-      "kind": "Declare",
-      "mut": "val",
+      "kind": "Ident",
+      "elems": []
+    },
+    {
+      "line": 14,
+      "column": 9,
+      "kind": "Param",
       "type": "Point",
       "elems": [
       {
-        "line": 13,
-        "column": 5,
+        "line": 14,
+        "column": 9,
         "kind": "Ident",
         "elems": []
       }
@@ -136,69 +164,85 @@
     },
     {
       "line": 14,
-      "column": 5,
-      "kind": "Declare",
-      "mut": "val",
-      "type": "Int64",
+      "column": 26,
+      "kind": "Block",
       "elems": [
       {
-        "line": 14,
+        "line": 15,
         "column": 5,
-        "kind": "Ident",
-        "elems": []
+        "kind": "Return",
+        "elems": [
+        {
+          "line": 15,
+          "column": 16,
+          "kind": "BinOp",
+          "elems": [
+          {
+            "line": 15,
+            "column": 13,
+            "kind": "FieldAccess",
+            "elems": [
+            {
+              "line": 15,
+              "column": 12,
+              "kind": "Ident",
+              "elems": []
+            },
+            {
+              "line": 15,
+              "column": 14,
+              "kind": "Ident",
+              "elems": []
+            }
+            ]
+          },
+          {
+            "line": 15,
+            "column": 19,
+            "kind": "FieldAccess",
+            "elems": [
+            {
+              "line": 15,
+              "column": 18,
+              "kind": "Ident",
+              "elems": []
+            },
+            {
+              "line": 15,
+              "column": 20,
+              "kind": "Ident",
+              "elems": []
+            }
+            ]
+          }
+          ]
+        }
+        ]
       }
       ]
     }
     ]
   },
   {
-    "line": 17,
-    "column": 1,
-    "kind": "ExternDecl",
-    "returnType": "Int64",
-    "elems": [
-    {
-      "line": 17,
-      "column": 12,
-      "kind": "Ident",
-      "elems": []
-    },
-    {
-      "line": 17,
-      "column": 16,
-      "kind": "Param",
-      "type": "Int64",
-      "elems": [
-      {
-        "line": 17,
-        "column": 16,
-        "kind": "Ident",
-        "elems": []
-      }
-      ]
-    }
-    ]
-  },
-  {
-    "line": 19,
+    "line": 18,
     "column": 1,
     "kind": "FuncDecl",
     "returnType": "Point",
     "elems": [
     {
-      "line": 19,
+      "line": 18,
       "column": 5,
       "kind": "Ident",
       "elems": []
     },
     {
-      "line": 19,
+      "line": 18,
       "column": 15,
       "kind": "Param",
       "type": "Int64",
       "elems": [
       {
-        "line": 19,
+        "line": 18,
         "column": 15,
         "kind": "Ident",
         "elems": []
@@ -206,34 +250,66 @@
       ]
     },
     {
-      "line": 19,
-      "column": 25,
+      "line": 18,
+      "column": 26,
       "kind": "Param",
       "type": "Int64",
       "elems": [
       {
-        "line": 19,
-        "column": 25,
+        "line": 18,
+        "column": 26,
         "kind": "Ident",
         "elems": []
       }
       ]
     },
     {
-      "line": 19,
-      "column": 42,
+      "line": 18,
+      "column": 44,
       "kind": "Block",
       "elems": [
       {
-        "line": 20,
+        "line": 19,
         "column": 5,
         "kind": "Declare",
         "mut": "var",
         "type": "Point",
         "elems": [
         {
-          "line": 20,
+          "line": 19,
           "column": 9,
+          "kind": "Ident",
+          "elems": []
+        }
+        ]
+      },
+      {
+        "line": 20,
+        "column": 9,
+        "kind": "Assign",
+        "elems": [
+        {
+          "line": 20,
+          "column": 6,
+          "kind": "FieldAccess",
+          "elems": [
+          {
+            "line": 20,
+            "column": 5,
+            "kind": "Ident",
+            "elems": []
+          },
+          {
+            "line": 20,
+            "column": 7,
+            "kind": "Ident",
+            "elems": []
+          }
+          ]
+        },
+        {
+          "line": 20,
+          "column": 11,
           "kind": "Ident",
           "elems": []
         }
@@ -273,43 +349,11 @@
       },
       {
         "line": 22,
-        "column": 9,
-        "kind": "Assign",
-        "elems": [
-        {
-          "line": 22,
-          "column": 6,
-          "kind": "FieldAccess",
-          "elems": [
-          {
-            "line": 22,
-            "column": 5,
-            "kind": "Ident",
-            "elems": []
-          },
-          {
-            "line": 22,
-            "column": 7,
-            "kind": "Ident",
-            "elems": []
-          }
-          ]
-        },
-        {
-          "line": 22,
-          "column": 11,
-          "kind": "Ident",
-          "elems": []
-        }
-        ]
-      },
-      {
-        "line": 23,
         "column": 5,
         "kind": "Return",
         "elems": [
         {
-          "line": 23,
+          "line": 22,
           "column": 12,
           "kind": "Ident",
           "elems": []
@@ -321,32 +365,144 @@
     ]
   },
   {
-    "line": 26,
+    "line": 25,
     "column": 1,
     "kind": "FuncDecl",
     "returnType": "Int64",
     "elems": [
     {
-      "line": 26,
+      "line": 25,
       "column": 5,
       "kind": "Ident",
       "elems": []
     },
     {
-      "line": 26,
+      "line": 25,
       "column": 19,
       "kind": "Block",
       "elems": [
       {
+        "line": 26,
+        "column": 12,
+        "kind": "Call",
+        "elems": [
+        {
+          "line": 26,
+          "column": 5,
+          "kind": "Ident",
+          "elems": []
+        },
+        {
+          "line": 26,
+          "column": 13,
+          "kind": "Cast",
+          "type": "Int8",
+          "elems": [
+          {
+            "line": 26,
+            "column": 24,
+            "kind": "IntLiteral",
+            "elems": []
+          }
+          ]
+        }
+        ]
+      },
+      {
         "line": 27,
+        "column": 12,
+        "kind": "Call",
+        "elems": [
+        {
+          "line": 27,
+          "column": 5,
+          "kind": "Ident",
+          "elems": []
+        },
+        {
+          "line": 27,
+          "column": 13,
+          "kind": "Cast",
+          "type": "Int8",
+          "elems": [
+          {
+            "line": 27,
+            "column": 24,
+            "kind": "IntLiteral",
+            "elems": []
+          }
+          ]
+        }
+        ]
+      },
+      {
+        "line": 28,
+        "column": 16,
+        "kind": "Call",
+        "elems": [
+        {
+          "line": 28,
+          "column": 5,
+          "kind": "Ident",
+          "elems": []
+        },
+        {
+          "line": 28,
+          "column": 20,
+          "kind": "Call",
+          "elems": [
+          {
+            "line": 28,
+            "column": 17,
+            "kind": "Ident",
+            "elems": []
+          },
+          {
+            "line": 28,
+            "column": 30,
+            "kind": "Call",
+            "elems": [
+            {
+              "line": 28,
+              "column": 21,
+              "kind": "Ident",
+              "elems": []
+            },
+            {
+              "line": 28,
+              "column": 31,
+              "kind": "IntLiteral",
+              "elems": []
+            },
+            {
+              "line": 28,
+              "column": 34,
+              "kind": "IntLiteral",
+              "elems": []
+            }
+            ]
+          }
+          ]
+        }
+        ]
+      },
+      {
+        "line": 29,
         "column": 5,
         "kind": "Return",
         "elems": [
         {
-          "line": 27,
-          "column": 12,
-          "kind": "IntLiteral",
-          "elems": []
+          "line": 29,
+          "column": 15,
+          "kind": "Call",
+          "elems": [
+          {
+            "line": 29,
+            "column": 12,
+            "kind": "Ident",
+            "elems": []
+          }
+          ]
         }
         ]
       }

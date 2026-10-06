@@ -20,7 +20,8 @@ then:                                             ; preds = %entry
   br label %ifmerge
 
 ifmerge:                                          ; preds = %else, %then
-  ret i64 0
+  %y2 = load i64, ptr %y, align 8
+  ret i64 %y2
 
 else:                                             ; preds = %entry
   store i64 3, ptr %y, align 8

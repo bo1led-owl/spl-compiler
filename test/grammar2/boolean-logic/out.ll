@@ -24,5 +24,6 @@ entry:
   %ortmp = or i1 %lbool4, %rbool5
   %orext = zext i1 %ortmp to i64
   store i64 %orext, ptr %c, align 8
-  ret i64 0
+  %c6 = load i64, ptr %c, align 8
+  ret i64 %c6
 }

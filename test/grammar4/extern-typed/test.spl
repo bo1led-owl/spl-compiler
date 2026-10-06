@@ -1,8 +1,6 @@
 extern def putchar(c: Int8): Int64;
-extern def exit(code: Int64): Int64;
 
 def main(): Int64 {
-    val r: Int64 = putchar(cast<Int8>(65));
-    var code: Int64 = 0;
-    return code;
+    putchar(cast<Int8>(65));
+    return 0;
 }

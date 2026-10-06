@@ -365,12 +365,10 @@ def discover_tests(test_root, grammar, stage_filter, name_filter, skip_dir=None,
         for stage in meta.get("stages", []):
             found_stages.add(stage)
 
-        # Backward compat: if meta.json lists "compiler" in stages but not
-        # "run", auto-add "run" (the old "compiler" stage covered both
-        # compilation and execution; new scheme splits them).
+        # Run tests must be explicitly listed in meta["stages"] (possibly
+        # with a stdout golden). Tests listing only "compiler" (e.g. expected
+        # link failures) must not gain an auto-added, always-failing run stage.
         meta_stages = meta.get("stages", [])
-        if "compiler" in meta_stages and "run" not in meta_stages:
-            found_stages.add("run")
 
         # If the test has an explicit non-zero exit contract but no golden
         # and no stages list, run for all configurable stages (user can filter

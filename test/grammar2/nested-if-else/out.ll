@@ -21,7 +21,8 @@ then:                                             ; preds = %entry
   br i1 %ifcond3, label %then4, label %else6
 
 ifmerge:                                          ; preds = %else, %ifmerge5
-  ret i64 0
+  %z7 = load i64, ptr %z, align 8
+  ret i64 %z7
 
 else:                                             ; preds = %entry
   store i64 3, ptr %z, align 8

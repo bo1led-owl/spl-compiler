@@ -23,13 +23,14 @@ while_body:                                       ; preds = %while_header
   %addtmp = add i64 %i2, 1
   store i64 %addtmp, ptr %i, align 8
   %i3 = load i64, ptr %i, align 8
-  %cmptmp4 = icmp eq i64 %i3, 3
+  %cmptmp4 = icmp sgt i64 %i3, 3
   %zexttmp5 = zext i1 %cmptmp4 to i64
   %ifcond = icmp ne i64 %zexttmp5, 0
   br i1 %ifcond, label %then, label %ifmerge
 
 while_end:                                        ; preds = %while_header
-  ret i64 0
+  %x8 = load i64, ptr %x, align 8
+  ret i64 %x8
 
 then:                                             ; preds = %while_body
   br label %while_header

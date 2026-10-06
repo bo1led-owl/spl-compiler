@@ -1,0 +1,9 @@
+extern def ext(x): Int64;
+
+def foo(x) {
+    return x;
+}
+
+def main(): Int64 {
+    return 0;
+}

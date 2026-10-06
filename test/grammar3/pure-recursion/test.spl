@@ -6,5 +6,5 @@ def fact(n) {
 }
 
 def main() {
-    return 0;
+    return fact(5);
 }

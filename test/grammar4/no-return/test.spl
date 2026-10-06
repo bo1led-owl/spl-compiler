@@ -1,0 +1,7 @@
+def helper(): Int64 {
+    var x: Int64 = 42;
+}
+
+def main(): Int64 {
+    return 0;
+}

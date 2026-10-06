@@ -21,13 +21,13 @@
       "elems": [
       {
         "line": 2,
-        "column": 8,
-        "kind": "Call",
+        "column": 5,
+        "kind": "Return",
         "elems": [
         {
           "line": 2,
-          "column": 5,
-          "kind": "Ident",
+          "column": 12,
+          "kind": "IntLiteral",
           "elems": []
         }
         ]
@@ -49,7 +49,7 @@
     },
     {
       "line": 5,
-      "column": 12,
+      "column": 11,
       "kind": "Block",
       "elems": [
       {
@@ -59,9 +59,56 @@
         "elems": [
         {
           "line": 6,
-          "column": 12,
-          "kind": "IntLiteral",
-          "elems": []
+          "column": 15,
+          "kind": "Call",
+          "elems": [
+          {
+            "line": 6,
+            "column": 12,
+            "kind": "Ident",
+            "elems": []
+          }
+          ]
+        }
+        ]
+      }
+      ]
+    }
+    ]
+  },
+  {
+    "line": 9,
+    "column": 1,
+    "kind": "FuncDecl",
+    "elems": [
+    {
+      "line": 9,
+      "column": 5,
+      "kind": "Ident",
+      "elems": []
+    },
+    {
+      "line": 9,
+      "column": 12,
+      "kind": "Block",
+      "elems": [
+      {
+        "line": 10,
+        "column": 5,
+        "kind": "Return",
+        "elems": [
+        {
+          "line": 10,
+          "column": 15,
+          "kind": "Call",
+          "elems": [
+          {
+            "line": 10,
+            "column": 12,
+            "kind": "Ident",
+            "elems": []
+          }
+          ]
         }
         ]
       }

@@ -1,5 +1,14 @@
 {
-  "grammar": ">=4",
-  "stages": ["parser"],
-  "exit": "nonzero"
+  "$schema": "../../schemas/meta.schema.json",
+  "grammar": [
+    "4",
+    "5"
+  ],
+  "stages": [
+    "lexer",
+    "parser"
+  ],
+  "exit": {
+    "parser": "nonzero"
+  }
 }

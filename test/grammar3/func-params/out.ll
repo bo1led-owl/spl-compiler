@@ -20,5 +20,6 @@ entry:
 
 define i64 @main() {
 entry:
-  ret i64 0
+  %calltmp = call i64 @add(i64 2, i64 3)
+  ret i64 %calltmp
 }
