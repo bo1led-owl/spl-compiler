@@ -1,53 +1,55 @@
 {
+  "kind": "Program",
   "line": 1,
   "column": 1,
-  "kind": "Program",
   "elems": [
-  {
-    "line": 1,
-    "column": 1,
-    "kind": "If",
-    "elems": [
     {
+      "kind": "If",
       "line": 1,
-      "column": 9,
-      "kind": "Error",
-      "elems": []
+      "column": 1,
+      "elems": [
+        {
+          "kind": "Error",
+          "line": 1,
+          "column": 4,
+          "elems": []
+        },
+        {
+          "kind": "Block",
+          "line": 1,
+          "column": 9,
+          "elems": [
+            {
+              "kind": "Return",
+              "line": 2,
+              "column": 5,
+              "elems": [
+                {
+                  "kind": "IntLiteral",
+                  "line": 2,
+                  "column": 12,
+                  "value": 42,
+                  "elems": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
     },
     {
-      "line": 1,
-      "column": 9,
-      "kind": "Block",
+      "kind": "Return",
+      "line": 4,
+      "column": 1,
       "elems": [
-      {
-        "line": 2,
-        "column": 5,
-        "kind": "Return",
-        "elems": [
         {
-          "line": 2,
-          "column": 12,
           "kind": "IntLiteral",
+          "line": 4,
+          "column": 8,
+          "value": 0,
           "elems": []
         }
-        ]
-      }
       ]
     }
-    ]
-  },
-  {
-    "line": 4,
-    "column": 1,
-    "kind": "Return",
-    "elems": [
-    {
-      "line": 4,
-      "column": 8,
-      "kind": "IntLiteral",
-      "elems": []
-    }
-    ]
-  }
   ]
 }

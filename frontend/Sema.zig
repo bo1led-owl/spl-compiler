@@ -12,6 +12,7 @@ tokens: lex.TokenList,
 ast: Ast,
 errors: *ErrorBundle,
 vars: std.StringHashMapUnmanaged(struct { mut: bool }),
+inside_loop: bool,
 
 pub fn init(
     gpa: std.mem.Allocator,
@@ -27,6 +28,7 @@ pub fn init(
         .ast = ast,
         .errors = errors,
         .vars = .{},
+        .inside_loop = false,
     };
 }
 
@@ -48,12 +50,10 @@ const NodeInfo = packed struct(u1) {
 };
 
 fn visitNode(self: *Self, node_index: Ast.Node.Index) (std.mem.Allocator.Error || ErrorBundle.ReportError)!NodeInfo {
-    const node = self.ast.nodes.get(@backingInt(node_index));
-
-    switch (node.kind) {
+    switch (self.ast.nodeKind(node_index)) {
         .recovery => return .{},
         .root => {
-            const body = self.ast.extractExtras(node.data.extra_range);
+            const body = self.ast.extractExtras(self.ast.nodeData(node_index).extra_range);
             if (body.len == 0) {
                 try self.report(
                     self.spanByNode(node_index),
@@ -79,29 +79,68 @@ fn visitNode(self: *Self, node_index: Ast.Node.Index) (std.mem.Allocator.Error |
 
             return .{};
         },
+        .block => {
+            for (self.ast.extractExtras(self.ast.nodeData(node_index).extra_range)) |i| {
+                _ = try self.visitNode(@fromBackingInt(i));
+            }
+            return .{};
+        },
+        .if_full, .if_simple => {
+            const info = Ast.info.ifAny(self.ast, node_index);
+
+            _ = try self.visitNode(info.cond);
+            _ = try self.visitNode(info.then_node);
+            if (info.else_node.toIndex()) |else_node|
+                _ = try self.visitNode(else_node);
+
+            return .{};
+        },
+        .@"while" => {
+            const cond, const body = self.ast.nodeData(node_index).node_node;
+
+            _ = try self.visitNode(cond);
+
+            self.inside_loop = true;
+            _ = try self.visitNode(body);
+            self.inside_loop = false;
+
+            return .{};
+        },
+        .@"continue" => {
+            if (!self.inside_loop) {
+                try self.report(self.spanByNode(node_index), "`continue` outside of a loop", .{});
+            }
+            return .{};
+        },
+        .@"break" => {
+            if (!self.inside_loop) {
+                try self.report(self.spanByNode(node_index), "`break` outside of a loop", .{});
+            }
+            return .{};
+        },
         .var_decl => {
-            const name_token = self.tokens.get(node.token + 1);
-            const name = self.source.tokenLiteral(name_token);
+            const info = Ast.info.varDecl(self.ast, node_index);
+            const name = self.source.tokenLiteral(self.tokens.get(info.name_token));
 
             const gop_res = try self.vars.getOrPut(self.gpa, name);
             if (gop_res.found_existing) {
                 try self.report(
-                    self.source.spanByToken(name_token),
+                    self.source.spanByToken(self.tokens.get(info.name_token)),
                     "redeclaration of variable `{s}`",
                     .{name},
                 );
             } else {
                 gop_res.value_ptr.* = .{
-                    .mut = self.tokens.items(.kind)[node.token] == .kw_var,
+                    .mut = self.tokens.items(.kind)[info.mutability_token] == .kw_var,
                 };
             }
 
-            _ = try self.visitNode(node.data.node);
+            _ = try self.visitNode(self.ast.nodeData(node_index).node);
 
             return .{};
         },
         .name_ref => {
-            const name_token = self.tokens.get(node.token);
+            const name_token = self.tokens.get(self.ast.nodeToken(node_index));
             const name = self.source.tokenLiteral(name_token);
 
             const var_opt = self.vars.get(name);
@@ -116,40 +155,41 @@ fn visitNode(self: *Self, node_index: Ast.Node.Index) (std.mem.Allocator.Error |
                 return .{ .is_assignable = true };
             }
         },
+        .bool_literal => return .{},
         .number => {
-            const token = self.tokens.get(node.token);
+            const token = self.tokens.get(self.ast.nodeToken(node_index));
 
             const value = std.fmt.parseUnsigned(u64, self.source.tokenLiteral(token), 10) catch
                 std.math.maxInt(u64); // greater than both |minInt(i64)| and maxInt(i64)
 
             if (value > std.math.maxInt(i64)) {
-                const span = self.source.spanByToken(token);
-                try self.report(span, "integer literal out of range", .{});
+                try self.report(self.spanByNode(node_index), "integer literal out of range", .{});
             }
 
             return .{};
         },
         .@"return" => {
-            _ = try self.visitNode(node.data.node);
+            _ = try self.visitNode(self.ast.nodeData(node_index).node);
             return .{};
         },
         .unary => {
-            _ = try self.visitNode(node.data.node);
+            _ = try self.visitNode(self.ast.nodeData(node_index).node);
             return .{};
         },
         .binary => {
-            _ = try self.visitNode(node.data.node_node.@"0");
-            _ = try self.visitNode(node.data.node_node.@"1");
+            const lhs, const rhs = self.ast.nodeData(node_index).node_node;
+            _ = try self.visitNode(lhs);
+            _ = try self.visitNode(rhs);
             return .{};
         },
         .assign => {
-            const dest_index = node.data.node_node.@"0";
+            const dest_index, const source_index = self.ast.nodeData(node_index).node_node;
             const dest_info = try self.visitNode(dest_index);
             if (!dest_info.is_assignable) {
                 try self.report(self.spanByNode(dest_index), "expression is not assignable", .{});
             }
 
-            _ = try self.visitNode(node.data.node_node.@"1");
+            _ = try self.visitNode(source_index);
 
             return .{};
         },
@@ -157,31 +197,56 @@ fn visitNode(self: *Self, node_index: Ast.Node.Index) (std.mem.Allocator.Error |
 }
 
 fn spanByNode(self: *Self, node_index: Ast.Node.Index) Source.Span {
-    const node = self.ast.nodes.get(@backingInt(node_index));
-    return switch (node.kind) {
-        .recovery => self.source.spanByToken(self.tokens.get(node.token)),
+    return switch (self.ast.nodeKind(node_index)) {
         .root => .{ .begin = 0, .end = @intCast(self.source.text.len) },
         .var_decl => .{
-            .begin = self.tokens.items(.offset)[node.token],
-            .end = self.spanByNode(node.data.node).end,
+            .begin = self.tokens.items(.offset)[self.ast.nodeToken(node_index)],
+            .end = self.spanByNode(self.ast.nodeData(node_index).node).end,
         },
-        .name_ref => self.source.spanByToken(self.tokens.get(node.token)),
-        .number => self.source.spanByToken(self.tokens.get(node.token)),
-        .@"return" => .{
-            .begin = self.tokens.items(.offset)[node.token],
-            .end = self.spanByNode(node.data.node).end,
+        .block => block: {
+            const opening = self.tokens.items(.offset)[self.ast.nodeToken(node_index)];
+
+            const data = self.ast.nodeData(node_index).extra_range;
+            const body = self.ast.extractExtras(data);
+            const last_stmt_end = if (body.len == 0)
+                opening
+            else
+                self.spanByNode(@fromBackingInt(body[body.len - 1])).end;
+            const end = std.mem.findScalarPos(u8, self.source.text, last_stmt_end, '}').?;
+
+            break :block .{
+                .begin = opening,
+                .end = @intCast(end),
+            };
         },
-        .unary => .{
-            .begin = self.tokens.items(.offset)[node.token],
-            .end = self.spanByNode(node.data.node).end,
+        .recovery,
+        .name_ref,
+        .bool_literal,
+        .number,
+        .@"continue",
+        .@"break",
+        => self.source.spanByToken(self.tokens.get(self.ast.nodeToken(node_index))),
+        .@"while",
+        .@"return",
+        .unary,
+        => .{
+            .begin = self.tokens.items(.offset)[self.ast.nodeToken(node_index)],
+            .end = self.spanByNode(self.ast.nodeData(node_index).node).end,
         },
-        .binary => .{
-            .begin = self.spanByNode(node.data.node_node.@"0").begin,
-            .end = self.spanByNode(node.data.node_node.@"1").end,
+        .if_full, .if_simple => if_span: {
+            const info = Ast.info.ifAny(self.ast, node_index);
+            const last_child = info.else_node.toIndex() orelse info.then_node;
+            break :if_span .{
+                .begin = self.tokens.items(.offset)[self.ast.nodeToken(node_index)],
+                .end = self.spanByNode(last_child).end,
+            };
         },
-        .assign => .{
-            .begin = self.spanByNode(node.data.node_node.@"0").begin,
-            .end = self.spanByNode(node.data.node_node.@"1").end,
+        .binary, .assign => bin: {
+            const lhs, const rhs = self.ast.nodeData(node_index).node_node;
+            break :bin .{
+                .begin = self.spanByNode(lhs).begin,
+                .end = self.spanByNode(rhs).end,
+            };
         },
     };
 }

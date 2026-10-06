@@ -6,6 +6,8 @@ const cli = @import("cli.zig");
 var stdout_buffer: [4096]u8 align(std.heap.page_size_min) = undefined;
 var dump_buffer: [4096]u8 align(std.heap.page_size_min) = undefined;
 
+const enable_codegen = false;
+
 pub fn main(init: std.process.Init.Minimal) u8 {
     const smp = std.heap.smp_allocator;
 
@@ -124,35 +126,37 @@ fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: cli.Args.Full) u8 {
 
     defer if (!args.emit_llvm) gpa.free(llvm_output_path);
 
-    var codegen = frontend.Codegen.init(gpa, source, tokens, ast);
-    defer codegen.deinit();
-    codegen.run(llvm_output_path, .{ .emit_llvm = args.emit_llvm }) catch |err| {
-        std.log.err("failed to generate code: {s}", .{@errorName(err)});
-        return 1;
-    };
-
-    if (args.emit_llvm) {
-        return 0;
-    }
-
-    const clang_argv: []const []const u8 = &.{ "clang", llvm_output_path, "-o", args.output_path };
-    const res = std.process.run(gpa, io, .{ .argv = clang_argv }) catch |err| {
-        std.log.err("failed to run clang: {s}", .{@errorName(err)});
-        return 1;
-    };
-    gpa.free(res.stdout);
-    defer gpa.free(res.stderr);
-
-    if (res.term.exited != 0) {
-        std.log.err("clang failed with exit code {d}, stderr:\n{s}", .{ res.term.exited, res.stderr });
-        return 1;
-    }
-
-    if (!args.preserve_temp) {
-        std.Io.Dir.cwd().deleteFile(io, llvm_output_path) catch |err| {
-            std.log.err("failed to delete temporary file: {s}", .{@errorName(err)});
+    if (enable_codegen) {
+        var codegen = frontend.Codegen.init(gpa, source, tokens, ast);
+        defer codegen.deinit();
+        codegen.run(llvm_output_path, .{ .emit_llvm = args.emit_llvm }) catch |err| {
+            std.log.err("failed to generate code: {s}", .{@errorName(err)});
             return 1;
         };
+
+        if (args.emit_llvm) {
+            return 0;
+        }
+
+        const clang_argv: []const []const u8 = &.{ "clang", llvm_output_path, "-o", args.output_path };
+        const res = std.process.run(gpa, io, .{ .argv = clang_argv }) catch |err| {
+            std.log.err("failed to run clang: {s}", .{@errorName(err)});
+            return 1;
+        };
+        gpa.free(res.stdout);
+        defer gpa.free(res.stderr);
+
+        if (res.term.exited != 0) {
+            std.log.err("clang failed with exit code {d}, stderr:\n{s}", .{ res.term.exited, res.stderr });
+            return 1;
+        }
+
+        if (!args.preserve_temp) {
+            std.Io.Dir.cwd().deleteFile(io, llvm_output_path) catch |err| {
+                std.log.err("failed to delete temporary file: {s}", .{@errorName(err)});
+                return 1;
+            };
+        }
     }
 
     return 0;
@@ -302,12 +306,18 @@ fn dumpAstNode(
         .root => "Program",
         .var_decl => "Declare",
         .name_ref => "Ident",
+        .bool_literal => "BoolLiteral",
         .number => "IntLiteral",
         .@"return" => "Return",
         .unary => "Unary",
         .binary => "BinOp",
         .assign => "Assign",
         .recovery => "Error",
+        .if_simple, .if_full => "If",
+        .@"while" => "While",
+        .@"continue" => "Continue",
+        .@"break" => "Break",
+        .block => "Block",
     });
 
     const loc = source.locationFromOffset(tokens.items(.offset)[node.token]);
@@ -322,6 +332,10 @@ fn dumpAstNode(
         .recovery => {},
         .@"return" => {},
         .assign => {},
+        .block => {},
+        .@"while" => {},
+        .@"continue", .@"break" => {},
+        .if_simple, .if_full => {},
         .var_decl => {
             try jws.objectField("mut");
             try jws.write(tokens.items(.kind)[node.token] == .kw_var);
@@ -329,6 +343,10 @@ fn dumpAstNode(
         .name_ref => {
             try jws.objectField("name");
             try jws.write(source.tokenLiteral(tokens.get(node.token)));
+        },
+        .bool_literal => {
+            try jws.objectField("value");
+            try jws.write(@intFromBool(tokens.items(.kind)[node.token] == .kw_true));
         },
         .number => {
             try jws.objectField("value");
@@ -352,12 +370,34 @@ fn dumpAstNode(
     switch (node.kind) {
         .recovery => {},
         .name_ref => {},
+        .bool_literal => {},
         .number => {},
+        .@"continue" => {},
+        .@"break" => {},
         .root => {
             const body = ast.extractExtras(node.data.extra_range);
             for (body) |i| {
                 try dumpAstNode(jws, source, tokens, ast, @fromBackingInt(i));
             }
+        },
+        .block => {
+            const body = ast.extractExtras(node.data.extra_range);
+            for (body) |i| {
+                try dumpAstNode(jws, source, tokens, ast, @fromBackingInt(i));
+            }
+        },
+        .@"while" => {
+            const cond, const body = node.data.node_node;
+            try dumpAstNode(jws, source, tokens, ast, cond);
+            try dumpAstNode(jws, source, tokens, ast, body);
+        },
+        .if_simple, .if_full => {
+            const info = frontend.Ast.info.ifAny(ast, node_index);
+
+            try dumpAstNode(jws, source, tokens, ast, info.cond);
+            try dumpAstNode(jws, source, tokens, ast, info.then_node);
+            if (info.else_node.toIndex()) |else_node|
+                try dumpAstNode(jws, source, tokens, ast, else_node);
         },
         .var_decl => {
             {
@@ -392,12 +432,14 @@ fn dumpAstNode(
             try dumpAstNode(jws, source, tokens, ast, node.data.node);
         },
         .binary => {
-            try dumpAstNode(jws, source, tokens, ast, node.data.node_node.@"0");
-            try dumpAstNode(jws, source, tokens, ast, node.data.node_node.@"1");
+            const lhs, const rhs = ast.nodeData(node_index).node_node;
+            try dumpAstNode(jws, source, tokens, ast, lhs);
+            try dumpAstNode(jws, source, tokens, ast, rhs);
         },
         .assign => {
-            try dumpAstNode(jws, source, tokens, ast, node.data.node_node.@"0");
-            try dumpAstNode(jws, source, tokens, ast, node.data.node_node.@"1");
+            const dest, const src = ast.nodeData(node_index).node_node;
+            try dumpAstNode(jws, source, tokens, ast, dest);
+            try dumpAstNode(jws, source, tokens, ast, src);
         },
     }
 
