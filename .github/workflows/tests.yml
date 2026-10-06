@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        grammar: [1]
+        grammar: [2]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
