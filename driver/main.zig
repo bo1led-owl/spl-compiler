@@ -346,7 +346,7 @@ fn dumpAstNode(
         },
         .bool_literal => {
             try jws.objectField("value");
-            try jws.write(@intFromBool(tokens.items(.kind)[node.token] == .kw_true));
+            try jws.write(tokens.items(.kind)[node.token] == .kw_true);
         },
         .number => {
             try jws.objectField("value");

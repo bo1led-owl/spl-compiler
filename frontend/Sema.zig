@@ -11,7 +11,8 @@ source: Source,
 tokens: lex.TokenList,
 ast: Ast,
 errors: *ErrorBundle,
-vars: std.StringHashMapUnmanaged(struct { mut: bool }),
+vars: std.StringArrayHashMapUnmanaged(struct { mut: bool }),
+scope_tops: std.ArrayList(u32),
 inside_loop: bool,
 
 pub fn init(
@@ -27,13 +28,15 @@ pub fn init(
         .tokens = tokens,
         .ast = ast,
         .errors = errors,
-        .vars = .{},
+        .vars = .empty,
+        .scope_tops = .empty,
         .inside_loop = false,
     };
 }
 
 pub fn deinit(self: *Self) void {
     self.vars.deinit(self.gpa);
+    self.scope_tops.deinit(self.gpa);
     self.* = undefined;
 }
 
@@ -48,6 +51,15 @@ fn report(self: *Self, span: Source.Span, comptime fmt: []const u8, args: anytyp
 const NodeInfo = packed struct(u1) {
     is_assignable: bool = false,
 };
+
+fn enterScope(self: *Self) !void {
+    try self.scope_tops.append(self.gpa, @intCast(self.vars.entries.len));
+}
+
+fn leaveScope(self: *Self) void {
+    const top = self.scope_tops.pop().?;
+    self.vars.shrinkRetainingCapacity(@intCast(top));
+}
 
 fn visitNode(self: *Self, node_index: Ast.Node.Index) (std.mem.Allocator.Error || ErrorBundle.ReportError)!NodeInfo {
     switch (self.ast.nodeKind(node_index)) {
@@ -80,18 +92,27 @@ fn visitNode(self: *Self, node_index: Ast.Node.Index) (std.mem.Allocator.Error |
             return .{};
         },
         .block => {
+            try self.enterScope();
             for (self.ast.extractExtras(self.ast.nodeData(node_index).extra_range)) |i| {
                 _ = try self.visitNode(@fromBackingInt(i));
             }
+            self.leaveScope();
             return .{};
         },
         .if_full, .if_simple => {
             const info = Ast.info.ifAny(self.ast, node_index);
 
             _ = try self.visitNode(info.cond);
+
+            try self.enterScope();
             _ = try self.visitNode(info.then_node);
-            if (info.else_node.toIndex()) |else_node|
+            self.leaveScope();
+
+            if (info.else_node.toIndex()) |else_node| {
+                try self.enterScope();
                 _ = try self.visitNode(else_node);
+                self.leaveScope();
+            }
 
             return .{};
         },
@@ -101,8 +122,12 @@ fn visitNode(self: *Self, node_index: Ast.Node.Index) (std.mem.Allocator.Error |
             _ = try self.visitNode(cond);
 
             self.inside_loop = true;
+            try self.enterScope();
+
             _ = try self.visitNode(body);
+
             self.inside_loop = false;
+            self.leaveScope();
 
             return .{};
         },
@@ -124,11 +149,19 @@ fn visitNode(self: *Self, node_index: Ast.Node.Index) (std.mem.Allocator.Error |
 
             const gop_res = try self.vars.getOrPut(self.gpa, name);
             if (gop_res.found_existing) {
-                try self.report(
-                    self.source.spanByToken(self.tokens.get(info.name_token)),
-                    "redeclaration of variable `{s}`",
-                    .{name},
-                );
+                if (gop_res.index < self.scope_tops.last() orelse 0) {
+                    try self.report(
+                        self.source.spanByToken(self.tokens.get(info.name_token)),
+                        "declaration of `{s}` shadows name from outer scope",
+                        .{name},
+                    );
+                } else {
+                    try self.report(
+                        self.source.spanByToken(self.tokens.get(info.name_token)),
+                        "redeclaration of `{s}` in the same scope",
+                        .{name},
+                    );
+                }
             } else {
                 gop_res.value_ptr.* = .{
                     .mut = self.tokens.items(.kind)[info.mutability_token] == .kw_var,

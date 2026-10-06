@@ -9,7 +9,7 @@ const std = @import("std");
 // `parse*` methods return null if parsing failed and no tokens were consumed and error if parsing failed and at least a token was consumed
 // `expect*` methods return error if parsing failed, token consumption does not matter
 
-const Self = @This();
+const Parser = @This();
 
 const lex = @import("lex.zig");
 const Ast = @import("Ast.zig");
@@ -20,6 +20,7 @@ const Token = lex.Token;
 const Node = Ast.Node;
 
 pub const Error = error{ParseError};
+pub const NonParseError = ErrorBundle.ReportError;
 
 gpa: std.mem.Allocator,
 source: Source,
@@ -32,7 +33,7 @@ nodes: Ast.NodeList,
 scratch: std.ArrayList(Node.Index),
 extras: std.ArrayList(u32),
 
-pub fn init(gpa: std.mem.Allocator, source: Source, tokens: lex.TokenList, errors: *ErrorBundle) Self {
+pub fn init(gpa: std.mem.Allocator, source: Source, tokens: lex.TokenList, errors: *ErrorBundle) Parser {
     return .{
         .gpa = gpa,
         .source = source,
@@ -45,12 +46,12 @@ pub fn init(gpa: std.mem.Allocator, source: Source, tokens: lex.TokenList, error
     };
 }
 
-pub fn deinit(self: *Self) void {
+pub fn deinit(self: *Parser) void {
     self.scratch.deinit(self.gpa);
     self.* = undefined;
 }
 
-pub fn run(self: *Self) (std.mem.Allocator.Error || std.Io.Writer.Error)!Ast {
+pub fn run(self: *Parser) NonParseError!Ast {
     std.debug.assert(self.tokens.len > 0);
 
     _ = try self.addNode(.{ .kind = .root, .token = 0 });
@@ -80,28 +81,28 @@ pub fn run(self: *Self) (std.mem.Allocator.Error || std.Io.Writer.Error)!Ast {
     };
 }
 
-fn addNode(self: *Self, node: Node) !Node.Index {
+fn addNode(self: *Parser, node: Node) !Node.Index {
     const result: u32 = @intCast(self.nodes.len);
     try self.nodes.append(self.gpa, node);
     return @fromBackingInt(result);
 }
 
-fn addRecoveryNode(self: *Self) !Node.Index {
+fn addRecoveryNode(self: *Parser) !Node.Index {
     return self.addNode(.{ .kind = .recovery, .token = self.token_index });
 }
 
-fn tokenKind(self: Self, index: Token.Index) Token.Kind {
+fn tokenKind(self: Parser, index: Token.Index) Token.Kind {
     return self.tokens.items(.kind)[index];
 }
 
-fn eatTokenAny(self: *Self, comptime kinds: []const Token.Kind) ?Token.Index {
+fn eatTokenAny(self: *Parser, comptime kinds: []const Token.Kind) ?Token.Index {
     if (std.mem.findScalar(Token.Kind, kinds, self.tokenKind(self.token_index)) != null) {
         return self.nextToken();
     }
     return null;
 }
 
-fn eatToken(self: *Self, comptime kind: Token.Kind) ?Token.Index {
+fn eatToken(self: *Parser, comptime kind: Token.Kind) ?Token.Index {
     if (self.tokenKind(self.token_index) == kind) {
         return self.nextToken();
     }
@@ -109,7 +110,7 @@ fn eatToken(self: *Self, comptime kind: Token.Kind) ?Token.Index {
     return null;
 }
 
-fn nextToken(self: *Self) Token.Index {
+fn nextToken(self: *Parser) Token.Index {
     defer self.token_index += 1;
     return self.token_index;
 }
@@ -145,7 +146,7 @@ inline fn formatExpectedList(comptime list: anytype) []const u8 {
     return result;
 }
 
-fn report(self: *Self, comptime fmt: []const u8, args: anytype) ErrorBundle.ReportError!void {
+fn report(self: *Parser, comptime fmt: []const u8, args: anytype) NonParseError!void {
     const cur_token = self.tokens.get(self.token_index);
     try self.errors.report(
         self.gpa,
@@ -155,12 +156,12 @@ fn report(self: *Self, comptime fmt: []const u8, args: anytype) ErrorBundle.Repo
     );
 }
 
-fn fail(self: *Self, comptime fmt: []const u8, args: anytype) (ErrorBundle.ReportError || Error) {
+fn fail(self: *Parser, comptime fmt: []const u8, args: anytype) (Parser.Error || NonParseError) {
     try self.report(fmt, args);
     return Error.ParseError;
 }
 
-fn reportUnexpected(self: *Self, actual: Token.Kind, comptime expected: anytype) ErrorBundle.ReportError!void {
+fn reportUnexpected(self: *Parser, actual: Token.Kind, comptime expected: anytype) NonParseError!void {
     switch (actual) {
         .err_invalid_character,
         .err_number_has_leading_zero,
@@ -176,12 +177,12 @@ fn reportUnexpected(self: *Self, actual: Token.Kind, comptime expected: anytype)
     }
 }
 
-fn failWithUnexpected(self: *Self, actual: Token.Kind, comptime expected: anytype) (ErrorBundle.ReportError || Error) {
+fn failWithUnexpected(self: *Parser, actual: Token.Kind, comptime expected: anytype) (Parser.Error || NonParseError) {
     try self.reportUnexpected(actual, expected);
     return Error.ParseError;
 }
 
-fn expectToken(self: *Self, comptime kind: Token.Kind) !Token.Index {
+fn expectToken(self: *Parser, comptime kind: Token.Kind) !Token.Index {
     if (self.tokenKind(self.token_index) != kind) {
         return self.failWithUnexpected(self.tokenKind(self.token_index), .{kind});
     }
@@ -189,13 +190,13 @@ fn expectToken(self: *Self, comptime kind: Token.Kind) !Token.Index {
     return self.nextToken();
 }
 
-fn skipUntilInclusive(self: *Self, kind: Token.Kind) void {
+fn skipUntilInclusive(self: *Parser, kind: Token.Kind) void {
     if (self.skipUntil(kind)) {
         _ = self.nextToken();
     }
 }
 
-fn skipUntil(self: *Self, kind: Token.Kind) bool {
+fn skipUntil(self: *Parser, kind: Token.Kind) bool {
     if (std.mem.findScalarPos(
         Token.Kind,
         self.tokens.items(.kind),
@@ -210,7 +211,7 @@ fn skipUntil(self: *Self, kind: Token.Kind) bool {
     }
 }
 
-fn skipUntilAny(self: *Self, comptime kinds: []const Token.Kind) Token.Kind {
+fn skipUntilAny(self: *Parser, comptime kinds: []const Token.Kind) Token.Kind {
     if (std.mem.findAnyPos(
         Token.Kind,
         self.tokens.items(.kind),
@@ -226,7 +227,7 @@ fn skipUntilAny(self: *Self, comptime kinds: []const Token.Kind) Token.Kind {
     }
 }
 
-fn expectStatement(self: *Self) !Node.Index {
+fn expectStatement(self: *Parser) !Node.Index {
     return try self.parseStatement() orelse
         self.failWithUnexpected(
             self.tokenKind(self.token_index),
@@ -234,7 +235,7 @@ fn expectStatement(self: *Self) !Node.Index {
         );
 }
 
-fn parseStatement(self: *Self) (ErrorBundle.ReportError || std.mem.Allocator.Error)!?Node.Index {
+fn parseStatement(self: *Parser) NonParseError!?Node.Index {
     return try self.parseStatementWithoutSemicolon() orelse
         self.parseStatementWithSemicolon() catch |err|
         if (err == error.ParseError) {
@@ -243,9 +244,9 @@ fn parseStatement(self: *Self) (ErrorBundle.ReportError || std.mem.Allocator.Err
         } else return @errorCast(err);
 }
 
-fn parseStatementWithSemicolon(self: *Self) !?Node.Index {
-    const stmt = try self.parseSingleTokenStatement(.kw_continue, .@"continue") orelse
-        try self.parseSingleTokenStatement(.kw_break, .@"break") orelse
+fn parseStatementWithSemicolon(self: *Parser) !?Node.Index {
+    const stmt = try self.parseSingleTokenNode(.kw_continue, .@"continue") orelse
+        try self.parseSingleTokenNode(.kw_break, .@"break") orelse
         try self.parseVarDecl() orelse
         try self.parseReturn() orelse
         try self.parseAssignmentOrExpr();
@@ -254,48 +255,50 @@ fn parseStatementWithSemicolon(self: *Self) !?Node.Index {
     return stmt;
 }
 
-fn parseStatementWithoutSemicolon(self: *Self) (std.mem.Allocator.Error || ErrorBundle.ReportError)!?Node.Index {
+fn parseStatementWithoutSemicolon(self: *Parser) NonParseError!?Node.Index {
     return try self.parseBlock() orelse
         try self.parseIf() orelse
         try self.parseWhile();
 }
 
-fn parseSingleTokenStatement(self: *Self, comptime token_kind: Token.Kind, comptime node_kind: Node.Kind) !?Node.Index {
+fn parseSingleTokenNode(
+    self: *Parser,
+    comptime token_kind: Token.Kind,
+    comptime node_kind: Node.Kind,
+) !?Node.Index {
     return if (self.eatToken(token_kind)) |token_index|
         try self.addNode(.{ .kind = node_kind, .token = token_index })
     else
         null;
 }
 
-fn parseVarDecl(self: *Self) !?Node.Index {
-    const var_token = self.eatToken(.kw_val) orelse
-        self.eatToken(.kw_var) orelse
-        return null;
+fn parseSingleTokenNodeAny(
+    self: *Parser,
+    comptime token_kinds: []const Token.Kind,
+    comptime node_kind: Node.Kind,
+) !?Node.Index {
+    return if (self.eatTokenAny(token_kinds)) |token_index|
+        try self.addNode(.{ .kind = node_kind, .token = token_index })
+    else
+        null;
+}
 
-    _ = self.expectToken(.ident) catch |err|
-        switch (err) {
-            error.ParseError => return try self.addRecoveryNode(),
-            else => return err,
+fn parseVarDecl(self: *Parser) !?Node.Index {
+    const var_token = self.eatTokenAny(&.{ .kw_val, .kw_var }) orelse return null;
+
+    _ = self.expectToken(.ident) catch try self.addRecoveryNode();
+
+    const initNode = init: {
+        _ = self.expectToken(.assign) catch {
+            defer _ = self.skipUntil(.semi);
+            break :init try self.addRecoveryNode();
         };
 
-    const initNode = blk: {
-        _ = self.expectToken(.assign) catch |err|
-            switch (err) {
-                error.ParseError => {
-                    defer _ = self.skipUntil(.semi);
-                    break :blk try self.addRecoveryNode();
-                },
-                else => return err,
-            };
-
-        break :blk self.expectExpr() catch |err|
-            switch (err) {
-                error.ParseError => {
-                    defer _ = self.skipUntil(.semi);
-                    break :blk try self.addRecoveryNode();
-                },
-                else => return err,
-            };
+        break :init self.expectExpr() catch |err|
+            if (err == error.ParseError) {
+                defer _ = self.skipUntil(.semi);
+                break :init try self.addRecoveryNode();
+            } else return err;
     };
 
     return try self.addNode(.{
@@ -305,7 +308,7 @@ fn parseVarDecl(self: *Self) !?Node.Index {
     });
 }
 
-fn parseReturn(self: *Self) !?Node.Index {
+fn parseReturn(self: *Parser) !?Node.Index {
     const ret_token = self.eatToken(.kw_return) orelse return null;
     const retval = self.expectExpr() catch |err|
         if (err == error.ParseError) blk: {
@@ -320,11 +323,11 @@ fn parseReturn(self: *Self) !?Node.Index {
     });
 }
 
-fn parseBlock(self: *Self) (std.mem.Allocator.Error || ErrorBundle.ReportError)!?Node.Index {
+fn parseBlock(self: *Parser) NonParseError!?Node.Index {
+    const brace_token = self.eatToken(.lbrace) orelse return null;
+
     const scratch_top = self.scratch.items.len;
     defer self.scratch.shrinkRetainingCapacity(scratch_top);
-
-    const brace_token = self.eatToken(.lbrace) orelse return null;
 
     while (self.eatToken(.rbrace) == null) {
         const stmt = self.expectStatement() catch |err|
@@ -350,7 +353,7 @@ fn parseBlock(self: *Self) (std.mem.Allocator.Error || ErrorBundle.ReportError)!
     });
 }
 
-fn parseCondition(self: *Self) (std.mem.Allocator.Error || ErrorBundle.ReportError)!Node.Index {
+fn parseCondition(self: *Parser) NonParseError!Node.Index {
     _ = self.expectToken(.lparen) catch {
         defer switch (self.skipUntilAny(&.{ .rparen, .lbrace, .semi, .rbrace })) {
             .rparen, .semi, .rbrace => _ = self.nextToken(),
@@ -378,7 +381,7 @@ fn parseCondition(self: *Self) (std.mem.Allocator.Error || ErrorBundle.ReportErr
     return res;
 }
 
-fn parseIf(self: *Self) (std.mem.Allocator.Error || ErrorBundle.ReportError)!?Node.Index {
+fn parseIf(self: *Parser) NonParseError!?Node.Index {
     const kw_token = self.eatToken(.kw_if) orelse return null;
 
     const cond = try self.parseCondition();
@@ -416,7 +419,7 @@ fn parseIf(self: *Self) (std.mem.Allocator.Error || ErrorBundle.ReportError)!?No
     });
 }
 
-fn parseWhile(self: *Self) (std.mem.Allocator.Error || ErrorBundle.ReportError)!?Node.Index {
+fn parseWhile(self: *Parser) NonParseError!?Node.Index {
     const kw_token = self.eatToken(.kw_while) orelse return null;
 
     const cond = try self.parseCondition();
@@ -436,30 +439,24 @@ fn parseWhile(self: *Self) (std.mem.Allocator.Error || ErrorBundle.ReportError)!
     });
 }
 
-fn assignmentNodeKind(token: Token.Kind) ?Node.Kind {
-    // to be expanded when `+=`, `-=` and similar appear
-    return switch (token) {
-        .assign => .assign,
-        else => null,
-    };
+fn eatAssignmentOp(self: *Parser) ?Token.Index {
+    return self.eatToken(.assign);
 }
 
-fn parseAssignmentOrExpr(self: *Self) !?Node.Index {
+fn parseAssignmentOrExpr(self: *Parser) !?Node.Index {
     const lhs = try self.parseExpr() orelse return null;
 
-    const node_kind = assignmentNodeKind(self.tokenKind(self.token_index)) orelse return lhs;
-    const token = self.nextToken();
+    const assignment_token = self.eatAssignmentOp() orelse return lhs;
 
     const rhs = try self.expectExpr();
-
     return try self.addNode(.{
-        .kind = node_kind,
-        .token = token,
+        .kind = .assign,
+        .token = assignment_token,
         .data = .{ .node_node = .{ lhs, rhs } },
     });
 }
 
-fn expectExpr(self: *Self) !Node.Index {
+fn expectExpr(self: *Parser) !Node.Index {
     return try self.parseExpr() orelse
         self.failWithUnexpected(
             self.tokenKind(self.token_index),
@@ -467,7 +464,7 @@ fn expectExpr(self: *Self) !Node.Index {
         );
 }
 
-fn parseExpr(self: *Self) (Error || ErrorBundle.ReportError)!?Node.Index {
+fn parseExpr(self: *Parser) (Parser.Error || NonParseError)!?Node.Index {
     const lhs = try self.parseTerm() orelse return null;
     return try self.parseExprPrecedence(lhs, 0);
 }
@@ -478,7 +475,7 @@ const Associativity = enum {
     right,
 };
 
-fn peekBinaryOp(self: Self) ?struct { token: Token.Index, precedence: u32, associativity: Associativity } {
+fn peekBinaryOp(self: Parser) ?struct { token: Token.Index, precedence: u32, associativity: Associativity } {
     const kind = self.tokenKind(self.token_index);
 
     const precedence: u32, const associativity: Associativity = switch (kind) {
@@ -494,7 +491,7 @@ fn peekBinaryOp(self: Self) ?struct { token: Token.Index, precedence: u32, assoc
     return .{ .token = self.token_index, .precedence = precedence, .associativity = associativity };
 }
 
-fn parseExprPrecedence(self: *Self, initial_lhs: Node.Index, min_prec: u32) !Node.Index {
+fn parseExprPrecedence(self: *Parser, initial_lhs: Node.Index, min_prec: u32) !Node.Index {
     var lhs = initial_lhs;
 
     while (true) {
@@ -527,7 +524,7 @@ fn parseExprPrecedence(self: *Self, initial_lhs: Node.Index, min_prec: u32) !Nod
     return lhs;
 }
 
-fn expectTerm(self: *Self) !Node.Index {
+fn expectTerm(self: *Parser) !Node.Index {
     return try self.parseTerm() orelse
         self.failWithUnexpected(
             self.tokenKind(self.token_index),
@@ -535,11 +532,11 @@ fn expectTerm(self: *Self) !Node.Index {
         );
 }
 
-fn eatUnaryOp(self: *Self) ?Token.Index {
-    return self.eatToken(.minus) orelse self.eatToken(.bang);
+fn eatUnaryOp(self: *Parser) ?Token.Index {
+    return self.eatTokenAny(&.{ .minus, .bang });
 }
 
-fn parseTerm(self: *Self) (Error || ErrorBundle.ReportError)!?Node.Index {
+fn parseTerm(self: *Parser) (Parser.Error || NonParseError)!?Node.Index {
     if (self.eatUnaryOp()) |unary_op| {
         const operand = try self.expectTerm();
         return try self.addNode(.{
@@ -549,28 +546,13 @@ fn parseTerm(self: *Self) (Error || ErrorBundle.ReportError)!?Node.Index {
         });
     }
 
-    return try self.parseBoolLiteral() orelse
-        try self.parseNumber() orelse
-        try self.parseNameRef() orelse
+    return try self.parseSingleTokenNodeAny(&.{ .kw_true, .kw_false }, .bool_literal) orelse
+        try self.parseSingleTokenNode(.number, .number) orelse
+        try self.parseSingleTokenNode(.ident, .name_ref) orelse
         try self.parseParenExpr();
 }
 
-fn parseBoolLiteral(self: *Self) !?Node.Index {
-    const tok = self.eatTokenAny(&.{ .kw_true, .kw_false }) orelse return null;
-    return try self.addNode(.{ .kind = .bool_literal, .token = tok });
-}
-
-fn parseNumber(self: *Self) !?Node.Index {
-    const tok = self.eatToken(.number) orelse return null;
-    return try self.addNode(.{ .kind = .number, .token = tok });
-}
-
-fn parseNameRef(self: *Self) !?Node.Index {
-    const tok = self.eatToken(.ident) orelse return null;
-    return try self.addNode(.{ .kind = .name_ref, .token = tok });
-}
-
-fn parseParenExpr(self: *Self) !?Node.Index {
+fn parseParenExpr(self: *Parser) !?Node.Index {
     _ = self.eatToken(.lparen) orelse return null;
 
     const res = self.expectExpr() catch |err|
