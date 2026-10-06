@@ -1,7 +1,7 @@
 {
   "$schema": "schemas/config.schema.json",
   "build": "",
-  "default_grammar": "1",
+  "default_grammar": "2",
   "versions": [1, 2, 3, 4, 5],
   "out_dir": "{root}/test/build",
   "stages": {

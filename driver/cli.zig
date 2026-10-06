@@ -57,15 +57,7 @@ pub const Args = union(enum) {
 
         var next_opt: ?Next = null;
 
-        const stages = std.StaticStringMap(Stage).initComptime(comptime init: {
-            // iterate over all variants of the enum and make pairs like `("foo", .foo)`
-            const info = @typeInfo(Stage).@"enum";
-            var res: [info.field_names.len]struct { []const u8, Stage } = undefined;
-            for (info.field_names, info.field_values, &res) |field_name, field_value, *res_item| {
-                res_item.* = .{ field_name, @as(Stage, @fromBackingInt(field_value)) };
-            }
-            break :init res;
-        });
+        const stages: std.StaticStringMap(Stage) = .initEnum();
 
         var iter = args.iterate();
         _ = iter.next(); // skip program name
