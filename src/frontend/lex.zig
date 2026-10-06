@@ -33,6 +33,16 @@ pub const Token = struct {
         lparen,
         rparen,
 
+        pub fn isError(self: Kind) bool {
+            return switch (self) {
+                .err_invalid_character,
+                .err_number_has_leading_zero,
+                .err_unterminated_multiline_comment,
+                => true,
+                else => false,
+            };
+        }
+
         pub fn toString(self: Kind) []const u8 {
             return switch (self) {
                 .eof => "EOF",
@@ -111,9 +121,7 @@ pub const Lexer = struct {
 
     pub fn next(self: *Self) Token {
         if (self.skipCommentsAndWhitespace()) |token| {
-            std.debug.assert(token.kind == .err_invalid_character or
-                token.kind == .err_number_has_leading_zero or
-                token.kind == .err_unterminated_multiline_comment);
+            std.debug.assert(token.kind.isError());
             return token;
         }
 

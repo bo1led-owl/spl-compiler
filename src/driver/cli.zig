@@ -142,10 +142,6 @@ pub const Args = union(enum) {
     }
 
     fn longOption(arg: [:0]const u8, comptime name: []const u8) ?[:0]const u8 {
-        const prefix = "--" ++ name ++ "=";
-        if (std.mem.startsWith(u8, arg, prefix)) {
-            return arg[prefix.len..];
-        }
-        return null;
+        return @ptrCast(std.mem.cutPrefix(u8, arg, "--" ++ name ++ "="));
     }
 };

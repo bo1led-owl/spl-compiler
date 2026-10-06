@@ -59,8 +59,8 @@ pub fn run(self: *Self) (std.mem.Allocator.Error || std.Io.Writer.Error)!Ast {
         const stmt_opt = self.parseStatement() catch |err|
             switch (err) {
                 error.ParseError => {
+                    defer self.skipUntilInclusive(.semi);
                     try self.scratch.append(self.gpa, try self.addRecoveryNode());
-                    self.skipUntilInclusive(.semi);
                     continue;
                 },
                 else => |e| return e,
