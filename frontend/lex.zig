@@ -18,7 +18,6 @@ pub const Token = struct {
         err_invalid_character,
         err_number_has_leading_zero,
         err_unterminated_multiline_comment,
-        err_ident_too_long,
         number,
         ident,
         kw_val,
@@ -67,7 +66,6 @@ pub const Token = struct {
                 .err_invalid_character => "invalid character",
                 .err_number_has_leading_zero => "number has leading zero",
                 .err_unterminated_multiline_comment => "unterminated multiline comment",
-                .err_ident_too_long => "identifier is too long",
                 .number => "a number",
                 .ident => "an identifier",
                 .kw_val => "`val`",
@@ -121,7 +119,7 @@ pub fn tokenLen(source: []const u8, token: Token) u32 {
         .err_invalid_character => 1,
         .err_unterminated_multiline_comment => @as(u32, @intCast(source.len)) - token.offset,
         .number, .err_number_has_leading_zero => lenMatching(source[token.offset..], std.ascii.isDigit),
-        .ident, .err_ident_too_long => lenMatching(source[token.offset..], isIdentifierChar),
+        .ident => lenMatching(source[token.offset..], isIdentifierChar),
     };
 }
 
@@ -347,10 +345,6 @@ pub const Lexer = struct {
         self.skipWhile(isIdentifierChar);
 
         const identifier = self.source[start..self.offset];
-
-        if (identifier.len > Token.MAX_IDENT_LEN) {
-            return Token{ .kind = .err_ident_too_long, .offset = start };
-        }
         if (keywords.get(identifier)) |kind| {
             return Token{ .kind = kind, .offset = start };
         }

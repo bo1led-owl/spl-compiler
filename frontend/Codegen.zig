@@ -268,11 +268,7 @@ fn gen(self: *Self, node_index: Ast.Node.Index) !GenResult {
         .var_decl => {
             const name = self.source.tokenLiteral(self.tokens.get(node.token + 1));
 
-            var null_terminated_name: [lex.Token.MAX_IDENT_LEN + 1]u8 = undefined;
-            @memcpy(null_terminated_name[0..name.len], name);
-            null_terminated_name[name.len] = 0;
-
-            const alloca = c.LLVMBuildAlloca(self.builder, self.i64Type, &null_terminated_name);
+            const alloca = c.LLVMBuildAlloca(self.builder, self.i64Type, "");
             try self.vars.put(self.gpa, name, alloca);
 
             const value = (try self.gen(node.data.node)).value;

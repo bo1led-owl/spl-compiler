@@ -232,7 +232,6 @@ fn dumpTokens(
             .err_invalid_character,
             .err_number_has_leading_zero,
             .err_unterminated_multiline_comment,
-            .err_ident_too_long,
             => "ERROR",
         };
 
@@ -240,7 +239,6 @@ fn dumpTokens(
             .err_invalid_character,
             .err_number_has_leading_zero,
             .err_unterminated_multiline_comment,
-            .err_ident_too_long,
             => token.kind.toString(),
             else => null,
         };

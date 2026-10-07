@@ -29,15 +29,15 @@ errors: *ErrorBundle,
 token_index: Token.Index,
 tokens: lex.TokenList,
 
-/// all nodes to be passed to AST
+/// All nodes to be passed to AST
 nodes: Ast.NodeList,
-/// scratch buffer for building extras
+/// Scratch buffer for building extras
 ///
-/// example: while parsing a block, we enter another block
-/// their extras ranges must not overlap, so we build the new extras in the scratch, then copy it to extras
-/// and only after the outer block ends, we add its contents into the extras
+/// Example: while parsing a block, we enter another block
+/// Their extras ranges must not overlap, so we build the new extras in the scratch,
+/// then copy it to extras, and only after the outer block ends, we add its contents into the extras
 scratch: std.ArrayList(Node.Index),
-/// extra data to be passed to AST
+/// Extra data to be passed to AST
 extras: std.ArrayList(u32),
 
 pub fn init(gpa: std.mem.Allocator, source: Source, tokens: lex.TokenList, errors: *ErrorBundle) Parser {
