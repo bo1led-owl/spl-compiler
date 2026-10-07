@@ -377,7 +377,7 @@ def discover_tests(test_root, grammar, stage_filter, name_filter, skip_dir=None,
             spec = False
             for stage in STAGE_GOLDEN_DEFAULT:
                 s = exit_spec(meta, stage=stage)
-                if s == "nonzero" or (isinstance(s, int) and s != 0):
+                if s == "nonzero" or isinstance(s, int):
                     spec = s
                     break
             if spec:
@@ -728,7 +728,7 @@ def no_golden_result(result, meta, is_fuzz, stage=None):
     if is_fuzz:
         return result  # fuzz exit contract met; nothing to compare
     spec = exit_spec(meta, stage=stage)
-    if spec == "nonzero" or (isinstance(spec, int) and spec != 0):
+    if spec == "nonzero" or isinstance(spec, int):
         return result  # exit-only negative test
     result.status = "SKIP"
     result.lines.append("no golden file; nothing to compare")
@@ -1123,7 +1123,7 @@ def list_compatibility_matrix(config, test_root, name_filter, stage_filter):
         if not found_stages:
             for stage in STAGE_GOLDEN_DEFAULT:
                 s = exit_spec(meta, stage=stage)
-                if s == "nonzero" or (isinstance(s, int) and s != 0):
+                if s == "nonzero" or isinstance(s, int):
                     found_stages.add(stage)
                     break
         if not found_stages:
