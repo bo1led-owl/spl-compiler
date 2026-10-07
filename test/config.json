@@ -13,7 +13,7 @@
       ]
     },
     "parser": {
-      "cmd": ["{root}/zig-out/bin/splc", "-a", "{ast_in}", "--last-stage=parser", "{input}"],
+      "cmd": ["{root}/zig-out/bin/splc", "-a", "{ast_in}", "--last-stage=sema", "{input}"],
       "out": "{ast_out}",
       "preprocess": [
         {"type": "json", "keep": ["kind", "line", "column", "elems"]}

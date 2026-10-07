@@ -18,9 +18,10 @@ pub const help_msg =
 
 pub const Args = union(enum) {
     pub const Stage = enum(u8) {
-        lexer = 0,
-        parser = 1,
-        codegen = 2,
+        lexer,
+        parser,
+        sema,
+        codegen,
     };
 
     pub const ParseError = error{

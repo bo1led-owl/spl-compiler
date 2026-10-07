@@ -97,6 +97,16 @@ fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: cli.Args.Full) u8 {
             std.log.err("failed to dump AST: {s}", .{@errorName(err)});
     }
 
+    if (args.last_stage == .parser) {
+        if (error_bundle.nonEmpty()) {
+            error_bundle.sort();
+            error_bundle.renderToStderr(io, source, null) catch {};
+            return 1;
+        }
+
+        return 0;
+    }
+
     var sema = frontend.Sema.init(gpa, source, tokens, ast, &error_bundle);
     defer sema.deinit();
     sema.run() catch |err| {
@@ -110,7 +120,7 @@ fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: cli.Args.Full) u8 {
         return 1;
     }
 
-    if (args.last_stage == .parser) {
+    if (args.last_stage == .sema) {
         return 0;
     }
 
