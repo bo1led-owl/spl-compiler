@@ -215,7 +215,7 @@ fn gen(self: *Self, node_index: Ast.Node.Index) !GenResult {
             return .{};
         },
         .@"while" => {
-            const cond_node, const body_node = self.ast.nodeData(node_index).node_node;
+            const cond_node, const body_node = self.ast.nodeData(node_index).node_and_node;
 
             const header = self.newBasicBlock("");
             const body = self.newBasicBlock("");
@@ -291,8 +291,7 @@ fn gen(self: *Self, node_index: Ast.Node.Index) !GenResult {
         },
         .number => {
             const literal = self.source.tokenLiteral(self.tokens.get(node.token));
-            const value = std.fmt.parseUnsigned(u64, literal, 10) catch
-                @panic("integer literals must be verified before codegen");
+            const value = std.fmt.parseUnsigned(u64, literal, 10) catch unreachable;
             return .{ .value = c.LLVMConstInt(self.i64Type, value, @intFromBool(false)) };
         },
         .@"return" => {
@@ -320,12 +319,12 @@ fn gen(self: *Self, node_index: Ast.Node.Index) !GenResult {
             }
         },
         .binary => {
-            const lhs = (try self.gen(node.data.node_node.@"0")).value;
+            const lhs = (try self.gen(node.data.node_and_node.@"0")).value;
 
             const token_kind = self.tokens.items(.kind)[node.token];
             switch (token_kind) {
                 .plus, .minus, .asterisk, .slash => {
-                    const rhs = (try self.gen(node.data.node_node.@"1")).value;
+                    const rhs = (try self.gen(node.data.node_and_node.@"1")).value;
                     return .{ .value = switch (token_kind) {
                         .plus => c.LLVMBuildAdd(self.builder, lhs, rhs, ""),
                         .minus => c.LLVMBuildSub(self.builder, lhs, rhs, ""),
@@ -335,7 +334,7 @@ fn gen(self: *Self, node_index: Ast.Node.Index) !GenResult {
                     } };
                 },
                 .eq, .ne, .lt, .gt, .le, .ge => {
-                    const rhs = (try self.gen(node.data.node_node.@"1")).value;
+                    const rhs = (try self.gen(node.data.node_and_node.@"1")).value;
                     const pred: c.LLVMIntPredicate = switch (token_kind) {
                         .eq => c.LLVMIntEQ,
                         .ne => c.LLVMIntNE,
@@ -368,7 +367,7 @@ fn gen(self: *Self, node_index: Ast.Node.Index) !GenResult {
                     );
 
                     self.positionBuilderAtEnd(rhs_block);
-                    const rhs = (try self.gen(node.data.node_node.@"1")).value;
+                    const rhs = (try self.gen(node.data.node_and_node.@"1")).value;
                     _ = c.LLVMBuildBr(self.builder, next_block);
 
                     self.positionBuilderAtEnd(next_block);
@@ -391,8 +390,8 @@ fn gen(self: *Self, node_index: Ast.Node.Index) !GenResult {
             }
         },
         .assign => {
-            const dest = self.genStorable(node.data.node_node.@"0");
-            const src = (try self.gen(node.data.node_node.@"1")).value;
+            const dest = self.genStorable(node.data.node_and_node.@"0");
+            const src = (try self.gen(node.data.node_and_node.@"1")).value;
             _ = c.LLVMBuildStore(self.builder, src, dest);
             return .{};
         },

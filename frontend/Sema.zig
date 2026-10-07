@@ -132,7 +132,7 @@ fn visitNode(self: *Self, node_index: Ast.Node.Index) (std.mem.Allocator.Error |
             return .{};
         },
         .@"while" => {
-            const cond, const body = self.ast.nodeData(node_index).node_node;
+            const cond, const body = self.ast.nodeData(node_index).node_and_node;
 
             _ = try self.visitNode(cond);
 
@@ -197,7 +197,7 @@ fn visitNode(self: *Self, node_index: Ast.Node.Index) (std.mem.Allocator.Error |
             } else {
                 try self.report(
                     self.source.spanByToken(name_token),
-                    "reference to undefined variable `{s}`",
+                    "reference to undefined name `{s}`",
                     .{name},
                 );
                 return .{ .is_assignable = true };
@@ -225,13 +225,13 @@ fn visitNode(self: *Self, node_index: Ast.Node.Index) (std.mem.Allocator.Error |
             return .{};
         },
         .binary => {
-            const lhs, const rhs = self.ast.nodeData(node_index).node_node;
+            const lhs, const rhs = self.ast.nodeData(node_index).node_and_node;
             _ = try self.visitNode(lhs);
             _ = try self.visitNode(rhs);
             return .{};
         },
         .assign => {
-            const dest_index, const source_index = self.ast.nodeData(node_index).node_node;
+            const dest_index, const source_index = self.ast.nodeData(node_index).node_and_node;
             const dest_info = try self.visitNode(dest_index);
             if (!dest_info.is_assignable) {
                 try self.report(self.spanByNode(dest_index), "expression is not assignable", .{});
@@ -246,7 +246,7 @@ fn visitNode(self: *Self, node_index: Ast.Node.Index) (std.mem.Allocator.Error |
 
 fn spanByNode(self: *Self, node_index: Ast.Node.Index) Source.Span {
     return switch (self.ast.nodeKind(node_index)) {
-        .root => .{ .begin = 0, .end = @intCast(self.source.text.len) },
+        .root => unreachable,
         .var_decl => .{
             .begin = self.tokens.items(.offset)[self.ast.nodeToken(node_index)],
             .end = self.spanByNode(self.ast.nodeData(node_index).node).end,
@@ -274,12 +274,15 @@ fn spanByNode(self: *Self, node_index: Ast.Node.Index) Source.Span {
         .@"continue",
         .@"break",
         => self.source.spanByToken(self.tokens.get(self.ast.nodeToken(node_index))),
-        .@"while",
         .@"return",
         .unary,
         => .{
             .begin = self.tokens.items(.offset)[self.ast.nodeToken(node_index)],
             .end = self.spanByNode(self.ast.nodeData(node_index).node).end,
+        },
+        .@"while" => .{
+            .begin = self.tokens.items(.offset)[self.ast.nodeToken(node_index)],
+            .end = self.spanByNode(self.ast.nodeData(node_index).node_and_node.@"1").end,
         },
         .if_full, .if_simple => if_span: {
             const info = Ast.info.ifAny(self.ast, node_index);
@@ -290,7 +293,7 @@ fn spanByNode(self: *Self, node_index: Ast.Node.Index) Source.Span {
             };
         },
         .binary, .assign => bin: {
-            const lhs, const rhs = self.ast.nodeData(node_index).node_node;
+            const lhs, const rhs = self.ast.nodeData(node_index).node_and_node;
             break :bin .{
                 .begin = self.spanByNode(lhs).begin,
                 .end = self.spanByNode(rhs).end,

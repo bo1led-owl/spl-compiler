@@ -76,7 +76,7 @@ pub fn run(self: *Parser) NonParseError!Ast {
     try self.extras.appendSlice(self.gpa, @ptrCast(self.scratch.items));
 
     return .{
-        .nodes = self.nodes,
+        .nodes = self.nodes.slice(),
         .extra_data = try self.extras.toOwnedSlice(self.gpa),
     };
 }
@@ -410,12 +410,12 @@ fn parseIf(self: *Parser) NonParseError!?Node.Index {
         return try self.addNode(.{
             .kind = .if_full,
             .token = kw_token,
-            .data = .{ .node_extra = .{ cond, extra_index } },
+            .data = .{ .node_and_extra = .{ cond, extra_index } },
         });
     } else return try self.addNode(.{
         .kind = .if_simple,
         .token = kw_token,
-        .data = .{ .node_node = .{ cond, then_node } },
+        .data = .{ .node_and_node = .{ cond, then_node } },
     });
 }
 
@@ -435,7 +435,7 @@ fn parseWhile(self: *Parser) NonParseError!?Node.Index {
     return try self.addNode(.{
         .kind = .@"while",
         .token = kw_token,
-        .data = .{ .node_node = .{ cond, body } },
+        .data = .{ .node_and_node = .{ cond, body } },
     });
 }
 
@@ -452,7 +452,7 @@ fn parseAssignmentOrExpr(self: *Parser) !?Node.Index {
     return try self.addNode(.{
         .kind = .assign,
         .token = assignment_token,
-        .data = .{ .node_node = .{ lhs, rhs } },
+        .data = .{ .node_and_node = .{ lhs, rhs } },
     });
 }
 
@@ -517,7 +517,7 @@ fn parseExprPrecedence(self: *Parser, initial_lhs: Node.Index, min_prec: u32) !N
         lhs = try self.addNode(.{
             .kind = .binary,
             .token = op.token,
-            .data = .{ .node_node = .{ lhs, rhs } },
+            .data = .{ .node_and_node = .{ lhs, rhs } },
         });
     }
 

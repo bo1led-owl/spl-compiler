@@ -383,7 +383,7 @@ fn dumpAstNode(
             }
         },
         .@"while" => {
-            const cond, const body = node.data.node_node;
+            const cond, const body = node.data.node_and_node;
             try dumpAstNode(jws, source, tokens, ast, cond);
             try dumpAstNode(jws, source, tokens, ast, body);
         },
@@ -428,12 +428,12 @@ fn dumpAstNode(
             try dumpAstNode(jws, source, tokens, ast, node.data.node);
         },
         .binary => {
-            const lhs, const rhs = ast.nodeData(node_index).node_node;
+            const lhs, const rhs = ast.nodeData(node_index).node_and_node;
             try dumpAstNode(jws, source, tokens, ast, lhs);
             try dumpAstNode(jws, source, tokens, ast, rhs);
         },
         .assign => {
-            const dest, const src = ast.nodeData(node_index).node_node;
+            const dest, const src = ast.nodeData(node_index).node_and_node;
             try dumpAstNode(jws, source, tokens, ast, dest);
             try dumpAstNode(jws, source, tokens, ast, src);
         },

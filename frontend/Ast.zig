@@ -5,13 +5,12 @@ const Token = @import("lex.zig").Token;
 
 pub const NodeList = std.MultiArrayList(Node);
 
-nodes: NodeList,
+nodes: NodeList.Slice,
 
 /// heterogeneous list of out-of-band extra info
 /// can, for example, store indices of statements in a block
 extra_data: []u32,
 
-/// range of extra data, `end` is not included
 pub const ExtraIndex = enum(u32) { _ };
 
 /// range of extra data, `end` is not included
@@ -81,7 +80,7 @@ pub const Node = struct {
         unary,
         /// binary operations
         /// `token` is the op
-        /// `data` is `node_node`, lhs and rhs respectively
+        /// `data` is `node_and_node`, lhs and rhs respectively
         binary,
         /// assignment statement
         /// follows the same rules as `binary`, but separated for ease of checking
@@ -92,16 +91,16 @@ pub const Node = struct {
         block,
         /// else'less "if" statement
         /// `token` is "if"
-        /// `data` is `node_node`, pointing to condition and body
+        /// `data` is `node_and_node`, pointing to condition and body
         if_simple,
         /// "if" statement with "else"
         /// `token` is "if"
-        /// `data` is `node_extra`,
+        /// `data` is `node_and_extra`,
         /// `node` pointing to condition and `extra` to [body_index, else_index] in extras
         if_full,
         /// while loop statement
         /// `token` is "while"
-        /// `data` is `node_node`, pointing to condition and body
+        /// `data` is `node_and_node`, pointing to condition and body
         @"while",
         /// "continue" statement
         /// `token` is "continue"
@@ -113,8 +112,8 @@ pub const Node = struct {
 
     pub const Data = union {
         node: Index,
-        node_node: struct { Node.Index, Node.Index },
-        node_extra: struct { Node.Index, ExtraIndex },
+        node_and_node: struct { Node.Index, Node.Index },
+        node_and_extra: struct { Node.Index, ExtraIndex },
         extra_range: ExtraRange,
 
         // reserved for the future
@@ -172,21 +171,21 @@ pub const info = struct {
         return switch (ast.nodeKind(node_index)) {
             .if_simple => ifSimple(ast, node_index),
             .if_full => ifFull(ast, node_index),
-            else => @panic("`if_simple` of `if_full` expected"),
+            else => unreachable,
         };
     }
 
     pub fn ifSimple(ast: Self, node_index: Node.Index) info.If {
         std.debug.assert(ast.nodeKind(node_index) == .if_simple);
 
-        const cond, const then_node = ast.nodeData(node_index).node_node;
+        const cond, const then_node = ast.nodeData(node_index).node_and_node;
         return .{ .cond = cond, .then_node = then_node, .else_node = .none };
     }
 
     pub fn ifFull(ast: Self, node_index: Node.Index) info.If {
         std.debug.assert(ast.nodeKind(node_index) == .if_full);
 
-        const cond, const extra_index = ast.nodeData(node_index).node_extra;
+        const cond, const extra_index = ast.nodeData(node_index).node_and_extra;
         const then_node: Node.Index = @fromBackingInt(ast.extra_data[@backingInt(extra_index)]);
         const else_node: Node.Index = @fromBackingInt(ast.extra_data[@backingInt(extra_index) + 1]);
         return .{ .cond = cond, .then_node = then_node, .else_node = else_node.toOptional() };
