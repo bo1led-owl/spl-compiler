@@ -11,8 +11,12 @@ source: Source,
 tokens: lex.TokenList,
 ast: Ast,
 errors: *ErrorBundle,
+
+/// Variables present in scope
 vars: std.StringArrayHashMapUnmanaged(struct { mut: bool }),
+/// Because `vars` is an `ArrayHashMap`, we can use indices to keep track of scope stacking
 scope_tops: std.ArrayList(u32),
+
 inside_loop: bool,
 
 pub fn init(
@@ -48,11 +52,6 @@ fn report(self: *Self, span: Source.Span, comptime fmt: []const u8, args: anytyp
     try self.errors.report(self.gpa, span, fmt, args);
 }
 
-const NodeInfo = packed struct(u2) {
-    is_assignable: bool = false,
-    is_terminator: bool = false,
-};
-
 fn enterScope(self: *Self) !void {
     try self.scope_tops.append(self.gpa, @intCast(self.vars.entries.len));
 }
@@ -62,7 +61,13 @@ fn leaveScope(self: *Self) void {
     self.vars.shrinkRetainingCapacity(@intCast(top));
 }
 
-fn visitNode(self: *Self, node_index: Ast.Node.Index) (std.mem.Allocator.Error || ErrorBundle.ReportError)!NodeInfo {
+// make it `packed` if it grows too large
+const NodeInfo = struct {
+    is_assignable: bool = false,
+    is_terminator: bool = false,
+};
+
+fn visitNode(self: *Self, node_index: Ast.Node.Index) ErrorBundle.ReportError!NodeInfo {
     switch (self.ast.nodeKind(node_index)) {
         .recovery => return .{},
         .root => {
@@ -100,6 +105,7 @@ fn visitNode(self: *Self, node_index: Ast.Node.Index) (std.mem.Allocator.Error |
         },
         .block => {
             try self.enterScope();
+            defer self.leaveScope();
 
             var seen_terminator = false;
             for (self.ast.extractExtras(self.ast.nodeData(node_index).extra_range)) |i| {
@@ -111,7 +117,6 @@ fn visitNode(self: *Self, node_index: Ast.Node.Index) (std.mem.Allocator.Error |
                 seen_terminator |= info.is_terminator;
             }
 
-            self.leaveScope();
             return .{ .is_terminator = seen_terminator };
         },
         .if_full, .if_simple => {
@@ -133,16 +138,15 @@ fn visitNode(self: *Self, node_index: Ast.Node.Index) (std.mem.Allocator.Error |
         },
         .@"while" => {
             const cond, const body = self.ast.nodeData(node_index).node_and_node;
-
             _ = try self.visitNode(cond);
 
             self.inside_loop = true;
+            defer self.inside_loop = false;
+
             try self.enterScope();
+            defer self.leaveScope();
 
             _ = try self.visitNode(body);
-
-            self.inside_loop = false;
-            self.leaveScope();
 
             return .{};
         },
