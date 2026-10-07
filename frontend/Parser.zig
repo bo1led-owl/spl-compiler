@@ -29,8 +29,15 @@ errors: *ErrorBundle,
 token_index: Token.Index,
 tokens: lex.TokenList,
 
+/// all nodes to be passed to AST
 nodes: Ast.NodeList,
+/// scratch buffer for building extras
+///
+/// example: while parsing a block, we enter another block
+/// their extras ranges must not overlap, so we build the new extras in the scratch, then copy it to extras
+/// and only after the outer block ends, we add its contents into the extras
 scratch: std.ArrayList(Node.Index),
+/// extra data to be passed to AST
 extras: std.ArrayList(u32),
 
 pub fn init(gpa: std.mem.Allocator, source: Source, tokens: lex.TokenList, errors: *ErrorBundle) Parser {
@@ -95,6 +102,7 @@ fn tokenKind(self: Parser, index: Token.Index) Token.Kind {
     return self.tokens.items(.kind)[index];
 }
 
+/// Eat a token if its `kind` is present in `kinds`. Returns index of the eaten token
 fn eatTokenAny(self: *Parser, comptime kinds: []const Token.Kind) ?Token.Index {
     if (std.mem.findScalar(Token.Kind, kinds, self.tokenKind(self.token_index)) != null) {
         return self.nextToken();
@@ -102,6 +110,7 @@ fn eatTokenAny(self: *Parser, comptime kinds: []const Token.Kind) ?Token.Index {
     return null;
 }
 
+/// Eat a token if its `kind` matches the given one. Returns index of the eaten token
 fn eatToken(self: *Parser, comptime kind: Token.Kind) ?Token.Index {
     if (self.tokenKind(self.token_index) == kind) {
         return self.nextToken();
@@ -110,11 +119,13 @@ fn eatToken(self: *Parser, comptime kind: Token.Kind) ?Token.Index {
     return null;
 }
 
+/// Advance current token index. Returns index of the next token
 fn nextToken(self: *Parser) Token.Index {
     defer self.token_index += 1;
     return self.token_index;
 }
 
+/// Format a list of *things* into a readable "A, B, C, D or E". Accepts `Token.Kind`s or strings of any kind
 inline fn formatExpectedList(comptime list: anytype) []const u8 {
     var result: []const u8 = "";
 
@@ -190,13 +201,15 @@ fn expectToken(self: *Parser, comptime kind: Token.Kind) !Token.Index {
     return self.nextToken();
 }
 
-fn skipUntilInclusive(self: *Parser, kind: Token.Kind) void {
+/// Skip tokens until one with `kind` is seen, then also eat it
+fn skipUntilInclusive(self: *Parser, comptime kind: Token.Kind) void {
     if (self.skipUntil(kind)) {
         _ = self.nextToken();
     }
 }
 
-fn skipUntil(self: *Parser, kind: Token.Kind) bool {
+/// Skip tokens until one with `kind` is seen
+fn skipUntil(self: *Parser, comptime kind: Token.Kind) bool {
     if (std.mem.findScalarPos(
         Token.Kind,
         self.tokens.items(.kind),
@@ -211,6 +224,7 @@ fn skipUntil(self: *Parser, kind: Token.Kind) bool {
     }
 }
 
+/// Skip tokens until one with `kind` present in `kinds` is seen
 fn skipUntilAny(self: *Parser, comptime kinds: []const Token.Kind) Token.Kind {
     if (std.mem.findAnyPos(
         Token.Kind,
@@ -235,6 +249,7 @@ fn expectStatement(self: *Parser) !Node.Index {
         );
 }
 
+/// Parse a statement. Eats semicolons for statements expecting one. Recovers from errors
 fn parseStatement(self: *Parser) NonParseError!?Node.Index {
     return try self.parseStatementWithoutSemicolon() orelse
         self.parseStatementWithSemicolon() catch |err|
@@ -244,6 +259,7 @@ fn parseStatement(self: *Parser) NonParseError!?Node.Index {
         } else return @errorCast(err);
 }
 
+/// Parse a subclass of statements that expect a semicolon. Does no extra error recovery
 fn parseStatementWithSemicolon(self: *Parser) !?Node.Index {
     const stmt = try self.parseSingleTokenNode(.kw_continue, .@"continue") orelse
         try self.parseSingleTokenNode(.kw_break, .@"break") orelse
@@ -255,12 +271,14 @@ fn parseStatementWithSemicolon(self: *Parser) !?Node.Index {
     return stmt;
 }
 
+/// Parse a subclas of statements that do not expect a semicolon. Recovers from errors
 fn parseStatementWithoutSemicolon(self: *Parser) NonParseError!?Node.Index {
     return try self.parseBlock() orelse
         try self.parseIf() orelse
         try self.parseWhile();
 }
 
+/// Parse a node represented by a token of kind `token_kind`. Does no error recovery
 fn parseSingleTokenNode(
     self: *Parser,
     comptime token_kind: Token.Kind,
@@ -272,6 +290,7 @@ fn parseSingleTokenNode(
         null;
 }
 
+/// Parse a node represented by a token of kind, present in `tokens_kinds`. Does no extra error recovery
 fn parseSingleTokenNodeAny(
     self: *Parser,
     comptime token_kinds: []const Token.Kind,
@@ -283,7 +302,8 @@ fn parseSingleTokenNodeAny(
         null;
 }
 
-fn parseVarDecl(self: *Parser) !?Node.Index {
+/// Parse a variable declaration. Recovers from errors
+fn parseVarDecl(self: *Parser) NonParseError!?Node.Index {
     const var_token = self.eatTokenAny(&.{ .kw_val, .kw_var }) orelse return null;
 
     _ = self.expectToken(.ident) catch try self.addRecoveryNode();
@@ -298,7 +318,7 @@ fn parseVarDecl(self: *Parser) !?Node.Index {
             if (err == error.ParseError) {
                 defer _ = self.skipUntil(.semi);
                 break :init try self.addRecoveryNode();
-            } else return err;
+            } else return @errorCast(err);
     };
 
     return try self.addNode(.{
@@ -308,13 +328,14 @@ fn parseVarDecl(self: *Parser) !?Node.Index {
     });
 }
 
-fn parseReturn(self: *Parser) !?Node.Index {
+/// Parse a return. Recovers from errors
+fn parseReturn(self: *Parser) NonParseError!?Node.Index {
     const ret_token = self.eatToken(.kw_return) orelse return null;
     const retval = self.expectExpr() catch |err|
         if (err == error.ParseError) blk: {
             defer _ = self.skipUntil(.semi);
             break :blk try self.addRecoveryNode();
-        } else return err;
+        } else return @errorCast(err);
 
     return try self.addNode(.{
         .kind = .@"return",
@@ -323,6 +344,7 @@ fn parseReturn(self: *Parser) !?Node.Index {
     });
 }
 
+/// Parse a block of statements. Recovers from errors
 fn parseBlock(self: *Parser) NonParseError!?Node.Index {
     const brace_token = self.eatToken(.lbrace) orelse return null;
 
@@ -353,6 +375,8 @@ fn parseBlock(self: *Parser) NonParseError!?Node.Index {
     });
 }
 
+/// Parse condition of an "if" or "while" (an expression in parentheses).
+/// Differs from `parseParenExpr` in error recovery, suitable for "if" and "while"
 fn parseCondition(self: *Parser) NonParseError!Node.Index {
     _ = self.expectToken(.lparen) catch {
         defer switch (self.skipUntilAny(&.{ .rparen, .lbrace, .semi, .rbrace })) {
@@ -381,6 +405,7 @@ fn parseCondition(self: *Parser) NonParseError!Node.Index {
     return res;
 }
 
+/// Parse an "if" statement. Recovers from errors
 fn parseIf(self: *Parser) NonParseError!?Node.Index {
     const kw_token = self.eatToken(.kw_if) orelse return null;
 
@@ -419,6 +444,7 @@ fn parseIf(self: *Parser) NonParseError!?Node.Index {
     });
 }
 
+/// Parse a "while" statement. Recovers from errors
 fn parseWhile(self: *Parser) NonParseError!?Node.Index {
     const kw_token = self.eatToken(.kw_while) orelse return null;
 
@@ -439,10 +465,12 @@ fn parseWhile(self: *Parser) NonParseError!?Node.Index {
     });
 }
 
+/// Try and eat a token representing an assignment operator
 fn eatAssignmentOp(self: *Parser) ?Token.Index {
     return self.eatToken(.assign);
 }
 
+/// Parse an assignment statement or expression statement. Does no extra error recovery
 fn parseAssignmentOrExpr(self: *Parser) !?Node.Index {
     const lhs = try self.parseExpr() orelse return null;
 
@@ -464,6 +492,7 @@ fn expectExpr(self: *Parser) !Node.Index {
         );
 }
 
+/// Parse an expression. Does no extra error recovery
 fn parseExpr(self: *Parser) (Parser.Error || NonParseError)!?Node.Index {
     const lhs = try self.parseTerm() orelse return null;
     return try self.parseExprPrecedence(lhs, 0);
@@ -475,6 +504,7 @@ const Associativity = enum {
     right,
 };
 
+/// Try and peek a token representing a binary operator
 fn peekBinaryOp(self: Parser) ?struct { token: Token.Index, precedence: u32, associativity: Associativity } {
     const kind = self.tokenKind(self.token_index);
 
@@ -491,6 +521,7 @@ fn peekBinaryOp(self: Parser) ?struct { token: Token.Index, precedence: u32, ass
     return .{ .token = self.token_index, .precedence = precedence, .associativity = associativity };
 }
 
+/// Parse a binary expression (if an operator is present). Does no extra error recovery
 fn parseExprPrecedence(self: *Parser, initial_lhs: Node.Index, min_prec: u32) !Node.Index {
     var lhs = initial_lhs;
 
@@ -532,10 +563,12 @@ fn expectTerm(self: *Parser) !Node.Index {
         );
 }
 
+/// Try and eat a token representing a unary operator
 fn eatUnaryOp(self: *Parser) ?Token.Index {
     return self.eatTokenAny(&.{ .minus, .bang });
 }
 
+/// Parse a term: `unary_expr`, `literal` or `(expr)`. Does no extra error recovery
 fn parseTerm(self: *Parser) (Parser.Error || NonParseError)!?Node.Index {
     if (self.eatUnaryOp()) |unary_op| {
         const operand = try self.expectTerm();
@@ -552,7 +585,8 @@ fn parseTerm(self: *Parser) (Parser.Error || NonParseError)!?Node.Index {
         try self.parseParenExpr();
 }
 
-fn parseParenExpr(self: *Parser) !?Node.Index {
+/// Parse an expression in parentheses. Recovers from errors
+fn parseParenExpr(self: *Parser) NonParseError!?Node.Index {
     _ = self.eatToken(.lparen) orelse return null;
 
     const res = self.expectExpr() catch |err|
@@ -561,9 +595,10 @@ fn parseParenExpr(self: *Parser) !?Node.Index {
                 _ = self.nextToken();
             };
             return try self.addRecoveryNode();
-        } else return err;
+        } else return @errorCast(err);
 
-    _ = try self.expectToken(.rparen);
+    // used instead of `eatToken` only because of its error message
+    _ = self.expectToken(.rparen) catch {};
 
     return res;
 }
