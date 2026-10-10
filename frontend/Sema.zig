@@ -98,18 +98,25 @@ fn visitNode(self: *Self, node_index: Ast.Node.Index) ErrorBundle.ReportError!No
             }
             defer if (kind == .block) self.leaveScope();
 
-            var terminator: ?Ast.Node.Index = null;
-            for (body) |i| {
-                if (terminator) |terminator_index| {
-                    try self.errors.addMessage(self.spanByNode(@fromBackingInt(i)), "unreachable code", .{});
-                    try self.errors.addMessage(self.spanByNode(terminator_index), "control flow was diverted here", .{});
-                    try self.errors.finishReport();
+            var terminator_body_index: ?usize = null;
+            for (body, 0..) |child_node_index, i| {
+                const info = try self.visitNode(@fromBackingInt(child_node_index));
+                if (terminator_body_index == null and info == .terminator) {
+                    terminator_body_index = i;
                 }
+            }
 
-                const info = try self.visitNode(@fromBackingInt(i));
-                if (terminator == null and info == .terminator) {
-                    terminator = @fromBackingInt(i);
-                }
+            if (terminator_body_index) |terminator_index| {
+                const begin = self.spanByNode(@fromBackingInt(body[terminator_index + 1])).begin;
+                const end = self.spanByNode(@fromBackingInt(body[body.len - 1])).end;
+
+                try self.errors.addMessage(.{ .begin = begin, .end = end }, "unreachable code", .{});
+                try self.errors.addMessage(
+                    self.spanByNode(@fromBackingInt(body[terminator_index])),
+                    "control flow was diverted here",
+                    .{},
+                );
+                try self.errors.finishReport();
             }
 
             if (kind == .root) {
@@ -123,7 +130,7 @@ fn visitNode(self: *Self, node_index: Ast.Node.Index) ErrorBundle.ReportError!No
                 }
                 return .none;
             } else {
-                return if (terminator != null) .terminator else .none;
+                return if (terminator_body_index != null) .terminator else .none;
             }
         },
         .if_full, .if_simple => {
