@@ -5,57 +5,65 @@ const Self = @This();
 const lex = @import("lex.zig");
 const Source = @import("Source.zig");
 
-pub const ReportError = std.Io.Writer.Error || std.mem.Allocator.Error;
+pub const ReportError = std.mem.Allocator.Error;
 
-pub const ErrorDetails = struct {
-    msg_start: u32, // no `msg_end` because messages are null-terminated
+const MessageIndex = enum(u32) { _ };
+const MessageStart = enum(u32) { invalid = std.math.maxInt(u32), _ };
+
+pub const Message = struct {
+    msg_start: MessageStart, // no `msg_end` because messages are null-terminated
     span: Source.Span,
+
+    pub fn isNullMsg(self: Message) bool {
+        return self.msg_start == .invalid;
+    }
 };
 
-errors: std.ArrayList(ErrorDetails),
-msg_storage: std.ArrayList(u8),
+const null_msg: Message = .{ .msg_start = .invalid, .span = undefined };
 
-pub const empty: Self = .{
-    .errors = .empty,
-    .msg_storage = .empty,
-};
+gpa: std.mem.Allocator,
+/// messages are populated by `null_msg`-terminated slices,
+/// the first message of each slice is considered the error message,
+/// the latter ones are considered note messages
+messages: std.ArrayList(Message),
+text_storage: std.ArrayList(u8),
 
-pub fn deinit(self: *Self, gpa: std.mem.Allocator) void {
-    self.errors.deinit(gpa);
-    self.msg_storage.deinit(gpa);
+pub fn init(gpa: std.mem.Allocator) Self {
+    return .{
+        .gpa = gpa,
+        .messages = .empty,
+        .text_storage = .empty,
+    };
+}
+
+pub fn deinit(self: *Self) void {
+    self.messages.deinit(self.gpa);
+    self.text_storage.deinit(self.gpa);
     self.* = undefined;
 }
 
 pub fn nonEmpty(self: Self) bool {
-    return self.errors.items.len > 0;
+    return self.messages.items.len > 0;
 }
 
-pub fn sort(self: *Self) void {
-    std.mem.sort(ErrorDetails, self.errors.items, {}, struct {
-        fn cmp(_: void, lhs: ErrorDetails, rhs: ErrorDetails) bool {
-            if (lhs.span.begin != rhs.span.begin) {
-                return lhs.span.begin < rhs.span.begin;
-            }
-            return lhs.span.end < rhs.span.end;
-        }
-    }.cmp);
-}
-
-pub fn report(
+pub fn addMessage(
     self: *Self,
-    gpa: std.mem.Allocator,
     span: Source.Span,
     comptime fmt: []const u8,
     args: anytype,
 ) ReportError!void {
-    const msg_start = self.msg_storage.items.len;
-    try self.msg_storage.print(gpa, fmt, args);
-    try self.msg_storage.append(gpa, 0);
+    const msg_start = self.text_storage.items.len;
+    try self.text_storage.print(self.gpa, fmt, args);
+    try self.text_storage.append(self.gpa, 0);
 
-    try self.errors.append(gpa, .{
-        .msg_start = @intCast(msg_start),
+    try self.messages.append(self.gpa, .{
+        .msg_start = @fromBackingInt(@intCast(msg_start)),
         .span = span,
     });
+}
+
+pub fn finishReport(self: *Self) !void {
+    try self.messages.append(self.gpa, null_msg);
 }
 
 pub fn renderToStderr(
@@ -74,30 +82,36 @@ pub fn renderToStderr(
     };
 }
 
-fn getNullTerminatedMsg(self: Self, err: ErrorDetails) [*:0]const u8 {
-    return @ptrCast(self.msg_storage.items[err.msg_start..]);
-}
-
 pub fn renderToTerminal(self: Self, source: Source, terminal: std.Io.Terminal) !void {
-    for (self.errors.items) |err| {
+    var is_main_msg = true;
+    for (self.messages.items) |msg| {
+        if (msg.isNullMsg()) {
+            is_main_msg = true;
+            continue;
+        }
+
         try terminal.setColor(.bold);
 
-        const loc = source.locationFromOffset(err.span.begin);
+        const loc = source.locationFromOffset(msg.span.begin);
         try terminal.writer.print("{s}:{d}:{d} ", .{ source.filename, loc.line, loc.column });
 
-        try terminal.setColor(.red);
-        try terminal.writer.writeAll("error: ");
+        if (is_main_msg) {
+            is_main_msg = false;
+            try terminal.setColor(.red);
+            try terminal.writer.writeAll("error: ");
+        } else {
+            try terminal.setColor(.cyan);
+            try terminal.writer.writeAll("note: ");
+        }
 
+        const null_terminated_msg: [*:0]const u8 = @ptrCast(self.text_storage.items[@backingInt(msg.msg_start)..]);
         try terminal.setColor(.white);
-        try terminal.writer.print(
-            "{s}",
-            .{self.getNullTerminatedMsg(err)},
-        );
+        try terminal.writer.writeAll(std.mem.span(null_terminated_msg));
 
         try terminal.setColor(.reset);
         try terminal.writer.writeByte('\n');
 
-        try renderRelevant(terminal, source.text, err.span);
+        try renderRelevant(terminal, source.text, msg.span);
     }
 }
 

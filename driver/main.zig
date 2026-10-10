@@ -74,8 +74,8 @@ fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: cli.Args.Full) u8 {
         return 0;
     }
 
-    var error_bundle: frontend.ErrorBundle = .empty;
-    defer error_bundle.deinit(gpa);
+    var error_bundle: frontend.ErrorBundle = .init(gpa);
+    defer error_bundle.deinit();
 
     var parser = frontend.Parser.init(gpa, source, tokens, &error_bundle);
     defer parser.deinit();
@@ -93,7 +93,6 @@ fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: cli.Args.Full) u8 {
 
     if (args.last_stage == .parser) {
         if (error_bundle.nonEmpty()) {
-            error_bundle.sort();
             error_bundle.renderToStderr(io, source, null) catch {};
             return 1;
         }
@@ -109,7 +108,6 @@ fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: cli.Args.Full) u8 {
     };
 
     if (error_bundle.nonEmpty()) {
-        error_bundle.sort();
         error_bundle.renderToStderr(io, source, null) catch {};
         return 1;
     }

@@ -159,12 +159,8 @@ inline fn formatExpectedList(comptime list: anytype) []const u8 {
 
 fn report(self: *Parser, comptime fmt: []const u8, args: anytype) NonParseError!void {
     const cur_token = self.tokens.get(self.token_index);
-    try self.errors.report(
-        self.gpa,
-        .{ .begin = cur_token.offset, .end = cur_token.offset + self.source.tokenLen(cur_token) },
-        fmt,
-        args,
-    );
+    try self.errors.addMessage(self.source.spanByToken(cur_token), fmt, args);
+    try self.errors.finishReport();
 }
 
 fn fail(self: *Parser, comptime fmt: []const u8, args: anytype) (Parser.Error || NonParseError) {
