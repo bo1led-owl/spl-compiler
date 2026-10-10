@@ -27,6 +27,7 @@ pub fn build(b: *std.Build) void {
     const frontend = b.addModule("frontend", .{
         .root_source_file = b.path("frontend/root.zig"),
         .target = target,
+        .optimize = optimize,
         .imports = &.{
             .{ .name = "c", .module = translator.mod },
         },

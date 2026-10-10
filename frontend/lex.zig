@@ -14,6 +14,12 @@ pub const Token = struct {
     offset: u32,
 
     pub const Kind = enum(u8) {
+        pub const errors: []const Kind = &.{
+            .err_invalid_character,
+            .err_number_has_leading_zero,
+            .err_unterminated_multiline_comment,
+        };
+
         eof,
         err_invalid_character,
         err_number_has_leading_zero,
@@ -51,13 +57,7 @@ pub const Token = struct {
         rbrace,
 
         pub fn isError(self: Kind) bool {
-            return switch (self) {
-                .err_invalid_character,
-                .err_number_has_leading_zero,
-                .err_unterminated_multiline_comment,
-                => true,
-                else => false,
-            };
+            return std.mem.findScalar(Kind, errors, self) != null;
         }
 
         pub fn toString(self: Kind) []const u8 {

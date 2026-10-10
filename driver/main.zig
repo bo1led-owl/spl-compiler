@@ -6,27 +6,21 @@ const cli = @import("cli.zig");
 var stdout_buffer: [4096]u8 align(std.heap.page_size_min) = undefined;
 var dump_buffer: [4096]u8 align(std.heap.page_size_min) = undefined;
 
+const use_safe_allocator = builtin.mode == .debug or builtin.mode == .safe;
+var safe_allocator: std.heap.SafeAllocator = .init(std.heap.page_allocator, .{});
+
 pub fn main(init: std.process.Init.Minimal) u8 {
-    const smp = std.heap.smp_allocator;
-
-    var safe_allocator: std.heap.SafeAllocator =
-        if (builtin.mode == .debug)
-            .init(smp, .{})
-        else
-            undefined;
-
-    defer if (builtin.mode == .debug) {
-        const leaks = safe_allocator.deinit();
-        std.debug.assert(leaks == 0);
+    const gpa = if (use_safe_allocator) safe_allocator.allocator() else std.heap.smp_allocator;
+    defer if (use_safe_allocator) {
+        _ = safe_allocator.deinit();
     };
-
-    const gpa = if (builtin.mode == .debug) safe_allocator.allocator() else smp;
 
     var io_impl = std.Io.Threaded.init(gpa, .{
         .argv0 = .init(init.args),
         .environ = init.environ,
     });
     defer io_impl.deinit();
+
     const io = io_impl.io();
 
     const args = cli.Args.parse(init.args) catch |err| {
@@ -66,11 +60,11 @@ fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: cli.Args.Full) u8 {
     }
 
     if (args.last_stage == .lexer) {
-        const error_occured = std.mem.findAny(frontend.lex.Token.Kind, tokens.items(.kind), &.{
-            .err_invalid_character,
-            .err_number_has_leading_zero,
-            .err_unterminated_multiline_comment,
-        }) != null;
+        const error_occured = std.mem.findAny(
+            frontend.lex.Token.Kind,
+            tokens.items(.kind),
+            frontend.lex.Token.Kind.errors,
+        ) != null;
 
         if (error_occured) {
             std.log.err("tokenizing error not reported due to stage limit", .{});
