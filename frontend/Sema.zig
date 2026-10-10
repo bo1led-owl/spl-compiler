@@ -98,30 +98,36 @@ fn visitNode(self: *Self, node_index: Ast.Node.Index) ErrorBundle.ReportError!No
             }
             defer if (kind == .block) self.leaveScope();
 
-            var terminator_body_index: ?usize = null;
+            var terminator_body_index_opt: ?usize = null;
             for (body, 0..) |child_node_index, i| {
                 const info = try self.visitNode(@fromBackingInt(child_node_index));
-                if (terminator_body_index == null and info == .terminator) {
-                    terminator_body_index = i;
+                if (terminator_body_index_opt == null and info == .terminator) {
+                    terminator_body_index_opt = i;
                 }
             }
 
-            if (terminator_body_index) |terminator_index| {
-                const begin = self.spanByNode(@fromBackingInt(body[terminator_index + 1])).begin;
-                const end = self.spanByNode(@fromBackingInt(body[body.len - 1])).end;
+            if (terminator_body_index_opt) |terminator_body_index| {
+                const tail = body[terminator_body_index + 1 ..];
+                if (tail.len != 0) {
+                    const terminator_index: Ast.Node.Index = @fromBackingInt(body[terminator_body_index]);
+                    const span: Source.Span = .{
+                        .begin = self.spanByNode(@fromBackingInt(tail[0])).begin,
+                        .end = self.spanByNode(@fromBackingInt(tail[tail.len - 1])).end,
+                    };
 
-                try self.errors.addMessage(.{ .begin = begin, .end = end }, "unreachable code", .{});
-                try self.errors.addMessage(
-                    self.spanByNode(@fromBackingInt(body[terminator_index])),
-                    "control flow was diverted here",
-                    .{},
-                );
-                try self.errors.finishReport();
+                    try self.errors.addMessage(span, "unreachable code", .{});
+                    try self.errors.addMessage(
+                        self.spanByNode(terminator_index),
+                        "control flow was diverted here",
+                        .{},
+                    );
+                    try self.errors.finishReport();
+                }
             }
 
             if (kind == .root) {
-                const last_node = self.ast.nodes.get(body[body.len - 1]);
-                if (last_node.kind != .@"return") {
+                const last_node_kind = self.ast.nodeKind(@fromBackingInt(body[body.len - 1]));
+                if (last_node_kind != .@"return") {
                     try self.reportSimpleError(
                         self.spanByNode(@fromBackingInt(body[body.len - 1])),
                         "last statement must be a `return`",
@@ -130,7 +136,7 @@ fn visitNode(self: *Self, node_index: Ast.Node.Index) ErrorBundle.ReportError!No
                 }
                 return .none;
             } else {
-                return if (terminator_body_index != null) .terminator else .none;
+                return if (terminator_body_index_opt != null) .terminator else .none;
             }
         },
         .if_full, .if_simple => {
