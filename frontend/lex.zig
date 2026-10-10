@@ -8,7 +8,6 @@ pub const TokenList = std.MultiArrayList(Token);
 
 pub const Token = struct {
     pub const Index = u32;
-    pub const MAX_IDENT_LEN = 255;
 
     kind: Kind,
     offset: u32,

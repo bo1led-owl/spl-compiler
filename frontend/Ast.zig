@@ -111,7 +111,7 @@ pub const Node = struct {
     };
 
     pub const Data = union {
-        node: Index,
+        node: Node.Index,
         node_and_node: struct { Node.Index, Node.Index },
         node_and_extra: struct { Node.Index, ExtraIndex },
         extra_range: ExtraRange,

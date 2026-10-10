@@ -19,7 +19,7 @@ const ErrorBundle = @import("ErrorBundle.zig");
 const Token = lex.Token;
 const Node = Ast.Node;
 
-pub const Error = error{ParseError};
+const Error = error{ParseError};
 pub const NonParseError = ErrorBundle.ReportError;
 
 gpa: std.mem.Allocator,

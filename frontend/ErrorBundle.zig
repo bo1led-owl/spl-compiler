@@ -10,7 +10,7 @@ pub const ReportError = std.mem.Allocator.Error;
 const MessageIndex = enum(u32) { _ };
 const MessageStart = enum(u32) { invalid = std.math.maxInt(u32), _ };
 
-pub const Message = struct {
+const Message = struct {
     msg_start: MessageStart, // no `msg_end` because messages are null-terminated
     span: Source.Span,
 
