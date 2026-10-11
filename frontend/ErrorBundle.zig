@@ -66,23 +66,6 @@ pub fn finishReport(self: *Self) !void {
     try self.messages.append(self.gpa, null_msg);
 }
 
-pub fn renderToStderr(
-    self: Self,
-    io: std.Io,
-    source: Source,
-    terminal_mode: ?std.Io.Terminal.Mode,
-) !void {
-    var buffer: [256]u8 = undefined;
-    const stderr = try std.Io.lockStderr(io, &buffer, terminal_mode);
-    defer std.Io.unlockStderr(io);
-
-    self.renderToTerminal(source, stderr.terminal()) catch |err| switch (err) {
-        error.WriteFailed => return stderr.file_writer.err.?,
-        error.Canceled => return err,
-        error.Unexpected => @panic("Unexpected error code from the OS, debug this and submit an issue to Zig"),
-    };
-}
-
 pub fn renderToTerminal(self: Self, source: Source, terminal: std.Io.Terminal) !void {
     var is_main_msg = true;
     for (self.messages.items) |msg| {

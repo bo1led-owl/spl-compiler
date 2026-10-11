@@ -118,7 +118,10 @@ fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: cli.Args.Full) u8 {
 
     if (args.last_stage == .parser) {
         if (error_bundle.nonEmpty()) {
-            error_bundle.renderToStderr(io, source, null) catch {};
+            const stderr = io.lockStderr(&dump_buffer, null) catch unreachable;
+            defer io.unlockStderr();
+
+            error_bundle.renderToTerminal(source, stderr.terminal()) catch {};
             return 1;
         }
         return 0;
@@ -133,7 +136,10 @@ fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: cli.Args.Full) u8 {
     };
 
     if (error_bundle.nonEmpty()) {
-        error_bundle.renderToStderr(io, source, null) catch {};
+        const stderr = io.lockStderr(&dump_buffer, null) catch unreachable;
+        defer io.unlockStderr();
+
+        error_bundle.renderToTerminal(source, stderr.terminal()) catch {};
         return 1;
     }
 
