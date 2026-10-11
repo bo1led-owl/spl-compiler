@@ -5,7 +5,11 @@ while (i < 42) {
         i = 6;
     } else if (i == 6) {
         break;
-        i = 7;
+        {
+            i = 7;
+            i = 6;
+            i = 5;
+        }
     }
     i = i + 1;
 }
