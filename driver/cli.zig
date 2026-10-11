@@ -14,6 +14,7 @@ pub const help_msg =
     \\  -a DUMP, --ast-dump=DUMP     Dump AST as JSON into DUMP
     \\           --last-stage=STAGE  Limit the compiler pipeline to specified stage. Stages are: lexer, parser, sema, codegen
     \\           --preserve-temp     Do not delete temporary files
+    \\           --timings           Report compiler timings
 ++ "\n";
 
 pub const Args = union(enum) {
@@ -40,6 +41,7 @@ pub const Args = union(enum) {
         last_stage: Stage,
         emit_llvm: bool,
         preserve_temp: bool,
+        timings: bool,
     };
 
     help,
@@ -55,6 +57,7 @@ pub const Args = union(enum) {
         var last_stage: Stage = .codegen;
         var emit_llvm = false;
         var preserve_temp = false;
+        var timings = false;
 
         var next_opt: ?Next = null;
 
@@ -92,6 +95,8 @@ pub const Args = union(enum) {
                 emit_llvm = true;
             } else if (flag(arg, null, "preserve-temp")) {
                 preserve_temp = true;
+            } else if (flag(arg, null, "timings")) {
+                timings = true;
             } else if (std.mem.startsWith(u8, arg, "-")) {
                 return ParseError.UnknownOption;
             } else if (source_path != null) {
@@ -116,6 +121,7 @@ pub const Args = union(enum) {
             .preserve_temp = preserve_temp,
             .last_stage = last_stage,
             .output_path = output_path orelse if (emit_llvm) "a.ll" else "a.out",
+            .timings = timings,
         } };
     }
 };

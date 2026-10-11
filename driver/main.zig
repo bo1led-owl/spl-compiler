@@ -36,19 +36,43 @@ pub fn main(init: std.process.Init.Minimal) u8 {
     }
 }
 
+fn printElapsed(comptime title: []const u8, from: std.Io.Timestamp, to: std.Io.Timestamp) void {
+    var buffer: [128]u8 = undefined;
+    var writer: std.Io.Writer = .fixed(&buffer);
+
+    const duration = from.durationTo(to);
+    duration.format(&writer) catch return;
+
+    std.log.info(title ++ "\t{s}", .{writer.buffered()});
+}
+
 fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: cli.Args.Full) u8 {
+    const clock: std.Io.Clock = .real;
+    const main_start_timestamp = clock.now(io);
+    defer if (args.timings) printElapsed("total", main_start_timestamp, clock.now(io));
+
+    var start_time: std.Io.Timestamp = undefined;
+    var end_time: std.Io.Timestamp = undefined;
+
     const source_text = readFile(io, gpa, args.source_path, std.math.maxInt(u32)) catch |err| {
         std.log.err("failed to read source file: {s}", .{@errorName(err)});
         return 1;
     };
     defer gpa.free(source_text);
 
+    // lexing
+
     var lexer = frontend.Lexer.init(source_text);
+
+    start_time = clock.now(io);
     var tokens = lexer.run(gpa) catch |err| {
         std.log.err("failed to tokenize: {s}", .{@errorName(err)});
         return 1;
     };
     defer tokens.deinit(gpa);
+    end_time = clock.now(io);
+
+    if (args.timings) printElapsed("lexing", start_time, end_time);
 
     const source: frontend.Source = .{
         .filename = args.source_path,
@@ -75,17 +99,23 @@ fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: cli.Args.Full) u8 {
         return 0;
     }
 
+    // parsing
+
     var error_bundle: frontend.ErrorBundle = .init(gpa);
     defer error_bundle.deinit();
 
     var parser = frontend.Parser.init(gpa, source, tokens, &error_bundle);
     defer parser.deinit();
 
+    start_time = clock.now(io);
     var ast = parser.run() catch |err| {
         std.log.err("failed to parse: {s}", .{@errorName(err)});
         return 1;
     };
     defer ast.deinit(gpa);
+    end_time = clock.now(io);
+
+    if (args.timings) printElapsed("parsing", start_time, end_time);
 
     if (args.ast_dump_path) |dump_path| {
         dumpAstIntoFile(io, dump_path, source, tokens, ast) catch |err|
@@ -94,7 +124,9 @@ fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: cli.Args.Full) u8 {
 
     if (args.last_stage == .parser) {
         if (error_bundle.nonEmpty()) {
-            const stderr = io.lockStderr(&dump_buffer, null) catch unreachable;
+            const stderr = io.lockStderr(&dump_buffer, null) catch
+                // because nobody can cancel this
+                unreachable;
             defer io.unlockStderr();
 
             error_bundle.renderToTerminal(source, stderr.terminal()) catch {};
@@ -103,13 +135,19 @@ fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: cli.Args.Full) u8 {
         return 0;
     }
 
+    // sema
+
     var sema = frontend.Sema.init(gpa, source, tokens, ast, &error_bundle);
     defer sema.deinit();
 
+    start_time = clock.now(io);
     sema.run() catch |err| {
         std.log.err("failed to run semantic analysis: {s}", .{@errorName(err)});
         return 1;
     };
+    end_time = clock.now(io);
+
+    if (args.timings) printElapsed("sema", start_time, end_time);
 
     if (error_bundle.nonEmpty()) {
         const stderr = io.lockStderr(&dump_buffer, null) catch unreachable;
@@ -122,6 +160,8 @@ fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: cli.Args.Full) u8 {
     if (args.last_stage == .sema) {
         return 0;
     }
+
+    // codegen
 
     const llvm_output_path = if (args.emit_llvm)
         args.output_path
@@ -136,20 +176,32 @@ fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: cli.Args.Full) u8 {
     var codegen = frontend.Codegen.init(gpa, source, tokens, ast);
     defer codegen.deinit();
 
+    start_time = clock.now(io);
     codegen.run(llvm_output_path, .{ .emit_llvm = args.emit_llvm }) catch |err| {
         std.log.err("failed to generate code: {s}", .{@errorName(err)});
         return 1;
     };
+    end_time = clock.now(io);
+
+    if (args.timings) printElapsed("codegen", start_time, end_time);
 
     if (args.emit_llvm) {
         return 0;
     }
 
+    // linking
+
     const clang_argv: []const []const u8 = &.{ "clang", llvm_output_path, "-o", args.output_path };
+
+    start_time = clock.now(io);
     const res = std.process.run(gpa, io, .{ .argv = clang_argv }) catch |err| {
         std.log.err("failed to run clang: {s}", .{@errorName(err)});
         return 1;
     };
+    end_time = clock.now(io);
+
+    if (args.timings) printElapsed("linking", start_time, end_time);
+
     gpa.free(res.stdout);
     defer gpa.free(res.stderr);
 
