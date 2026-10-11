@@ -55,14 +55,10 @@ fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: cli.Args.Full) u8 {
         .text = source_text,
     };
 
-    var token_dump_future = if (args.tokens_dump_path) |dump_path|
-        io.async(dumpTokensIntoFile, .{ io, dump_path, source, tokens })
-    else
-        null;
-
-    defer if (token_dump_future) |*future| {
-        future.await(io) catch |err| std.log.err("failed to dump tokens: {s}", .{@errorName(err)});
-    };
+    if (args.tokens_dump_path) |dump_path| {
+        dumpTokensIntoFile(io, dump_path, source, tokens) catch |err|
+            std.log.err("failed to dump tokens: {s}", .{@errorName(err)});
+    }
 
     if (args.last_stage == .lexer) {
         const error_occured = std.mem.findAny(
@@ -91,14 +87,10 @@ fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: cli.Args.Full) u8 {
     };
     defer ast.deinit(gpa);
 
-    var ast_dump_future = if (args.ast_dump_path) |dump_path|
-        io.async(dumpAstIntoFile, .{ io, dump_path, source, tokens, ast })
-    else
-        null;
-
-    defer if (ast_dump_future) |*future| {
-        future.await(io) catch |err| std.log.err("failed to dump AST: {s}", .{@errorName(err)});
-    };
+    if (args.ast_dump_path) |dump_path| {
+        dumpAstIntoFile(io, dump_path, source, tokens, ast) catch |err|
+            std.log.err("failed to dump AST: {s}", .{@errorName(err)});
+    }
 
     if (args.last_stage == .parser) {
         if (error_bundle.nonEmpty()) {

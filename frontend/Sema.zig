@@ -193,8 +193,7 @@ fn visitNode(self: *Self, node_index: Ast.Node.Index) ErrorBundle.ReportError!No
                 const prev_declaration_kind: []const u8 =
                     switch (self.ast.nodeKind(prev_declaration_node_index)) {
                         .var_decl => var_decl: {
-                            const mutability_token =
-                                self.tokens.items(.kind)[self.ast.nodeToken(prev_declaration_node_index)];
+                            const mutability_token = self.tokenKindByNodeIndex(prev_declaration_node_index);
                             const is_mutable = mutability_token == .kw_var;
                             break :var_decl if (is_mutable) "variable" else "constant";
                         },
@@ -233,7 +232,7 @@ fn visitNode(self: *Self, node_index: Ast.Node.Index) ErrorBundle.ReportError!No
             if (entity_opt) |entity| {
                 switch (self.ast.nodeKind(entity.declaration)) {
                     .var_decl => {
-                        const mutability_token = self.tokens.items(.kind)[self.ast.nodeToken(entity.declaration)];
+                        const mutability_token = self.tokenKindByNodeIndex(entity.declaration);
                         const is_mutable = mutability_token == .kw_var;
                         if (is_mutable) {
                             return .assignable;
@@ -326,15 +325,23 @@ fn visitNode(self: *Self, node_index: Ast.Node.Index) ErrorBundle.ReportError!No
     }
 }
 
+fn tokenKindByNodeIndex(self: Self, node_index: Ast.Node.Index) lex.Token.Kind {
+    return self.tokens.items(.kind)[self.ast.nodeToken(node_index)];
+}
+
+fn tokenOffsetByNodeIndex(self: Self, node_index: Ast.Node.Index) u32 {
+    return self.tokens.items(.offset)[self.ast.nodeToken(node_index)];
+}
+
 fn spanByNode(self: *Self, node_index: Ast.Node.Index) Source.Span {
     return switch (self.ast.nodeKind(node_index)) {
         .root => unreachable,
         .var_decl => .{
-            .begin = self.tokens.items(.offset)[self.ast.nodeToken(node_index)],
+            .begin = self.tokenOffsetByNodeIndex(node_index),
             .end = self.spanByNode(self.ast.nodeData(node_index).node).end,
         },
         .block => block: {
-            const opening = self.tokens.items(.offset)[self.ast.nodeToken(node_index)];
+            const opening = self.tokenOffsetByNodeIndex(node_index);
 
             const data = self.ast.nodeData(node_index).extra_range;
             const body = self.ast.extractExtras(data);
@@ -359,18 +366,18 @@ fn spanByNode(self: *Self, node_index: Ast.Node.Index) Source.Span {
         .@"return",
         .unary,
         => .{
-            .begin = self.tokens.items(.offset)[self.ast.nodeToken(node_index)],
+            .begin = self.tokenOffsetByNodeIndex(node_index),
             .end = self.spanByNode(self.ast.nodeData(node_index).node).end,
         },
         .@"while" => .{
-            .begin = self.tokens.items(.offset)[self.ast.nodeToken(node_index)],
+            .begin = self.tokenOffsetByNodeIndex(node_index),
             .end = self.spanByNode(self.ast.nodeData(node_index).node_and_node.@"1").end,
         },
         .if_full, .if_simple => if_span: {
             const info = Ast.info.ifAny(self.ast, node_index);
             const last_child = info.else_node.toIndex() orelse info.then_node;
             break :if_span .{
-                .begin = self.tokens.items(.offset)[self.ast.nodeToken(node_index)],
+                .begin = self.tokenOffsetByNodeIndex(node_index),
                 .end = self.spanByNode(last_child).end,
             };
         },
