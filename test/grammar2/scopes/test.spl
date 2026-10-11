@@ -1,0 +1,12 @@
+val x = true;
+if (x) {
+    val y = 37;
+    val y = x;
+    {
+        val y = 42;
+        val x = y;
+        return x;
+    }
+}
+
+return y;

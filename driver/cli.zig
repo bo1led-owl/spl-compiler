@@ -4,23 +4,24 @@ pub const help_msg =
     \\Usage: splc [options...] <filename>
     \\
     \\Arguments:
-    \\  filename - path to the source file
+    \\  filename - Path to the source file
     \\
     \\Options:
-    \\  -h, --help                                   - print this message and exit
-    \\  -o FILE, --output=FILE                       - set output file
-    \\           --emit-llvm                         - output LLVM IR file and stop
-    \\  -t DUMP, --tokens-dump=DUMP                  - dump tokens as JSON into DUMP
-    \\  -a DUMP, --ast-dump=DUMP                     - dump AST as JSON into DUMP
-    \\           --last-stage=<lexer|parser|codegen> - limit the compiler pipeline to specified stage
-    \\           --preserve-temp                     - do not delete temporary files
+    \\  -h, --help                   Print this message and exit
+    \\  -o FILE, --output=FILE       Set output file
+    \\           --emit-llvm         Output LLVM IR file and stop
+    \\  -t DUMP, --tokens-dump=DUMP  Dump tokens as JSON into DUMP
+    \\  -a DUMP, --ast-dump=DUMP     Dump AST as JSON into DUMP
+    \\           --last-stage=STAGE  Limit the compiler pipeline to specified stage. Stages are: lexer, parser, sema, codegen
+    \\           --preserve-temp     Do not delete temporary files
 ++ "\n";
 
 pub const Args = union(enum) {
     pub const Stage = enum(u8) {
-        lexer = 0,
-        parser = 1,
-        codegen = 2,
+        lexer,
+        parser,
+        sema,
+        codegen,
     };
 
     pub const ParseError = error{
@@ -32,7 +33,7 @@ pub const Args = union(enum) {
     };
 
     pub const Full = struct {
-        source_path: []const u8,
+        source_path: [:0]const u8,
         output_path: [:0]const u8,
         tokens_dump_path: ?[]const u8,
         ast_dump_path: ?[]const u8,
@@ -47,7 +48,7 @@ pub const Args = union(enum) {
     pub fn parse(args: std.process.Args) ParseError!Args {
         const Next = enum { tokens_dump, ast_dump, output };
 
-        var source_path: ?[]const u8 = null;
+        var source_path: ?[:0]const u8 = null;
         var output_path: ?[:0]const u8 = null;
         var tokens_dump_path: ?[]const u8 = null;
         var ast_dump_path: ?[]const u8 = null;
@@ -57,15 +58,7 @@ pub const Args = union(enum) {
 
         var next_opt: ?Next = null;
 
-        const stages = std.StaticStringMap(Stage).initComptime(comptime init: {
-            // iterate over all variants of the enum and make pairs like `("foo", .foo)`
-            const info = @typeInfo(Stage).@"enum";
-            var res: [info.field_names.len]struct { []const u8, Stage } = undefined;
-            for (info.field_names, info.field_values, &res) |field_name, field_value, *res_item| {
-                res_item.* = .{ field_name, @as(Stage, @fromBackingInt(field_value)) };
-            }
-            break :init res;
-        });
+        const stages: std.StaticStringMap(Stage) = .initEnum();
 
         var iter = args.iterate();
         _ = iter.next(); // skip program name
@@ -93,7 +86,8 @@ pub const Args = union(enum) {
             } else if (longOption(arg, "output")) |value| {
                 output_path = value;
             } else if (longOption(arg, "last-stage")) |value| {
-                last_stage = stages.get(value) orelse return ParseError.UnknownStage;
+                last_stage = stages.get(value) orelse
+                    return ParseError.UnknownStage;
             } else if (flag(arg, null, "emit-llvm")) {
                 emit_llvm = true;
             } else if (flag(arg, null, "preserve-temp")) {
@@ -124,24 +118,24 @@ pub const Args = union(enum) {
             .output_path = output_path orelse if (emit_llvm) "a.ll" else "a.out",
         } };
     }
-
-    fn flag(arg: [:0]const u8, comptime short: ?u8, comptime long: ?[]const u8) bool {
-        if (short) |s| {
-            if (std.mem.eql(u8, arg, std.fmt.comptimePrint("-{c}", .{s}))) {
-                return true;
-            }
-        }
-
-        if (long) |l| {
-            if (std.mem.eql(u8, arg, "--" ++ l)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    fn longOption(arg: [:0]const u8, comptime name: []const u8) ?[:0]const u8 {
-        return @ptrCast(std.mem.cutPrefix(u8, arg, "--" ++ name ++ "="));
-    }
 };
+
+fn flag(arg: [:0]const u8, comptime short: ?u8, comptime long: ?[]const u8) bool {
+    if (short) |s| {
+        if (std.mem.eql(u8, arg, std.fmt.comptimePrint("-{c}", .{s}))) {
+            return true;
+        }
+    }
+
+    if (long) |l| {
+        if (std.mem.eql(u8, arg, "--" ++ l)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+fn longOption(arg: [:0]const u8, comptime name: []const u8) ?[:0]const u8 {
+    return @ptrCast(std.mem.cutPrefix(u8, arg, "--" ++ name ++ "="));
+}

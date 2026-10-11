@@ -1,0 +1,16 @@
+var i = 0;
+while (i < 42) {
+    if (i == 5) {
+        continue;
+        i = 6;
+    } else if (i == 6) {
+        break;
+        i = 7;
+    }
+    i = i + 1;
+}
+
+return i;
+
+i = 187;
+return i;

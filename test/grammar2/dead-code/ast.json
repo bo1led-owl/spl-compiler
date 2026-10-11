@@ -1,0 +1,276 @@
+{
+  "kind": "Program",
+  "line": 1,
+  "column": 1,
+  "elems": [
+    {
+      "kind": "Declare",
+      "line": 1,
+      "column": 1,
+      "mut": true,
+      "elems": [
+        {
+          "kind": "Ident",
+          "name": "i",
+          "elems": [],
+          "line": 1,
+          "column": 5
+        },
+        {
+          "kind": "IntLiteral",
+          "line": 1,
+          "column": 9,
+          "value": 0,
+          "elems": []
+        }
+      ]
+    },
+    {
+      "kind": "While",
+      "line": 2,
+      "column": 1,
+      "elems": [
+        {
+          "kind": "BinOp",
+          "line": 2,
+          "column": 10,
+          "op": "lt",
+          "elems": [
+            {
+              "kind": "Ident",
+              "line": 2,
+              "column": 8,
+              "name": "i",
+              "elems": []
+            },
+            {
+              "kind": "IntLiteral",
+              "line": 2,
+              "column": 12,
+              "value": 42,
+              "elems": []
+            }
+          ]
+        },
+        {
+          "kind": "Block",
+          "line": 2,
+          "column": 16,
+          "elems": [
+            {
+              "kind": "If",
+              "line": 3,
+              "column": 5,
+              "elems": [
+                {
+                  "kind": "BinOp",
+                  "line": 3,
+                  "column": 11,
+                  "op": "eq",
+                  "elems": [
+                    {
+                      "kind": "Ident",
+                      "line": 3,
+                      "column": 9,
+                      "name": "i",
+                      "elems": []
+                    },
+                    {
+                      "kind": "IntLiteral",
+                      "line": 3,
+                      "column": 14,
+                      "value": 5,
+                      "elems": []
+                    }
+                  ]
+                },
+                {
+                  "kind": "Block",
+                  "line": 3,
+                  "column": 17,
+                  "elems": [
+                    {
+                      "kind": "Continue",
+                      "line": 4,
+                      "column": 9,
+                      "elems": []
+                    },
+                    {
+                      "kind": "Assign",
+                      "line": 5,
+                      "column": 11,
+                      "elems": [
+                        {
+                          "kind": "Ident",
+                          "line": 5,
+                          "column": 9,
+                          "name": "i",
+                          "elems": []
+                        },
+                        {
+                          "kind": "IntLiteral",
+                          "line": 5,
+                          "column": 13,
+                          "value": 6,
+                          "elems": []
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "kind": "If",
+                  "line": 6,
+                  "column": 12,
+                  "elems": [
+                    {
+                      "kind": "BinOp",
+                      "line": 6,
+                      "column": 18,
+                      "op": "eq",
+                      "elems": [
+                        {
+                          "kind": "Ident",
+                          "line": 6,
+                          "column": 16,
+                          "name": "i",
+                          "elems": []
+                        },
+                        {
+                          "kind": "IntLiteral",
+                          "line": 6,
+                          "column": 21,
+                          "value": 6,
+                          "elems": []
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "Block",
+                      "line": 6,
+                      "column": 24,
+                      "elems": [
+                        {
+                          "kind": "Break",
+                          "line": 7,
+                          "column": 9,
+                          "elems": []
+                        },
+                        {
+                          "kind": "Assign",
+                          "line": 8,
+                          "column": 11,
+                          "elems": [
+                            {
+                              "kind": "Ident",
+                              "line": 8,
+                              "column": 9,
+                              "name": "i",
+                              "elems": []
+                            },
+                            {
+                              "kind": "IntLiteral",
+                              "line": 8,
+                              "column": 13,
+                              "value": 7,
+                              "elems": []
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "kind": "Assign",
+              "line": 10,
+              "column": 7,
+              "elems": [
+                {
+                  "kind": "Ident",
+                  "line": 10,
+                  "column": 5,
+                  "name": "i",
+                  "elems": []
+                },
+                {
+                  "kind": "BinOp",
+                  "line": 10,
+                  "column": 11,
+                  "op": "plus",
+                  "elems": [
+                    {
+                      "kind": "Ident",
+                      "line": 10,
+                      "column": 9,
+                      "name": "i",
+                      "elems": []
+                    },
+                    {
+                      "kind": "IntLiteral",
+                      "line": 10,
+                      "column": 13,
+                      "value": 1,
+                      "elems": []
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "Return",
+      "line": 13,
+      "column": 1,
+      "elems": [
+        {
+          "kind": "Ident",
+          "line": 13,
+          "column": 8,
+          "name": "i",
+          "elems": []
+        }
+      ]
+    },
+    {
+      "kind": "Assign",
+      "line": 15,
+      "column": 3,
+      "elems": [
+        {
+          "kind": "Ident",
+          "line": 15,
+          "column": 1,
+          "name": "i",
+          "elems": []
+        },
+        {
+          "kind": "IntLiteral",
+          "line": 15,
+          "column": 5,
+          "value": 187,
+          "elems": []
+        }
+      ]
+    },
+    {
+      "kind": "Return",
+      "line": 16,
+      "column": 1,
+      "elems": [
+        {
+          "kind": "Ident",
+          "line": 16,
+          "column": 8,
+          "name": "i",
+          "elems": []
+        }
+      ]
+    }
+  ]
+}

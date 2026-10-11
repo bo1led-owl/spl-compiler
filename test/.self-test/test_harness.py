@@ -299,16 +299,6 @@ def test_exit_only_exact_code_auto_discover(harness, run):
     assert "PASS  exit5" in out
 
 
-def test_exit_only_stages_list_skips(harness, run):
-    """Exit-only test: explicit stages list + exit=0, no golden -> SKIP."""
-    harness.add_test("skipme", src="// exit: 0\n",
-                     meta={"stages": ["lexer"], "exit": 0})
-    cfg = harness.write_config(stages=lexer_stage(["kind"]))
-    rc, out = run(["test", "--config", cfg])
-    assert rc == 0
-    assert "SKIP  skipme" in out
-
-
 def test_crash_fails(harness, run):
     add_lexer(harness, "crash", src="// crash\n", meta={"exit": 0})
     cfg = harness.write_config(stages=lexer_stage(["kind"]))

@@ -7,7 +7,7 @@ pub fn build(b: *std.Build) void {
 
     const translate_c = b.dependency("translate_c", .{});
     const translator: Translator = .init(translate_c, .{
-        .c_source_file = b.path("src/c.h"),
+        .c_source_file = b.path("frontend/c.h"),
         .target = target,
         .optimize = optimize,
         .link_system_libs = &.{
@@ -25,8 +25,9 @@ pub fn build(b: *std.Build) void {
     }
 
     const frontend = b.addModule("frontend", .{
-        .root_source_file = b.path("src/frontend/root.zig"),
+        .root_source_file = b.path("frontend/root.zig"),
         .target = target,
+        .optimize = optimize,
         .imports = &.{
             .{ .name = "c", .module = translator.mod },
         },
@@ -35,7 +36,7 @@ pub fn build(b: *std.Build) void {
     const exe = b.addExecutable(.{
         .name = "splc",
         .root_module = b.createModule(.{
-            .root_source_file = b.path("src/driver/main.zig"),
+            .root_source_file = b.path("driver/main.zig"),
             .target = target,
             .optimize = optimize,
             .imports = &.{
