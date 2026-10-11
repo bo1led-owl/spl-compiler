@@ -3,7 +3,6 @@ const builtin = @import("builtin");
 const frontend = @import("frontend");
 const cli = @import("cli.zig");
 
-var stdout_buffer: [4096]u8 align(std.heap.page_size_min) = undefined;
 var dump_buffer: [4096]u8 align(std.heap.page_size_min) = undefined;
 
 const use_safe_allocator = builtin.mode == .debug or builtin.mode == .safe;
@@ -38,24 +37,38 @@ pub fn main(init: std.process.Init.Minimal) u8 {
 }
 
 fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: cli.Args.Full) u8 {
-    const source: frontend.Source = .{
-        .filename = args.source_path,
-        .text = readFile(io, gpa, args.source_path) catch |err| {
-            std.log.err("failed to read source file: {s}", .{@errorName(err)});
-            return 1;
-        },
+    const source_text = readFile(io, gpa, args.source_path, std.math.maxInt(u32)) catch |err| {
+        std.log.err("failed to read source file: {s}", .{@errorName(err)});
+        return 1;
     };
-    defer gpa.free(source.text);
+    defer gpa.free(source_text);
 
-    var lexer = frontend.Lexer.init(source.text);
+    var lexer = frontend.Lexer.init(source_text);
     var tokens = lexer.run(gpa) catch |err| {
         std.log.err("failed to tokenize: {s}", .{@errorName(err)});
         return 1;
     };
     defer tokens.deinit(gpa);
 
-    if (args.tokens_dump_path) |dump_path| {
-        dumpTokens(io, source, tokens, dump_path) catch |err|
+    const source: frontend.Source = .{
+        .filename = args.source_path,
+        .text = source_text,
+    };
+
+    if (args.tokens_dump_path) |dump_path| tokens_dump: {
+        const dump_file = std.Io.Dir.cwd().createFile(io, dump_path, .{}) catch |err| {
+            std.log.err("failed to open token dump file: {s}", .{@errorName(err)});
+            break :tokens_dump;
+        };
+        defer dump_file.close(io);
+
+        var dump_writer = dump_file.writer(io, &dump_buffer);
+        dumpTokens(&dump_writer.interface, source, tokens) catch |err| {
+            std.debug.assert(err == std.Io.Writer.Error.WriteFailed);
+            std.log.err("failed to dump tokens: {s}", .{@errorName(dump_writer.err.?)});
+            break :tokens_dump;
+        };
+        dump_writer.flush() catch |err|
             std.log.err("failed to dump tokens: {s}", .{@errorName(err)});
     }
 
@@ -86,8 +99,20 @@ fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: cli.Args.Full) u8 {
     };
     defer ast.deinit(gpa);
 
-    if (args.ast_dump_path) |dump_path| {
-        dumpAst(io, source, tokens, ast, dump_path) catch |err|
+    if (args.ast_dump_path) |dump_path| ast_dump: {
+        const dump_file = std.Io.Dir.cwd().createFile(io, dump_path, .{}) catch |err| {
+            std.log.err("failed to open AST dump file: {s}", .{@errorName(err)});
+            break :ast_dump;
+        };
+        defer dump_file.close(io);
+
+        var dump_writer = dump_file.writer(io, &dump_buffer);
+        dumpAst(&dump_writer.interface, source, tokens, ast) catch |err| {
+            std.debug.assert(err == std.Io.Writer.Error.WriteFailed);
+            std.log.err("failed to dump AST: {s}", .{@errorName(dump_writer.err.?)});
+            break :ast_dump;
+        };
+        dump_writer.flush() catch |err|
             std.log.err("failed to dump AST: {s}", .{@errorName(err)});
     }
 
@@ -96,12 +121,12 @@ fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: cli.Args.Full) u8 {
             error_bundle.renderToStderr(io, source, null) catch {};
             return 1;
         }
-
         return 0;
     }
 
     var sema = frontend.Sema.init(gpa, source, tokens, ast, &error_bundle);
     defer sema.deinit();
+
     sema.run() catch |err| {
         std.log.err("failed to run semantic analysis: {s}", .{@errorName(err)});
         return 1;
@@ -119,7 +144,7 @@ fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: cli.Args.Full) u8 {
     const llvm_output_path = if (args.emit_llvm)
         args.output_path
     else
-        std.fmt.allocPrintSentinel(gpa, "{s}.o", .{args.output_path}, 0) catch {
+        gpa.printSentinel("{s}.o", .{args.output_path}, 0) catch {
             std.log.err("failed to allocate temporary path", .{});
             return 1;
         };
@@ -128,6 +153,7 @@ fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: cli.Args.Full) u8 {
 
     var codegen = frontend.Codegen.init(gpa, source, tokens, ast);
     defer codegen.deinit();
+
     codegen.run(llvm_output_path, .{ .emit_llvm = args.emit_llvm }) catch |err| {
         std.log.err("failed to generate code: {s}", .{@errorName(err)});
         return 1;
@@ -160,13 +186,12 @@ fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: cli.Args.Full) u8 {
     return 0;
 }
 
-fn readFile(io: std.Io, gpa: std.mem.Allocator, path: []const u8) ![]u8 {
-    const file = try std.Io.Dir.cwd().openFile(io, path, .{});
+fn readFile(io: std.Io, gpa: std.mem.Allocator, path: []const u8, max_size: u32) ![]u8 {
+    const file = try std.Io.Dir.cwd().openFile(io, path, .{ .allow_directory = false });
     defer file.close(io);
 
     const size = try file.length(io);
-
-    if (size > std.math.maxInt(u32)) {
+    if (size > max_size) {
         return error.FileTooLarge;
     }
 
@@ -176,22 +201,21 @@ fn readFile(io: std.Io, gpa: std.mem.Allocator, path: []const u8) ![]u8 {
     var result_writer = std.Io.Writer.fixed(result);
 
     var reader = file.reader(io, &.{});
-    try reader.interface.streamExact(&result_writer, size);
+    reader.interface.streamExact(&result_writer, size) catch |err| switch (err) {
+        error.ReadFailed => return reader.err.?,
+        error.WriteFailed => unreachable,
+        error.EndOfStream => unreachable,
+    };
 
     return result;
 }
 
 fn dumpTokens(
-    io: std.Io,
+    writer: *std.Io.Writer,
     source: frontend.Source,
     tokens: frontend.lex.TokenList,
-    path: []const u8,
-) !void {
-    const dump_file = try std.Io.Dir.cwd().createFile(io, path, .{});
-    defer dump_file.close(io);
-
-    var writer = dump_file.writer(io, &dump_buffer);
-    var jws = std.json.Stringify{ .writer = &writer.interface, .options = .{ .whitespace = .indent_2 } };
+) std.Io.Writer.Error!void {
+    var jws = std.json.Stringify{ .writer = writer, .options = .{ .whitespace = .indent_2 } };
 
     try jws.beginArray();
 
@@ -271,19 +295,13 @@ fn dumpTokens(
 }
 
 fn dumpAst(
-    io: std.Io,
+    writer: *std.Io.Writer,
     source: frontend.Source,
     tokens: frontend.lex.TokenList,
     ast: frontend.Ast,
-    path: []const u8,
-) !void {
-    const dump_file = try std.Io.Dir.cwd().createFile(io, path, .{});
-    defer dump_file.close(io);
-
-    var writer = dump_file.writer(io, &dump_buffer);
-    var jws = std.json.Stringify{ .writer = &writer.interface, .options = .{ .whitespace = .indent_2 } };
+) std.Io.Writer.Error!void {
+    var jws = std.json.Stringify{ .writer = writer, .options = .{ .whitespace = .indent_2 } };
     try dumpAstNode(&jws, source, tokens, ast, .root);
-    try writer.flush();
 }
 
 fn dumpAstNode(

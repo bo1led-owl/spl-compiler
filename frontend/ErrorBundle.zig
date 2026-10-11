@@ -78,7 +78,8 @@ pub fn renderToStderr(
 
     self.renderToTerminal(source, stderr.terminal()) catch |err| switch (err) {
         error.WriteFailed => return stderr.file_writer.err.?,
-        else => |e| return e,
+        error.Canceled => return err,
+        error.Unexpected => @panic("Unexpected error code from the OS, debug this and submit an issue to Zig"),
     };
 }
 
