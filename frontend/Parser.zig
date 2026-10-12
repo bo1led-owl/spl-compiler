@@ -159,8 +159,7 @@ inline fn formatExpectedList(comptime list: anytype) []const u8 {
 
 fn report(self: *Parser, comptime fmt: []const u8, args: anytype) NonParseError!void {
     const cur_token = self.tokens.get(self.token_index);
-    try self.errors.addMessage(self.source.spanByToken(cur_token), fmt, args);
-    try self.errors.finishReport();
+    try self.errors.reportSingleMessage(self.source.spanByToken(cur_token), fmt, args);
 }
 
 fn fail(self: *Parser, comptime fmt: []const u8, args: anytype) (Parser.Error || NonParseError) {
@@ -274,24 +273,24 @@ fn parseStatementWithoutSemicolon(self: *Parser) NonParseError!?Node.Index {
         try self.parseWhile();
 }
 
-/// Parse a node represented by a token of kind `token_kind`. Does no error recovery
+/// Parse a node represented by a token of kind `token_kind`
 fn parseSingleTokenNode(
     self: *Parser,
     comptime token_kind: Token.Kind,
     comptime node_kind: Node.Kind,
-) !?Node.Index {
+) NonParseError!?Node.Index {
     return if (self.eatToken(token_kind)) |token_index|
         try self.addNode(.{ .kind = node_kind, .token = token_index })
     else
         null;
 }
 
-/// Parse a node represented by a token of kind, present in `tokens_kinds`. Does no extra error recovery
+/// Parse a node represented by a token of kind present in `tokens_kinds`
 fn parseSingleTokenNodeAny(
     self: *Parser,
     comptime token_kinds: []const Token.Kind,
     comptime node_kind: Node.Kind,
-) !?Node.Index {
+) NonParseError!?Node.Index {
     return if (self.eatTokenAny(token_kinds)) |token_index|
         try self.addNode(.{ .kind = node_kind, .token = token_index })
     else

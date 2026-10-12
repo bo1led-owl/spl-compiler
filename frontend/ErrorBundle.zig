@@ -66,6 +66,16 @@ pub fn finishReport(self: *Self) !void {
     try self.messages.append(self.gpa, null_msg);
 }
 
+pub fn reportSingleMessage(
+    self: *Self,
+    span: Source.Span,
+    comptime fmt: []const u8,
+    args: anytype,
+) ReportError!void {
+    try self.addMessage(span, fmt, args);
+    try self.finishReport();
+}
+
 pub fn renderToTerminal(self: Self, source: Source, terminal: std.Io.Terminal) !void {
     var is_main_msg = true;
     for (self.messages.items) |msg| {

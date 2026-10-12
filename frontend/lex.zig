@@ -106,15 +106,12 @@ pub fn tokenLen(source: []const u8, token: Token) u32 {
         .eof => 0,
         .semi, .assign, .plus, .minus, .asterisk, .slash, .lparen, .rparen, .lbrace, .rbrace, .bang, .gt, .lt => 1,
         .eq, .ne, .le, .ge, .logical_and, .logical_or => 2,
-        .kw_val, .kw_var => 3,
-        .kw_return => 6,
         .kw_if => 2,
-        .kw_else => 4,
-        .kw_while => 5,
-        .kw_break => 5,
+        .kw_val, .kw_var => 3,
+        .kw_else, .kw_true => 4,
+        .kw_while, .kw_break, .kw_false => 5,
+        .kw_return => 6,
         .kw_continue => 8,
-        .kw_true => 4,
-        .kw_false => 5,
         .err_invalid_character => 1,
         .err_unterminated_multiline_comment => @as(u32, @intCast(source.len)) - token.offset,
         .number, .err_number_has_leading_zero => lenMatching(source[token.offset..], std.ascii.isDigit),
@@ -170,9 +167,7 @@ pub const Lexer = struct {
     offset: u32,
 
     pub fn init(source: []const u8) Self {
-        // should be checked while reading the file
         std.debug.assert(source.len <= std.math.maxInt(u32));
-
         return .{ .source = source, .offset = 0 };
     }
 
@@ -320,7 +315,7 @@ pub const Lexer = struct {
 
     fn identifiersAndKeywords(self: *Self) ?Token {
         const keywords = std.StaticStringMap(Token.Kind).initComptime(comptime init: {
-            // for each `kw_<NAME>` case produce a pair `("<NAME>", .<NAME>)`
+            // for each `kw_<NAME>` case produce a pair `("<NAME>", .kw_<NAME>)`
 
             const info: std.lang.Type.Enum = @typeInfo(Token.Kind).@"enum";
             var result: [info.field_names.len]struct { []const u8, Token.Kind } = undefined;

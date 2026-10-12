@@ -48,11 +48,6 @@ pub fn run(self: *Self) !void {
     _ = try self.visitNode(.root);
 }
 
-fn reportSimpleError(self: *Self, span: Source.Span, comptime fmt: []const u8, args: anytype) ErrorBundle.ReportError!void {
-    try self.errors.addMessage(span, fmt, args);
-    try self.errors.finishReport();
-}
-
 fn enterScope(self: *Self) !void {
     try self.scope_tops.append(self.gpa, @intCast(self.names.entries.len));
 }
@@ -84,7 +79,7 @@ fn visitNode(self: *Self, node_index: Ast.Node.Index) ErrorBundle.ReportError!No
 
             if (kind == .root) {
                 if (body.len == 0) {
-                    try self.reportSimpleError(
+                    try self.errors.reportSingleMessage(
                         self.spanByNode(node_index),
                         "empty program, at least one statement expected",
                         .{},
@@ -128,7 +123,7 @@ fn visitNode(self: *Self, node_index: Ast.Node.Index) ErrorBundle.ReportError!No
             if (kind == .root) {
                 const last_node_kind = self.ast.nodeKind(@fromBackingInt(body[body.len - 1]));
                 if (last_node_kind != .@"return") {
-                    try self.reportSimpleError(
+                    try self.errors.reportSingleMessage(
                         self.spanByNode(@fromBackingInt(body[body.len - 1])),
                         "last statement must be a `return`",
                         .{},
@@ -172,13 +167,13 @@ fn visitNode(self: *Self, node_index: Ast.Node.Index) ErrorBundle.ReportError!No
         },
         .@"continue" => {
             if (!self.inside_loop) {
-                try self.reportSimpleError(self.spanByNode(node_index), "`continue` outside of a loop", .{});
+                try self.errors.reportSingleMessage(self.spanByNode(node_index), "`continue` outside of a loop", .{});
             }
             return .terminator;
         },
         .@"break" => {
             if (!self.inside_loop) {
-                try self.reportSimpleError(self.spanByNode(node_index), "`break` outside of a loop", .{});
+                try self.errors.reportSingleMessage(self.spanByNode(node_index), "`break` outside of a loop", .{});
             }
             return .terminator;
         },
@@ -242,7 +237,7 @@ fn visitNode(self: *Self, node_index: Ast.Node.Index) ErrorBundle.ReportError!No
                     else => unreachable, // TODO: extend when more entity kinds are added
                 }
             } else {
-                try self.reportSimpleError(
+                try self.errors.reportSingleMessage(
                     self.source.spanByToken(name_token),
                     "reference to undefined name `{s}`",
                     .{name},
@@ -258,7 +253,7 @@ fn visitNode(self: *Self, node_index: Ast.Node.Index) ErrorBundle.ReportError!No
                 std.math.maxInt(u64); // greater than both |minInt(i64)| and maxInt(i64)
 
             if (value > std.math.maxInt(i64)) {
-                try self.reportSimpleError(
+                try self.errors.reportSingleMessage(
                     self.spanByNode(node_index),
                     std.fmt.comptimePrint(
                         "integer literal out of [{d}, {d}] range",
@@ -311,7 +306,7 @@ fn visitNode(self: *Self, node_index: Ast.Node.Index) ErrorBundle.ReportError!No
                     );
                     try self.errors.finishReport();
                 },
-                .none, .terminator => try self.reportSimpleError(
+                .none, .terminator => try self.errors.reportSingleMessage(
                     self.spanByNode(dest_index),
                     "expression is not assignable",
                     .{},
@@ -340,7 +335,7 @@ fn spanByNode(self: *Self, node_index: Ast.Node.Index) Source.Span {
             .begin = self.tokenOffsetByNodeIndex(node_index),
             .end = self.spanByNode(self.ast.nodeData(node_index).node).end,
         },
-        .block => block: {
+        .block => block_span: {
             const opening = self.tokenOffsetByNodeIndex(node_index);
 
             const data = self.ast.nodeData(node_index).extra_range;
@@ -351,10 +346,7 @@ fn spanByNode(self: *Self, node_index: Ast.Node.Index) Source.Span {
                 self.spanByNode(@fromBackingInt(body[body.len - 1])).end;
             const end = std.mem.findScalarPos(u8, self.source.text, last_stmt_end, '}').?;
 
-            break :block .{
-                .begin = opening,
-                .end = @intCast(end),
-            };
+            break :block_span .{ .begin = opening, .end = @intCast(end) };
         },
         .recovery,
         .name_ref,
@@ -381,9 +373,9 @@ fn spanByNode(self: *Self, node_index: Ast.Node.Index) Source.Span {
                 .end = self.spanByNode(last_child).end,
             };
         },
-        .binary, .assign => bin: {
+        .binary, .assign => binary_span: {
             const lhs, const rhs = self.ast.nodeData(node_index).node_and_node;
-            break :bin .{
+            break :binary_span .{
                 .begin = self.spanByNode(lhs).begin,
                 .end = self.spanByNode(rhs).end,
             };
