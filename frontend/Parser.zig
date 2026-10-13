@@ -142,9 +142,12 @@ inline fn formatExpectedList(comptime list: anytype) []const u8 {
         }
 
         result = result ++
-            if (field_type == Token.Kind)
-                value.toString()
-            else switch (@typeInfo(field_type)) {
+            if (field_type == Token.Kind) token_kind: {
+                const initial = value.toString();
+                var escaped: [std.mem.replacementSize(u8, initial, "}", "}}")]u8 = undefined;
+                _ = std.mem.replace(u8, initial, "}", "}}", &escaped);
+                break :token_kind &escaped;
+            } else switch (@typeInfo(field_type)) {
                 .pointer => |field_info| switch (field_info.size) {
                     .one, .slice => @as([]const u8, value),
                     .many, .c => @as([:0]const u8, std.mem.span(value)),
@@ -174,9 +177,6 @@ fn reportUnexpected(self: *Parser, actual: Token.Kind, comptime expected: anytyp
         .err_unterminated_multiline_comment,
         => try self.report("{s}", .{actual.toString()}),
         else => try self.report(
-            // NOTE:
-            // if you `expect` a '}', this breaks
-            // but that is avoidable
             "expected " ++ formatExpectedList(expected) ++ ", but got {s}",
             .{actual.toString()},
         ),
@@ -346,7 +346,29 @@ fn parseBlock(self: *Parser) NonParseError!?Node.Index {
     const scratch_top = self.scratch.items.len;
     defer self.scratch.shrinkRetainingCapacity(scratch_top);
 
-    while (self.eatToken(.rbrace) == null) {
+    while (true) {
+        switch (self.tokenKind(self.token_index)) {
+            .rbrace => {
+                _ = self.nextToken();
+                break;
+            },
+            .eof => {
+                try self.errors.addMessage(
+                    self.source.spanByToken(self.tokens.get(self.token_index)),
+                    "unclosed block",
+                    .{},
+                );
+                try self.errors.addMessage(
+                    self.source.spanByToken(self.tokens.get(brace_token)),
+                    "opened here",
+                    .{},
+                );
+                try self.errors.finishReport();
+                break;
+            },
+            else => {},
+        }
+
         const stmt = self.expectStatement() catch |err|
             if (err == error.ParseError) recovery: {
                 defer if (self.skipUntilAny(&.{ .semi, .rbrace }) == .semi) {

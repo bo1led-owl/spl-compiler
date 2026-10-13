@@ -344,7 +344,9 @@ fn spanByNode(self: *Self, node_index: Ast.Node.Index) Source.Span {
                 opening
             else
                 self.spanByNode(@fromBackingInt(body[body.len - 1])).end;
-            const end = std.mem.findScalarPos(u8, self.source.text, last_stmt_end, '}').?;
+
+            const end = std.mem.findScalarPos(u8, self.source.text, last_stmt_end, '}') orelse
+                last_stmt_end;
 
             break :block_span .{ .begin = opening, .end = @intCast(end) };
         },
