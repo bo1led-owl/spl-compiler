@@ -5,7 +5,6 @@ pub const Ast = @import("Ast.zig");
 pub const Parser = @import("Parser.zig");
 pub const Sema = @import("Sema.zig");
 pub const Source = @import("Source.zig");
-pub const Codegen = @import("Codegen.zig");
 
 test {
     _ = lex;

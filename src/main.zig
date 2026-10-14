@@ -1,7 +1,10 @@
 const std = @import("std");
 const builtin = @import("builtin");
-const frontend = @import("frontend");
+
 const cli = @import("cli.zig");
+const frontend = @import("frontend.zig");
+const backend = @import("backend");
+const Codegen = @import("Codegen.zig");
 
 var dump_buffer: [4096]u8 align(std.heap.page_size_min) = undefined;
 
@@ -173,7 +176,7 @@ fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: cli.Args.Full) u8 {
 
     defer if (!args.emit_llvm) gpa.free(llvm_output_path);
 
-    var codegen = frontend.Codegen.init(gpa, source, tokens, ast);
+    var codegen = Codegen.init(gpa, source, tokens, ast);
     defer codegen.deinit();
 
     start_time = clock.now(io);
