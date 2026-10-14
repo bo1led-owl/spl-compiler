@@ -78,7 +78,7 @@ pub fn run(self: *Parser) NonParseError!Ast {
 
     self.nodes.items(.data)[@backingInt(Node.Index.root)] = .{ .extra_range = .{
         .begin = @fromBackingInt(@intCast(self.extras.items.len)),
-        .end = @fromBackingInt(@intCast(self.extras.items.len + self.scratch.items.len)),
+        .len = @intCast(self.scratch.items.len),
     } };
     try self.extras.appendSlice(self.gpa, @ptrCast(self.scratch.items));
 
@@ -381,7 +381,7 @@ fn parseBlock(self: *Parser) NonParseError!?Node.Index {
 
     const data: Ast.ExtraRange = .{
         .begin = @fromBackingInt(@intCast(self.extras.items.len)),
-        .end = @fromBackingInt(@intCast(self.extras.items.len + self.scratch.items.len - scratch_top)),
+        .len = @intCast(self.scratch.items.len - scratch_top),
     };
 
     try self.extras.appendSlice(self.gpa, @ptrCast(self.scratch.items[scratch_top..]));

@@ -14,7 +14,7 @@ extra_data: []u32,
 pub const ExtraIndex = enum(u32) { _ };
 
 /// range of extra data, `end` is not included
-pub const ExtraRange = struct { begin: ExtraIndex, end: ExtraIndex };
+pub const ExtraRange = struct { begin: ExtraIndex, len: u32 };
 
 pub const Node = struct {
     pub const Index = enum(u32) {
@@ -128,7 +128,7 @@ pub fn deinit(self: *Self, gpa: std.mem.Allocator) void {
 }
 
 pub fn extractExtras(self: Self, range: ExtraRange) []u32 {
-    return self.extra_data[@backingInt(range.begin)..@backingInt(range.end)];
+    return self.extra_data[@backingInt(range.begin)..][0..range.len];
 }
 
 pub fn nodeKind(self: Self, index: Node.Index) Node.Kind {
