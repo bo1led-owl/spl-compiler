@@ -9,10 +9,26 @@
       "column": 1,
       "elems": [
         {
-          "kind": "Error",
+          "kind": "BinOp",
           "line": 1,
-          "column": 15,
-          "elems": []
+          "column": 12,
+          "op": "plus",
+          "elems": [
+            {
+              "kind": "IntLiteral",
+              "line": 1,
+              "column": 9,
+              "value": 42,
+              "elems": []
+            },
+            {
+              "kind": "IntLiteral",
+              "line": 1,
+              "column": 14,
+              "value": 3,
+              "elems": []
+            }
+          ]
         }
       ]
     }

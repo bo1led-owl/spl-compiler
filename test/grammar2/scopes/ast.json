@@ -1,0 +1,173 @@
+{
+  "kind": "Program",
+  "line": 1,
+  "column": 1,
+  "elems": [
+    {
+      "kind": "Declare",
+      "line": 1,
+      "column": 1,
+      "mut": false,
+      "elems": [
+        {
+          "kind": "Ident",
+          "name": "x",
+          "elems": [],
+          "line": 1,
+          "column": 5
+        },
+        {
+          "kind": "BoolLiteral",
+          "line": 1,
+          "column": 9,
+          "value": true,
+          "elems": []
+        }
+      ]
+    },
+    {
+      "kind": "If",
+      "line": 2,
+      "column": 1,
+      "elems": [
+        {
+          "kind": "Ident",
+          "line": 2,
+          "column": 5,
+          "name": "x",
+          "elems": []
+        },
+        {
+          "kind": "Block",
+          "line": 2,
+          "column": 8,
+          "elems": [
+            {
+              "kind": "Declare",
+              "line": 3,
+              "column": 5,
+              "mut": false,
+              "elems": [
+                {
+                  "kind": "Ident",
+                  "name": "y",
+                  "elems": [],
+                  "line": 3,
+                  "column": 9
+                },
+                {
+                  "kind": "IntLiteral",
+                  "line": 3,
+                  "column": 13,
+                  "value": 37,
+                  "elems": []
+                }
+              ]
+            },
+            {
+              "kind": "Declare",
+              "line": 4,
+              "column": 5,
+              "mut": false,
+              "elems": [
+                {
+                  "kind": "Ident",
+                  "name": "y",
+                  "elems": [],
+                  "line": 4,
+                  "column": 9
+                },
+                {
+                  "kind": "Ident",
+                  "line": 4,
+                  "column": 13,
+                  "name": "x",
+                  "elems": []
+                }
+              ]
+            },
+            {
+              "kind": "Block",
+              "line": 5,
+              "column": 5,
+              "elems": [
+                {
+                  "kind": "Declare",
+                  "line": 6,
+                  "column": 9,
+                  "mut": false,
+                  "elems": [
+                    {
+                      "kind": "Ident",
+                      "name": "y",
+                      "elems": [],
+                      "line": 6,
+                      "column": 13
+                    },
+                    {
+                      "kind": "IntLiteral",
+                      "line": 6,
+                      "column": 17,
+                      "value": 42,
+                      "elems": []
+                    }
+                  ]
+                },
+                {
+                  "kind": "Declare",
+                  "line": 7,
+                  "column": 9,
+                  "mut": false,
+                  "elems": [
+                    {
+                      "kind": "Ident",
+                      "name": "x",
+                      "elems": [],
+                      "line": 7,
+                      "column": 13
+                    },
+                    {
+                      "kind": "Ident",
+                      "line": 7,
+                      "column": 17,
+                      "name": "y",
+                      "elems": []
+                    }
+                  ]
+                },
+                {
+                  "kind": "Return",
+                  "line": 8,
+                  "column": 9,
+                  "elems": [
+                    {
+                      "kind": "Ident",
+                      "line": 8,
+                      "column": 16,
+                      "name": "x",
+                      "elems": []
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "Return",
+      "line": 12,
+      "column": 1,
+      "elems": [
+        {
+          "kind": "Ident",
+          "line": 12,
+          "column": 8,
+          "name": "y",
+          "elems": []
+        }
+      ]
+    }
+  ]
+}
