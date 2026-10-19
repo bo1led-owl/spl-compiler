@@ -4,7 +4,7 @@ const Self = @This();
 
 const lex = @import("lex.zig");
 
-filename: []const u8,
+filename: [:0]const u8,
 text: []const u8,
 
 pub const Span = struct {
