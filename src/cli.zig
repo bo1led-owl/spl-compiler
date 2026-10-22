@@ -15,6 +15,7 @@ pub const help_msg =
     \\           --last-stage=STAGE  Limit the compiler pipeline to specified stage. Stages are: lexer, parser, sema, codegen
     \\           --preserve-temp     Do not delete temporary files
     \\           --timings           Report compiler timings
+    \\           --backend=BACKEND   Select backend to be used. Supported values: llvm, selfhosted
 ++ "\n";
 
 pub const Args = union(enum) {
@@ -31,7 +32,10 @@ pub const Args = union(enum) {
         UnknownOption,
         MissingOptionValue,
         UnknownStage,
+        UnknownBackend,
     };
+
+    pub const Backend = enum { llvm, selfhosted };
 
     pub const Full = struct {
         source_path: [:0]const u8,
@@ -42,6 +46,7 @@ pub const Args = union(enum) {
         emit_llvm: bool,
         preserve_temp: bool,
         timings: bool,
+        backend: Backend,
     };
 
     help,
@@ -55,6 +60,7 @@ pub const Args = union(enum) {
         var tokens_dump_path: ?[]const u8 = null;
         var ast_dump_path: ?[]const u8 = null;
         var last_stage: Stage = .codegen;
+        var backend: Backend = .selfhosted;
         var emit_llvm = false;
         var preserve_temp = false;
         var timings = false;
@@ -62,6 +68,7 @@ pub const Args = union(enum) {
         var next_opt: ?Next = null;
 
         const stages: std.StaticStringMap(Stage) = .initEnum();
+        const backends: std.StaticStringMap(Backend) = .initEnum();
 
         var iter = args.iterate();
         _ = iter.next(); // skip program name
@@ -91,6 +98,9 @@ pub const Args = union(enum) {
             } else if (longOption(arg, "last-stage")) |value| {
                 last_stage = stages.get(value) orelse
                     return ParseError.UnknownStage;
+            } else if (longOption(arg, "backend")) |value| {
+                backend = backends.get(value) orelse
+                    return ParseError.UnknownBackend;
             } else if (flag(arg, null, "emit-llvm")) {
                 emit_llvm = true;
             } else if (flag(arg, null, "preserve-temp")) {
@@ -122,6 +132,7 @@ pub const Args = union(enum) {
             .last_stage = last_stage,
             .output_path = output_path orelse if (emit_llvm) "a.ll" else "a.out",
             .timings = timings,
+            .backend = backend,
         } };
     }
 };

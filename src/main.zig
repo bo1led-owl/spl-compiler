@@ -4,9 +4,12 @@ const builtin = @import("builtin");
 const cli = @import("cli.zig");
 const frontend = @import("frontend.zig");
 const backend = @import("backend");
-const Codegen = @import("Codegen.zig");
+const ir = backend.ir;
 
-var dump_buffer: [4096]u8 align(std.heap.page_size_min) = undefined;
+const LlvmCodegen = @import("LlvmCodegen.zig");
+const SelfhostedCodegen = @import("SelfhostedCodegen.zig");
+
+var buffer: [4096]u8 align(std.heap.page_size_min) = undefined;
 
 const use_safe_allocator = builtin.mode == .debug or builtin.mode == .safe;
 var safe_allocator: std.heap.SafeAllocator = .init(std.heap.page_allocator, .{});
@@ -40,8 +43,8 @@ pub fn main(init: std.process.Init.Minimal) u8 {
 }
 
 fn printElapsed(comptime title: []const u8, from: std.Io.Timestamp, to: std.Io.Timestamp) void {
-    var buffer: [128]u8 = undefined;
-    var writer: std.Io.Writer = .fixed(&buffer);
+    var fmt_buffer: [128]u8 = undefined;
+    var writer: std.Io.Writer = .fixed(&fmt_buffer);
 
     const duration = from.durationTo(to);
     duration.format(&writer) catch return;
@@ -127,7 +130,7 @@ fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: cli.Args.Full) u8 {
 
     if (args.last_stage == .parser) {
         if (error_bundle.nonEmpty()) {
-            const stderr = io.lockStderr(&dump_buffer, null) catch
+            const stderr = io.lockStderr(&buffer, null) catch
                 // because nobody can cancel this
                 unreachable;
             defer io.unlockStderr();
@@ -153,7 +156,7 @@ fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: cli.Args.Full) u8 {
     if (args.timings) printElapsed("sema", start_time, end_time);
 
     if (error_bundle.nonEmpty()) {
-        const stderr = io.lockStderr(&dump_buffer, null) catch unreachable;
+        const stderr = io.lockStderr(&buffer, null) catch unreachable;
         defer io.unlockStderr();
 
         error_bundle.renderToTerminal(source, stderr.terminal()) catch {};
@@ -166,61 +169,100 @@ fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: cli.Args.Full) u8 {
 
     // codegen
 
-    const llvm_output_path = if (args.emit_llvm)
-        args.output_path
-    else
-        gpa.printSentinel("{s}.o", .{args.output_path}, 0) catch {
-            std.log.err("failed to allocate temporary path", .{});
-            return 1;
-        };
+    switch (args.backend) {
+        .selfhosted => {
+            var context: ir.Context = .init(gpa);
+            defer context.deinit();
 
-    defer if (!args.emit_llvm) gpa.free(llvm_output_path);
+            const function = codegen: {
+                var codegen = SelfhostedCodegen.init(gpa, source, tokens, ast, &context) catch |err| {
+                    std.log.err("failed to initialize selfhosted code generator: {s}", .{@errorName(err)});
+                    return 1;
+                };
+                defer codegen.deinit();
 
-    var codegen = Codegen.init(gpa, source, tokens, ast);
-    defer codegen.deinit();
+                start_time = clock.now(io);
+                const res = codegen.run() catch |err| {
+                    std.log.err("failed to generate code: {s}", .{@errorName(err)});
+                    return 1;
+                };
+                end_time = clock.now(io);
 
-    start_time = clock.now(io);
-    codegen.run(llvm_output_path, .{ .emit_llvm = args.emit_llvm }) catch |err| {
-        std.log.err("failed to generate code: {s}", .{@errorName(err)});
-        return 1;
-    };
-    end_time = clock.now(io);
+                if (args.timings) printElapsed("codegen", start_time, end_time);
 
-    if (args.timings) printElapsed("codegen", start_time, end_time);
+                break :codegen res;
+            };
+            var stdout_writer = std.Io.File.stdout().writer(io, &buffer);
+            var printer: ir.Printer = .init(&context, &stdout_writer.interface);
+            printer.printFunction(function) catch {
+                std.log.err("failed to print function: {s}", .{@errorName(stdout_writer.err.?)});
+                return 1;
+            };
+            stdout_writer.flush() catch {
+                std.log.err("failed to print function: {s}", .{@errorName(stdout_writer.err.?)});
+                return 1;
+            };
 
-    if (args.emit_llvm) {
-        return 0;
+            return 0;
+        },
+        .llvm => {
+            const llvm_output_path = if (args.emit_llvm)
+                args.output_path
+            else
+                gpa.printSentinel("{s}.o", .{args.output_path}, 0) catch {
+                    std.log.err("failed to allocate temporary path", .{});
+                    return 1;
+                };
+
+            defer if (!args.emit_llvm) gpa.free(llvm_output_path);
+
+            var codegen: LlvmCodegen = .init(gpa, source, tokens, ast);
+            defer codegen.deinit();
+
+            start_time = clock.now(io);
+            codegen.run(llvm_output_path, .{ .emit_llvm = args.emit_llvm }) catch |err| {
+                std.log.err("failed to generate code: {s}", .{@errorName(err)});
+                return 1;
+            };
+            end_time = clock.now(io);
+
+            if (args.timings) printElapsed("codegen", start_time, end_time);
+
+            if (args.emit_llvm) {
+                return 0;
+            }
+
+            // linking
+
+            const clang_argv: []const []const u8 = &.{ "clang", llvm_output_path, "-o", args.output_path };
+
+            start_time = clock.now(io);
+            const res = std.process.run(gpa, io, .{ .argv = clang_argv }) catch |err| {
+                std.log.err("failed to run clang: {s}", .{@errorName(err)});
+                return 1;
+            };
+            end_time = clock.now(io);
+
+            if (args.timings) printElapsed("linking", start_time, end_time);
+
+            gpa.free(res.stdout);
+            defer gpa.free(res.stderr);
+
+            if (res.term.exited != 0) {
+                std.log.err("clang failed with exit code {d}, stderr:\n{s}", .{ res.term.exited, res.stderr });
+                return 1;
+            }
+
+            if (!args.preserve_temp) {
+                std.Io.Dir.cwd().deleteFile(io, llvm_output_path) catch |err| {
+                    std.log.err("failed to delete temporary file: {s}", .{@errorName(err)});
+                    return 1;
+                };
+            }
+
+            return 0;
+        },
     }
-
-    // linking
-
-    const clang_argv: []const []const u8 = &.{ "clang", llvm_output_path, "-o", args.output_path };
-
-    start_time = clock.now(io);
-    const res = std.process.run(gpa, io, .{ .argv = clang_argv }) catch |err| {
-        std.log.err("failed to run clang: {s}", .{@errorName(err)});
-        return 1;
-    };
-    end_time = clock.now(io);
-
-    if (args.timings) printElapsed("linking", start_time, end_time);
-
-    gpa.free(res.stdout);
-    defer gpa.free(res.stderr);
-
-    if (res.term.exited != 0) {
-        std.log.err("clang failed with exit code {d}, stderr:\n{s}", .{ res.term.exited, res.stderr });
-        return 1;
-    }
-
-    if (!args.preserve_temp) {
-        std.Io.Dir.cwd().deleteFile(io, llvm_output_path) catch |err| {
-            std.log.err("failed to delete temporary file: {s}", .{@errorName(err)});
-            return 1;
-        };
-    }
-
-    return 0;
 }
 
 fn readFile(io: std.Io, gpa: std.mem.Allocator, path: []const u8, max_size: u32) ![]u8 {
@@ -256,7 +298,7 @@ fn dumpTokensIntoFile(
     const dump_file = try std.Io.Dir.cwd().createFile(io, dump_path, .{});
     defer dump_file.close(io);
 
-    var dump_writer = dump_file.writer(io, &dump_buffer);
+    var dump_writer = dump_file.writer(io, &buffer);
     dumpTokens(&dump_writer.interface, source, tokens) catch |err| {
         std.debug.assert(err == std.Io.Writer.Error.WriteFailed);
         return dump_writer.err.?;
@@ -358,7 +400,7 @@ fn dumpAstIntoFile(
     const dump_file = try std.Io.Dir.cwd().createFile(io, dump_path, .{});
     defer dump_file.close(io);
 
-    var dump_writer = dump_file.writer(io, &dump_buffer);
+    var dump_writer = dump_file.writer(io, &buffer);
     dumpAst(&dump_writer.interface, source, tokens, ast) catch |err| {
         std.debug.assert(err == std.Io.Writer.Error.WriteFailed);
         return dump_writer.err.?;
