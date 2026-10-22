@@ -102,6 +102,7 @@ pub const Args = union(enum) {
                 backend = backends.get(value) orelse
                     return ParseError.UnknownBackend;
             } else if (flag(arg, null, "emit-llvm")) {
+                backend = .llvm;
                 emit_llvm = true;
             } else if (flag(arg, null, "preserve-temp")) {
                 preserve_temp = true;

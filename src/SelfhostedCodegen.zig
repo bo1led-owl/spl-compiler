@@ -301,7 +301,7 @@ fn gen(self: *Self, node_index: Ast.Node.Index) !GenResult {
             const dest = self.genStorable(dest_index);
             const src = (try self.gen(src_index)).value.toIndex().?;
 
-            // TODO: is this always `stackStore`?
+            // TODO: this will stop stop being a stack store one day
             _ = try self.builder.createStackStore(dest, src);
             return .{};
         },
