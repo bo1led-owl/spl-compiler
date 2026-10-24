@@ -2,8 +2,7 @@ const Self = @This();
 
 const std = @import("std");
 
-const backend = @import("backend");
-const ir = backend.ir;
+const ir = @import("ir");
 
 const Source = @import("Source.zig");
 const Ast = @import("Ast.zig");

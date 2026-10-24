@@ -34,7 +34,7 @@ pub fn build(b: *std.Build) void {
             .optimize = optimize,
             .imports = &.{
                 .{ .name = "c", .module = translator.mod },
-                .{ .name = "backend", .module = backend.module("backend") },
+                .{ .name = "ir", .module = backend.module("ir") },
             },
         }),
     });

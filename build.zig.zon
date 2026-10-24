@@ -9,7 +9,7 @@
             .hash = "translate_c-0.0.0-Q_BUWoFOBwAhz77Zd15HCVuhTKzdUKc94kezmCeJ7IC_",
         },
         .backend = .{
-            .path = "../../zig/backend"
+            .path = "../../zig/backend" // TODO: unhardcode this
         },
     },
     .paths = .{

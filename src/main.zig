@@ -3,8 +3,7 @@ const builtin = @import("builtin");
 
 const cli = @import("cli.zig");
 const frontend = @import("frontend.zig");
-const backend = @import("backend");
-const ir = backend.ir;
+const ir = @import("ir");
 
 const LlvmCodegen = @import("LlvmCodegen.zig");
 const SelfhostedCodegen = @import("SelfhostedCodegen.zig");
