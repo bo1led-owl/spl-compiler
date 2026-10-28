@@ -5,7 +5,6 @@ const cli = @import("cli.zig");
 const frontend = @import("frontend.zig");
 const ir = @import("ir");
 
-const LlvmCodegen = @import("LlvmCodegen.zig");
 const SelfhostedCodegen = @import("SelfhostedCodegen.zig");
 
 var buffer: [4096]u8 align(std.heap.page_size_min) = undefined;
@@ -168,100 +167,39 @@ fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: cli.Args.Full) u8 {
 
     // codegen
 
-    switch (args.backend) {
-        .selfhosted => {
-            var context: ir.Context = .init(gpa);
-            defer context.deinit();
+    var context: ir.Context = .init(gpa);
+    defer context.deinit();
 
-            const function = codegen: {
-                var codegen = SelfhostedCodegen.init(gpa, source, tokens, ast, &context) catch |err| {
-                    std.log.err("failed to initialize selfhosted code generator: {s}", .{@errorName(err)});
-                    return 1;
-                };
-                defer codegen.deinit();
+    const function = codegen: {
+        var codegen = SelfhostedCodegen.init(gpa, source, tokens, ast, &context) catch |err| {
+            std.log.err("failed to initialize code generator: {s}", .{@errorName(err)});
+            return 1;
+        };
+        defer codegen.deinit();
 
-                start_time = clock.now(io);
-                const res = codegen.run() catch |err| {
-                    std.log.err("failed to generate code: {s}", .{@errorName(err)});
-                    return 1;
-                };
-                end_time = clock.now(io);
+        start_time = clock.now(io);
+        const res = codegen.run() catch |err| {
+            std.log.err("failed to generate code: {s}", .{@errorName(err)});
+            return 1;
+        };
+        end_time = clock.now(io);
 
-                if (args.timings) printElapsed("codegen", start_time, end_time);
+        if (args.timings) printElapsed("codegen", start_time, end_time);
 
-                break :codegen res;
-            };
-            var stdout_writer = std.Io.File.stdout().writer(io, &buffer);
-            var printer: ir.Printer = .init(&context, &stdout_writer.interface);
-            printer.printFunction(function) catch {
-                std.log.err("failed to print function: {s}", .{@errorName(stdout_writer.err.?)});
-                return 1;
-            };
-            stdout_writer.flush() catch {
-                std.log.err("failed to print function: {s}", .{@errorName(stdout_writer.err.?)});
-                return 1;
-            };
+        break :codegen res;
+    };
+    var stdout_writer = std.Io.File.stdout().writer(io, &buffer);
+    var printer: ir.Printer = .init(&context, &stdout_writer.interface);
+    printer.printFunction(function) catch {
+        std.log.err("failed to print function: {s}", .{@errorName(stdout_writer.err.?)});
+        return 1;
+    };
+    stdout_writer.flush() catch {
+        std.log.err("failed to print function: {s}", .{@errorName(stdout_writer.err.?)});
+        return 1;
+    };
 
-            return 0;
-        },
-        .llvm => {
-            const llvm_output_path = if (args.emit_llvm)
-                args.output_path
-            else
-                gpa.printSentinel("{s}.o", .{args.output_path}, 0) catch {
-                    std.log.err("failed to allocate temporary path", .{});
-                    return 1;
-                };
-
-            defer if (!args.emit_llvm) gpa.free(llvm_output_path);
-
-            var codegen: LlvmCodegen = .init(gpa, source, tokens, ast);
-            defer codegen.deinit();
-
-            start_time = clock.now(io);
-            codegen.run(llvm_output_path, .{ .emit_llvm = args.emit_llvm }) catch |err| {
-                std.log.err("failed to generate code: {s}", .{@errorName(err)});
-                return 1;
-            };
-            end_time = clock.now(io);
-
-            if (args.timings) printElapsed("codegen", start_time, end_time);
-
-            if (args.emit_llvm) {
-                return 0;
-            }
-
-            // linking
-
-            const clang_argv: []const []const u8 = &.{ "clang", llvm_output_path, "-o", args.output_path };
-
-            start_time = clock.now(io);
-            const res = std.process.run(gpa, io, .{ .argv = clang_argv }) catch |err| {
-                std.log.err("failed to run clang: {s}", .{@errorName(err)});
-                return 1;
-            };
-            end_time = clock.now(io);
-
-            if (args.timings) printElapsed("linking", start_time, end_time);
-
-            gpa.free(res.stdout);
-            defer gpa.free(res.stderr);
-
-            if (res.term.exited != 0) {
-                std.log.err("clang failed with exit code {d}, stderr:\n{s}", .{ res.term.exited, res.stderr });
-                return 1;
-            }
-
-            if (!args.preserve_temp) {
-                std.Io.Dir.cwd().deleteFile(io, llvm_output_path) catch |err| {
-                    std.log.err("failed to delete temporary file: {s}", .{@errorName(err)});
-                    return 1;
-                };
-            }
-
-            return 0;
-        },
-    }
+    return 0;
 }
 
 fn readFile(io: std.Io, gpa: std.mem.Allocator, path: []const u8, max_size: u32) ![]u8 {

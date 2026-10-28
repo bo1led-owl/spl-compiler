@@ -1,28 +1,8 @@
 const std = @import("std");
-const Translator = @import("translate_c").Translator;
 
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
-
-    const translate_c = b.dependency("translate_c", .{});
-    const translator: Translator = .init(translate_c, .{
-        .c_source_file = b.path("src/c.h"),
-        .target = target,
-        .optimize = optimize,
-        .link_system_libs = &.{
-            .{ .name = "LLVM-23", .options = .{} },
-        },
-    });
-
-    const llvm_config_output = b.run(&.{ "llvm-config", "--cflags" });
-    var args = std.mem.splitAny(u8, llvm_config_output, &std.ascii.whitespace);
-    while (args.next()) |arg| {
-        if (arg.len == 0) {
-            continue;
-        }
-        translator.run.addArg(arg);
-    }
 
     const backend = b.dependency("backend", .{});
 
@@ -33,7 +13,6 @@ pub fn build(b: *std.Build) void {
             .target = target,
             .optimize = optimize,
             .imports = &.{
-                .{ .name = "c", .module = translator.mod },
                 .{ .name = "ir", .module = backend.module("ir") },
             },
         }),
