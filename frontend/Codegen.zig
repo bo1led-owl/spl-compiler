@@ -20,16 +20,20 @@ pub const Error = error{
 gpa: std.mem.Allocator,
 
 source: Source,
-tokens: lex.TokenList,
+tokens: lex.TokenList.Slice,
 ast: Ast,
 
-i64Type: c.LLVMTypeRef,
 context: c.LLVMContextRef,
 module: c.LLVMModuleRef,
 builder: c.LLVMBuilderRef,
 function: c.LLVMValueRef,
 
-allocas: std.StringHashMapUnmanaged(c.LLVMValueRef),
+// saved to reuse
+i64Type: c.LLVMTypeRef,
+zero: c.LLVMValueRef,
+
+declarations: std.StringHashMapUnmanaged(c.LLVMValueRef),
+
 loop_stack: std.ArrayList(struct {
     header: c.LLVMBasicBlockRef,
     exit_block: c.LLVMBasicBlockRef,
@@ -38,14 +42,15 @@ loop_stack: std.ArrayList(struct {
 pub fn init(
     gpa: std.mem.Allocator,
     source: Source,
-    tokens: lex.TokenList,
+    tokens: lex.TokenList.Slice,
     ast: Ast,
 ) Self {
     const context = c.LLVMContextCreate();
     const module = c.LLVMModuleCreateWithName("spl"); // "spl" may be replaced with actual filename
     const builder = c.LLVMCreateBuilderInContext(context);
-    const i64Type = c.LLVMInt64TypeInContext(context);
 
+    const i64Type = c.LLVMInt64TypeInContext(context);
+    const zero = c.LLVMConstInt(i64Type, 0, @intFromBool(false));
     return .{
         .gpa = gpa,
 
@@ -54,12 +59,13 @@ pub fn init(
         .ast = ast,
 
         .i64Type = i64Type,
+        .zero = zero,
         .context = context,
         .module = module,
         .builder = builder,
-        .function = c.LLVMAddFunction(module, "main", c.LLVMFunctionType(i64Type, null, 0, 0)),
+        .function = null,
 
-        .allocas = .empty,
+        .declarations = .empty,
         .loop_stack = .empty,
     };
 }
@@ -68,7 +74,7 @@ pub fn deinit(self: *Self) void {
     c.LLVMDisposeBuilder(self.builder);
     c.LLVMDisposeModule(self.module);
     c.LLVMContextDispose(self.context);
-    self.allocas.deinit(self.gpa);
+    self.declarations.deinit(self.gpa);
     self.loop_stack.deinit(self.gpa);
     self.* = undefined;
 }
@@ -153,12 +159,72 @@ fn gen(self: *Self, node_index: Ast.Node.Index) !GenResult {
     switch (self.ast.nodeKind(node_index)) {
         .recovery => unreachable,
         .root => {
+            const body: []const Ast.Node.Index =
+                @ptrCast(self.ast.extractExtras(self.ast.nodeData(node_index).extra_range));
+
+            for (body) |func| {
+                const proto = switch (self.ast.nodeKind(func)) {
+                    .fn_proto => func,
+                    .fn_decl => self.ast.nodeData(func).node_and_node.@"0",
+                    else => unreachable,
+                };
+                _ = try self.gen(proto);
+            }
+
+            for (body) |func| {
+                if (self.ast.nodeKind(func) != .fn_decl) {
+                    continue;
+                }
+
+                _ = try self.gen(func);
+            }
+
+            return .{};
+        },
+        .fn_proto => {
+            const info = Ast.info.fnProto(self.ast, self.tokens, node_index);
+
+            const param_types = try self.gpa.alloc(c.LLVMTypeRef, info.params.len);
+            defer self.gpa.free(param_types);
+
+            @memset(param_types, self.i64Type);
+
+            const name = self.source.tokenLiteral(self.tokens.get(info.name_token));
+            const null_terminated_name = try self.gpa.dupeSentinel(u8, name, 0);
+            defer self.gpa.free(null_terminated_name);
+
+            const function = c.LLVMAddFunction(
+                self.module,
+                null_terminated_name,
+                c.LLVMFunctionType(self.i64Type, @ptrCast(param_types), @intCast(info.params.len), @intFromBool(false)),
+            );
+
+            try self.declarations.put(self.gpa, name, function);
+
+            return .{};
+        },
+        .fn_decl => {
+            const proto, const body = self.ast.nodeData(node_index).node_and_node;
+            const proto_info = Ast.info.fnProto(self.ast, self.tokens, proto);
+
+            const fn_name = self.source.tokenLiteral(self.tokens.get(proto_info.name_token));
+            self.function = self.declarations.get(fn_name).?;
+
             const entry = self.newBasicBlock("entry");
             self.positionBuilderAtEnd(entry);
 
-            for (self.ast.extractExtras(self.ast.nodeData(node_index).extra_range)) |i| {
-                _ = try self.gen(@fromBackingInt(i));
+            for (proto_info.params, 0..) |param, i| {
+                const name = self.source.tokenLiteral(self.tokens.get(param));
+
+                const alloca = c.LLVMBuildAlloca(self.builder, self.i64Type, "");
+                try self.declarations.put(self.gpa, name, alloca);
+
+                _ = c.LLVMBuildStore(self.builder, c.LLVMGetParam(self.function, @intCast(i)), alloca);
+
+                try self.declarations.put(self.gpa, name, alloca);
             }
+
+            _ = try self.gen(body);
 
             return .{};
         },
@@ -173,7 +239,6 @@ fn gen(self: *Self, node_index: Ast.Node.Index) !GenResult {
         },
         .if_simple, .if_full => {
             const then_block = self.newBasicBlock("");
-            const meet_block = self.newBasicBlock("");
 
             const info = Ast.info.ifAny(self.ast, node_index);
             const cond = (try self.gen(info.cond)).value;
@@ -181,7 +246,12 @@ fn gen(self: *Self, node_index: Ast.Node.Index) !GenResult {
 
             self.positionBuilderAtEnd(then_block);
             const then_info = try self.gen(info.then_node);
+
+            var meet_block: c.LLVMBasicBlockRef = null;
             if (!then_info.is_terminator) {
+                if (meet_block == null) {
+                    meet_block = self.newBasicBlock("");
+                }
                 _ = c.LLVMBuildBr(self.builder, meet_block);
             }
 
@@ -196,17 +266,18 @@ fn gen(self: *Self, node_index: Ast.Node.Index) !GenResult {
             } else null;
 
             self.positionBuilderAtEnd(header);
+            const icmp = c.LLVMBuildICmp(self.builder, c.LLVMIntNE, cond, self.zero, "");
+
             _ = c.LLVMBuildCondBr(
                 self.builder,
-                c.LLVMBuildICmp(
-                    self.builder,
-                    c.LLVMIntNE,
-                    cond,
-                    c.LLVMConstInt(self.i64Type, 0, @intFromBool(false)),
-                    "",
-                ),
+                icmp,
                 then_block,
-                else_block orelse meet_block,
+                else_block orelse meet: {
+                    if (meet_block == null) {
+                        meet_block = self.newBasicBlock("");
+                    }
+                    break :meet meet_block;
+                },
             );
 
             self.positionBuilderAtEnd(meet_block);
@@ -224,18 +295,8 @@ fn gen(self: *Self, node_index: Ast.Node.Index) !GenResult {
 
             self.positionBuilderAtEnd(header);
             const cond = (try self.gen(cond_node)).value;
-            _ = c.LLVMBuildCondBr(
-                self.builder,
-                c.LLVMBuildICmp(
-                    self.builder,
-                    c.LLVMIntNE,
-                    cond,
-                    c.LLVMConstInt(self.i64Type, 0, @intFromBool(false)),
-                    "",
-                ),
-                body,
-                exit_block,
-            );
+            const icmp = c.LLVMBuildICmp(self.builder, c.LLVMIntNE, cond, self.zero, "");
+            _ = c.LLVMBuildCondBr(self.builder, icmp, body, exit_block);
 
             try self.loop_stack.append(self.gpa, .{
                 .header = header,
@@ -268,17 +329,44 @@ fn gen(self: *Self, node_index: Ast.Node.Index) !GenResult {
             const name = self.source.tokenLiteral(self.tokens.get(info.name_token));
 
             const alloca = c.LLVMBuildAlloca(self.builder, self.i64Type, "");
-            try self.allocas.put(self.gpa, name, alloca);
+            try self.declarations.put(self.gpa, name, alloca);
 
             const value = (try self.gen(info.init_expr)).value;
             _ = c.LLVMBuildStore(self.builder, value, alloca);
 
             return .{};
         },
+        .call => {
+            const info = Ast.info.call(self.ast, node_index);
+
+            var args = try self.gpa.alloc(c.LLVMValueRef, info.args.len);
+            defer self.gpa.free(args);
+
+            for (info.args, 0..) |arg, i| {
+                args[i] = (try self.gen(arg)).value;
+            }
+
+            const callee = (try self.gen(info.callee)).value;
+            return .{ .value = c.LLVMBuildCall2(
+                self.builder,
+                c.LLVMGlobalGetValueType(callee),
+                callee,
+                @ptrCast(args),
+                @intCast(info.args.len),
+                "",
+            ) };
+        },
         .name_ref => {
             const name = self.source.tokenLiteral(self.tokens.get(self.ast.nodeToken(node_index)));
-            const alloca = self.allocas.get(name).?;
-            return .{ .value = c.LLVMBuildLoad2(self.builder, self.i64Type, alloca, "") };
+            const declaration = self.declarations.get(name).?;
+
+            const is_alloca = c.LLVMIsAAllocaInst(declaration) != null;
+            if (is_alloca) {
+                return .{ .value = c.LLVMBuildLoad2(self.builder, self.i64Type, declaration, "") };
+            } else {
+                std.debug.assert(c.LLVMIsAFunction(declaration) != null);
+                return .{ .value = declaration };
+            }
         },
         .bool_literal => {
             const value = self.tokens.items(.kind)[self.ast.nodeToken(node_index)] == .kw_true;
@@ -301,13 +389,7 @@ fn gen(self: *Self, node_index: Ast.Node.Index) !GenResult {
             switch (token_kind) {
                 .minus => return .{ .value = c.LLVMBuildNeg(self.builder, value, "") },
                 .bang => {
-                    const cmp = c.LLVMBuildICmp(
-                        self.builder,
-                        c.LLVMIntEQ,
-                        value,
-                        c.LLVMConstInt(self.i64Type, 0, @intFromBool(false)),
-                        "",
-                    );
+                    const cmp = c.LLVMBuildICmp(self.builder, c.LLVMIntEQ, value, self.zero, "");
                     return .{ .value = c.LLVMBuildZExt(self.builder, cmp, self.i64Type, "") };
                 },
                 else => unreachable,
@@ -349,18 +431,9 @@ fn gen(self: *Self, node_index: Ast.Node.Index) !GenResult {
                     const rhs_block = self.newBasicBlock("");
                     const next_block = self.newBasicBlock("");
 
-                    _ = c.LLVMBuildCondBr(
-                        self.builder,
-                        c.LLVMBuildICmp(
-                            self.builder,
-                            if (token_kind == .logical_and) c.LLVMIntEQ else c.LLVMIntNE,
-                            lhs,
-                            c.LLVMConstInt(self.i64Type, 0, @intFromBool(false)),
-                            "",
-                        ),
-                        next_block,
-                        rhs_block,
-                    );
+                    const pred: c.LLVMIntPredicate = if (token_kind == .logical_and) c.LLVMIntEQ else c.LLVMIntNE;
+                    const icmp = c.LLVMBuildICmp(self.builder, pred, lhs, self.zero, "");
+                    _ = c.LLVMBuildCondBr(self.builder, icmp, next_block, rhs_block);
 
                     self.positionBuilderAtEnd(rhs_block);
                     const rhs = (try self.gen(rhs_index)).value;
@@ -400,7 +473,7 @@ fn genStorable(self: *Self, node_index: Ast.Node.Index) c.LLVMValueRef {
     switch (self.ast.nodeKind(node_index)) {
         .name_ref => {
             const name = self.source.tokenLiteral(self.tokens.get(self.ast.nodeToken(node_index)));
-            return self.allocas.get(name).?;
+            return self.declarations.get(name).?;
         },
         .recovery,
         .root,
@@ -417,6 +490,9 @@ fn genStorable(self: *Self, node_index: Ast.Node.Index) c.LLVMValueRef {
         .bool_literal,
         .if_full,
         .if_simple,
+        .call,
+        .fn_decl,
+        .fn_proto,
         => unreachable,
     }
 }
