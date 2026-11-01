@@ -5,14 +5,23 @@ const cli = @import("cli.zig");
 
 var dump_buffer: [4096]u8 align(std.heap.page_size_min) = undefined;
 
-const use_safe_allocator = builtin.mode == .debug or builtin.mode == .safe;
-var safe_allocator: std.heap.SafeAllocator = .init(std.heap.page_allocator, .{});
-
 pub fn main(init: std.process.Init.Minimal) u8 {
-    const gpa = if (use_safe_allocator) safe_allocator.allocator() else std.heap.smp_allocator;
-    defer if (use_safe_allocator) {
-        _ = safe_allocator.deinit();
+    var allocator = switch (builtin.mode) {
+        .debug => std.heap.DebugAllocator(.{}){},
+        .safe => std.heap.SafeAllocator.init(std.heap.page_allocator, .{}),
+        else => struct {
+            pub fn allocator(self: @This()) std.mem.Allocator {
+                _ = self;
+                return std.heap.smp_allocator;
+            }
+            pub fn deinit(self: @This()) void {
+                _ = self;
+            }
+        }{},
     };
+
+    const gpa = allocator.allocator();
+    defer _ = allocator.deinit();
 
     var io_impl = std.Io.Threaded.init(gpa, .{
         .argv0 = .init(init.args),
