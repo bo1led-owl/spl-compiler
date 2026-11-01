@@ -6,7 +6,7 @@ const cli = @import("cli.zig");
 var dump_buffer: [4096]u8 align(std.heap.page_size_min) = undefined;
 
 pub fn main(init: std.process.Init.Minimal) u8 {
-    var allocator = switch (builtin.mode) {
+    var allocator = switch (builtin.optimize) {
         .debug => std.heap.DebugAllocator(.{}){},
         .safe => std.heap.SafeAllocator.init(std.heap.page_allocator, .{}),
         else => struct {
