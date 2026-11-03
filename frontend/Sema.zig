@@ -62,13 +62,23 @@ fn leaveScope(self: *Self) void {
     self.names.shrinkRetainingCapacity(@intCast(top));
 }
 
-const NodeInfo = packed struct {
-    // split into flags in case we get function pointers as variables
+const NodeInfo = packed struct(u32) {
+    // not an enum in case we get function pointers as variables
 
     is_assignable: bool = false,
     is_valid_lvalue_but_constant: bool = false,
-    is_callable: bool = false,
+    callable_kind: CallableKind = .not_callable,
     terminator_kind: TerminatorKind = .none,
+
+    pub const CallableKind = enum(u28) {
+        not_callable = std.math.maxInt(u28),
+        _,
+
+        pub fn withArgs(n: @typeInfo(CallableKind).@"enum".tag_type) CallableKind {
+            std.debug.assert(n != @backingInt(CallableKind.not_callable));
+            return @fromBackingInt(n);
+        }
+    };
 
     pub const TerminatorKind = enum(u2) {
         none = 0,
@@ -84,12 +94,22 @@ const NodeInfo = packed struct {
         return self.terminator_kind != .none;
     }
 
+    pub fn isCallable(self: NodeInfo) ?u28 {
+        if (self.callable_kind == .not_callable) {
+            return null;
+        }
+        return @backingInt(self.callable_kind);
+    }
+
     pub const none: NodeInfo = .{};
     pub const assignable: NodeInfo = .{ .is_assignable = true };
     pub const valid_lvalue_but_constant: NodeInfo = .{ .is_valid_lvalue_but_constant = true };
     pub const terminator: NodeInfo = .{ .terminator_kind = .any };
     pub const @"return": NodeInfo = .{ .terminator_kind = .ret };
-    pub const callable: NodeInfo = .{ .is_callable = true };
+
+    pub fn callableWithArgs(n: u28) NodeInfo {
+        return .{ .callable_kind = .withArgs(n) };
+    }
 };
 
 fn getDeclarationKind(self: Self, decl_info: DeclarationInfo) []const u8 {
@@ -167,17 +187,17 @@ fn visitNode(self: *Self, node_index: Ast.Node.Index) ErrorBundle.ReportError!No
             return .none;
         },
         .fn_proto => {
-            const name_token_index = Ast.info.fnProto(self.ast, self.tokens, node_index).name_token;
-            const name = self.source.tokenLiteral(self.tokens.get(name_token_index));
+            const info = Ast.info.fnProto(self.ast, self.tokens, node_index);
+            const name = self.source.tokenLiteral(self.tokens.get(info.name_token));
 
             const gop_res = try self.names.getOrPut(self.gpa, name);
             if (gop_res.found_existing) {
-                try self.reportRedeclaration(gop_res.index, name_token_index, gop_res.value_ptr.*);
+                try self.reportRedeclaration(gop_res.index, info.name_token, gop_res.value_ptr.*);
             } else {
                 gop_res.value_ptr.* = .{ .node = node_index };
             }
 
-            return .callable;
+            return .callableWithArgs(@intCast(info.params.len));
         },
         .fn_decl => {
             const proto, const body = self.ast.nodeData(node_index).node_and_node;
@@ -206,7 +226,7 @@ fn visitNode(self: *Self, node_index: Ast.Node.Index) ErrorBundle.ReportError!No
                 );
             }
 
-            return .callable;
+            return .callableWithArgs(@intCast(params.len));
         },
         .block => {
             const body: []const Ast.Node.Index = @ptrCast(self.ast.extractExtras(self.ast.nodeData(node_index).extra_range));
@@ -328,7 +348,10 @@ fn visitNode(self: *Self, node_index: Ast.Node.Index) ErrorBundle.ReportError!No
                             }
                             return .valid_lvalue_but_constant;
                         },
-                        .fn_decl, .fn_proto => return .callable,
+                        .fn_proto => {
+                            const info = Ast.info.fnProto(self.ast, self.tokens, declaration);
+                            return .callableWithArgs(@intCast(info.params.len));
+                        },
                         else => unreachable, // TODO: extend when more entity kinds are added
                     },
                 }
@@ -344,16 +367,25 @@ fn visitNode(self: *Self, node_index: Ast.Node.Index) ErrorBundle.ReportError!No
         .call => {
             const info = Ast.info.call(self.ast, node_index);
             const callee_info = try self.visitNode(info.callee);
-            if (!callee_info.is_callable) {
-                try self.errors.reportSingleMessage(
-                    self.spanByNode(info.callee),
-                    "expression is not assignable",
-                    .{},
-                );
-            }
 
             for (info.args) |arg| {
                 _ = try self.visitNode(arg);
+            }
+
+            if (callee_info.isCallable()) |param_count| {
+                if (info.args.len != param_count) {
+                    try self.errors.reportSingleMessage(
+                        self.spanByNode(info.callee),
+                        "invalid argument count: expected {d}, but got {d}",
+                        .{ param_count, info.args.len },
+                    );
+                }
+            } else {
+                try self.errors.reportSingleMessage(
+                    self.spanByNode(info.callee),
+                    "expression is not callable",
+                    .{},
+                );
             }
 
             return .none;

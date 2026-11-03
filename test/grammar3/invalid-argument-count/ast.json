@@ -1,0 +1,163 @@
+{
+  "kind": "Program",
+  "line": 1,
+  "column": 1,
+  "elems": [
+    {
+      "kind": "FuncDecl",
+      "line": 1,
+      "column": 1,
+      "elems": [
+        {
+          "kind": "Ident",
+          "name": "foo",
+          "elems": [],
+          "line": 1,
+          "column": 5
+        },
+        {
+          "kind": "Ident",
+          "name": "a",
+          "elems": [],
+          "line": 1,
+          "column": 9
+        },
+        {
+          "kind": "Ident",
+          "name": "b",
+          "elems": [],
+          "line": 1,
+          "column": 12
+        },
+        {
+          "kind": "Block",
+          "line": 1,
+          "column": 15,
+          "elems": [
+            {
+              "kind": "Return",
+              "line": 2,
+              "column": 3,
+              "elems": [
+                {
+                  "kind": "BinOp",
+                  "line": 2,
+                  "column": 12,
+                  "op": "plus",
+                  "elems": [
+                    {
+                      "kind": "Ident",
+                      "line": 2,
+                      "column": 10,
+                      "name": "a",
+                      "elems": []
+                    },
+                    {
+                      "kind": "Ident",
+                      "line": 2,
+                      "column": 14,
+                      "name": "b",
+                      "elems": []
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "FuncDecl",
+      "line": 5,
+      "column": 1,
+      "elems": [
+        {
+          "kind": "Ident",
+          "name": "main",
+          "elems": [],
+          "line": 5,
+          "column": 5
+        },
+        {
+          "kind": "Block",
+          "line": 5,
+          "column": 12,
+          "elems": [
+            {
+              "kind": "Return",
+              "line": 6,
+              "column": 3,
+              "elems": [
+                {
+                  "kind": "BinOp",
+                  "line": 6,
+                  "column": 18,
+                  "op": "plus",
+                  "elems": [
+                    {
+                      "kind": "Call",
+                      "line": 6,
+                      "column": 13,
+                      "elems": [
+                        {
+                          "kind": "Ident",
+                          "line": 6,
+                          "column": 10,
+                          "name": "foo",
+                          "elems": []
+                        },
+                        {
+                          "kind": "IntLiteral",
+                          "line": 6,
+                          "column": 14,
+                          "value": 42,
+                          "elems": []
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "Call",
+                      "line": 6,
+                      "column": 23,
+                      "elems": [
+                        {
+                          "kind": "Ident",
+                          "line": 6,
+                          "column": 20,
+                          "name": "foo",
+                          "elems": []
+                        },
+                        {
+                          "kind": "IntLiteral",
+                          "line": 6,
+                          "column": 24,
+                          "value": 1,
+                          "elems": []
+                        },
+                        {
+                          "kind": "IntLiteral",
+                          "line": 6,
+                          "column": 27,
+                          "value": 2,
+                          "elems": []
+                        },
+                        {
+                          "kind": "IntLiteral",
+                          "line": 6,
+                          "column": 30,
+                          "value": 3,
+                          "elems": []
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
