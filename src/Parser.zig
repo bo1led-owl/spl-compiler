@@ -27,7 +27,7 @@ source: Source,
 errors: *ErrorBundle,
 
 token_index: Token.Index,
-tokens: lex.TokenList,
+tokens: lex.TokenList.Slice,
 
 /// All nodes to be passed to AST
 nodes: Ast.NodeList,
@@ -36,11 +36,11 @@ nodes: Ast.NodeList,
 /// Example: while parsing a block, we enter another block
 /// Their extras ranges must not overlap, so we build the new extras in the scratch,
 /// then copy it to extras, and only after the outer block ends, we add its contents into the extras
-scratch: std.ArrayList(Node.Index),
+scratch: std.ArrayList(u32),
 /// Extra data to be passed to AST
 extras: std.ArrayList(u32),
 
-pub fn init(gpa: std.mem.Allocator, source: Source, tokens: lex.TokenList, errors: *ErrorBundle) Parser {
+pub fn init(gpa: std.mem.Allocator, source: Source, tokens: lex.TokenList.Slice, errors: *ErrorBundle) Parser {
     return .{
         .gpa = gpa,
         .source = source,
@@ -64,19 +64,19 @@ pub fn run(self: *Parser) NonParseError!Ast {
     _ = try self.addNode(.{ .kind = .root, .token = 0 });
 
     while (self.tokenKind(self.token_index) != .eof) {
-        const stmt_opt = try self.parseStatement();
+        const top_level_decl_opt = try self.parseTopLevelDecl();
 
-        if (stmt_opt) |stmt| {
-            try self.scratch.append(self.gpa, stmt);
+        if (top_level_decl_opt) |decl| {
+            try self.scratch.append(self.gpa, decl.toU32());
         } else {
-            try self.reportUnexpected(self.tokenKind(self.token_index), .{"a statement"});
-            try self.scratch.append(self.gpa, try self.addRecoveryNode());
+            try self.reportUnexpected(self.tokenKind(self.token_index), .{"a declaration"});
+            try self.scratch.append(self.gpa, (try self.addRecoveryNode()).toU32());
             _ = self.nextToken();
             continue;
         }
     }
 
-    self.nodes.items(.data)[@backingInt(Node.Index.root)] = .{ .extra_range = .{
+    self.nodes.items(.data)[Node.Index.root.toU32()] = .{ .extra_range = .{
         .begin = @fromBackingInt(@intCast(self.extras.items.len)),
         .len = @intCast(self.scratch.items.len),
     } };
@@ -203,7 +203,8 @@ fn skipUntilInclusive(self: *Parser, comptime kind: Token.Kind) void {
     }
 }
 
-/// Skip tokens until one with `kind` is seen
+/// Skip tokens until one with `kind` is seen.
+/// Returns `true` iff the token was found before end of file
 fn skipUntil(self: *Parser, comptime kind: Token.Kind) bool {
     if (std.mem.findScalarPos(
         Token.Kind,
@@ -219,7 +220,16 @@ fn skipUntil(self: *Parser, comptime kind: Token.Kind) bool {
     }
 }
 
-/// Skip tokens until one with `kind` present in `kinds` is seen
+/// Skip tokens until one with `kind` present in `kinds` is seen, then also eat it
+fn skipUntilAnyInclusive(self: *Parser, comptime kinds: []const Token.Kind) void {
+    const skipped_until = self.skipUntilAny(kinds);
+    if (std.mem.findScalar(Token.Kind, kinds, skipped_until) != null) {
+        _ = self.nextToken();
+    }
+}
+
+/// Skip tokens until one with `kind` present in `kinds` is seen.
+/// Returns a kind from `kinds` if an expected token was found, `eof` otherwise
 fn skipUntilAny(self: *Parser, comptime kinds: []const Token.Kind) Token.Kind {
     if (std.mem.findAnyPos(
         Token.Kind,
@@ -236,6 +246,92 @@ fn skipUntilAny(self: *Parser, comptime kinds: []const Token.Kind) Token.Kind {
     }
 }
 
+/// Parse a top-level declaration (`def ...` or `extern def ...`). Recovers from errors
+fn parseTopLevelDecl(self: *Parser) NonParseError!?Node.Index {
+    const extern_token_opt = self.eatToken(.kw_extern);
+    const proto = self.parseFnProto() catch |err| switch (err) {
+        error.ParseError => {
+            defer self.skipUntilAnyInclusive(&.{ .semi, .rparen, .rbrace, .kw_def, .kw_extern });
+            return try self.addRecoveryNode();
+        },
+        else => |e| return e,
+    } orelse return null;
+
+    if (extern_token_opt) |extern_token| {
+        // TODO: additional error and recovery path if '{' is found here?
+        _ = self.expectToken(.semi) catch {};
+
+        self.nodes.items(.token)[proto.toU32()] = extern_token;
+        return proto;
+    } else {
+        const body = try self.parseBlock() orelse no_body: {
+            try self.reportUnexpected(self.tokenKind(self.token_index), .{"function body"});
+            break :no_body try self.addRecoveryNode();
+        };
+
+        const def_token = self.nodes.items(.token)[proto.toU32()];
+        return try self.addNode(.{
+            .kind = .fn_decl,
+            .token = def_token,
+            .data = .{ .node_and_node = .{ proto, body } },
+        });
+    }
+}
+
+/// Parse a function prototype
+fn parseFnProto(self: *Parser) !?Node.Index {
+    const def_token = self.eatToken(.kw_def) orelse return null;
+    _ = try self.expectToken(.ident);
+    const lparen_token = try self.expectToken(.lparen);
+
+    const scratch_top = self.scratch.items.len;
+    defer self.scratch.shrinkRetainingCapacity(scratch_top);
+
+    var first = true;
+    while (true) : (first = false) {
+        switch (self.tokenKind(self.token_index)) {
+            .rparen => {
+                _ = self.nextToken();
+                break;
+            },
+            .eof => {
+                try self.errors.addMessage(
+                    self.source.spanByToken(self.tokens.get(self.token_index)),
+                    "unclosed parameter list",
+                    .{},
+                );
+                try self.errors.addMessage(
+                    self.source.spanByToken(self.tokens.get(lparen_token)),
+                    "opened here",
+                    .{},
+                );
+                try self.errors.finishReport();
+                break;
+            },
+            else => if (!first) {
+                _ = self.expectToken(.comma) catch {};
+            },
+        }
+
+        const param = self.expectToken(.ident) catch continue;
+
+        try self.scratch.append(self.gpa, param);
+    }
+
+    const n_params: u32 = @intCast(self.scratch.items.len - scratch_top);
+    const data: Ast.ExtraRange = .{
+        .begin = @fromBackingInt(@intCast(self.extras.items.len)),
+        .len = n_params,
+    };
+
+    try self.extras.appendSlice(self.gpa, @ptrCast(self.scratch.items[scratch_top..]));
+    return try self.addNode(.{
+        .kind = .fn_proto,
+        .token = def_token,
+        .data = .{ .extra_range = data },
+    });
+}
+
 fn expectStatement(self: *Parser) !Node.Index {
     return try self.parseStatement() orelse
         self.failWithUnexpected(
@@ -247,11 +343,13 @@ fn expectStatement(self: *Parser) !Node.Index {
 /// Parse a statement. Eats semicolons for statements expecting one. Recovers from errors
 fn parseStatement(self: *Parser) NonParseError!?Node.Index {
     return try self.parseStatementWithoutSemicolon() orelse
-        self.parseStatementWithSemicolon() catch |err|
-        if (err == error.ParseError) {
+        self.parseStatementWithSemicolon() catch |err| switch (err) {
+        error.ParseError => {
             defer self.skipUntilInclusive(.semi);
             return try self.addRecoveryNode();
-        } else return @errorCast(err);
+        },
+        else => |e| return e,
+    };
 }
 
 /// Parse a subclass of statements that expect a semicolon. Does no extra error recovery
@@ -309,11 +407,13 @@ fn parseVarDecl(self: *Parser) NonParseError!?Node.Index {
             break :init try self.addRecoveryNode();
         };
 
-        break :init self.expectExpr() catch |err|
-            if (err == error.ParseError) {
+        break :init self.expectExpr() catch |err| switch (err) {
+            error.ParseError => {
                 defer _ = self.skipUntil(.semi);
                 break :init try self.addRecoveryNode();
-            } else return @errorCast(err);
+            },
+            else => |e| return e,
+        };
     };
 
     return try self.addNode(.{
@@ -326,11 +426,13 @@ fn parseVarDecl(self: *Parser) NonParseError!?Node.Index {
 /// Parse a return. Recovers from errors
 fn parseReturn(self: *Parser) NonParseError!?Node.Index {
     const ret_token = self.eatToken(.kw_return) orelse return null;
-    const retval = self.expectExpr() catch |err|
-        if (err == error.ParseError) blk: {
+    const retval = self.expectExpr() catch |err| switch (err) {
+        error.ParseError => recovery: {
             defer _ = self.skipUntil(.semi);
-            break :blk try self.addRecoveryNode();
-        } else return @errorCast(err);
+            break :recovery try self.addRecoveryNode();
+        },
+        else => |e| return e,
+    };
 
     return try self.addNode(.{
         .kind = .@"return",
@@ -376,7 +478,7 @@ fn parseBlock(self: *Parser) NonParseError!?Node.Index {
                 };
                 break :recovery try self.addRecoveryNode();
             } else return @errorCast(err);
-        try self.scratch.append(self.gpa, stmt);
+        try self.scratch.append(self.gpa, stmt.toU32());
     }
 
     const data: Ast.ExtraRange = .{
@@ -403,14 +505,16 @@ fn parseCondition(self: *Parser) NonParseError!Node.Index {
         return try self.addRecoveryNode();
     };
 
-    const res = self.expectExpr() catch |err|
-        if (err == error.ParseError) {
+    const res = self.expectExpr() catch |err| switch (err) {
+        error.ParseError => {
             defer switch (self.skipUntilAny(&.{ .rparen, .lbrace, .semi, .rbrace })) {
                 .rparen, .semi, .rbrace => _ = self.nextToken(),
                 else => {},
             };
             return try self.addRecoveryNode();
-        } else return @errorCast(err);
+        },
+        else => |e| return e,
+    };
 
     _ = self.expectToken(.rparen) catch {
         defer switch (self.skipUntilAny(&.{ .lbrace, .semi, .rbrace })) {
@@ -427,24 +531,28 @@ fn parseIf(self: *Parser) NonParseError!?Node.Index {
     const kw_token = self.eatToken(.kw_if) orelse return null;
 
     const cond = try self.parseCondition();
-    const then_node = self.expectStatement() catch |err|
-        if (err == error.ParseError) recovery: {
+    const then_node = self.expectStatement() catch |err| switch (err) {
+        error.ParseError => recovery: {
             defer {
                 _ = self.skipUntilAny(&.{ .semi, .rbrace });
                 _ = self.nextToken();
             }
             break :recovery try self.addRecoveryNode();
-        } else return @errorCast(err);
+        },
+        else => |e| return e,
+    };
 
     if (self.eatToken(.kw_else) != null) {
-        const else_node = self.expectStatement() catch |err|
-            if (err == error.ParseError) recovery: {
+        const else_node = self.expectStatement() catch |err| switch (err) {
+            error.ParseError => recovery: {
                 defer {
                     _ = self.skipUntilAny(&.{ .semi, .rbrace });
                     _ = self.nextToken();
                 }
                 break :recovery try self.addRecoveryNode();
-            } else return @errorCast(err);
+            },
+            else => |e| return e,
+        };
 
         const extra_index: Ast.ExtraIndex = @fromBackingInt(@intCast(self.extras.items.len));
         try self.extras.appendSlice(self.gpa, @ptrCast(&.{ then_node, else_node }));
@@ -466,14 +574,16 @@ fn parseWhile(self: *Parser) NonParseError!?Node.Index {
     const kw_token = self.eatToken(.kw_while) orelse return null;
 
     const cond = try self.parseCondition();
-    const body = self.expectStatement() catch |err|
-        if (err == error.ParseError) recovery: {
+    const body = self.expectStatement() catch |err| switch (err) {
+        error.ParseError => recovery: {
             defer {
                 _ = self.skipUntilAny(&.{ .semi, .rbrace });
                 _ = self.nextToken();
             }
             break :recovery try self.addRecoveryNode();
-        } else return @errorCast(err);
+        },
+        else => |e| return e,
+    };
 
     return try self.addNode(.{
         .kind = .@"while",
@@ -585,7 +695,7 @@ fn eatUnaryOp(self: *Parser) ?Token.Index {
     return self.eatTokenAny(&.{ .minus, .bang });
 }
 
-/// Parse a term: `unary_expr`, `literal` or `(expr)`. Does no extra error recovery
+/// Parse a term: unary expression, call expression or a primary expression. Does no extra error recovery
 fn parseTerm(self: *Parser) (Parser.Error || NonParseError)!?Node.Index {
     if (self.eatUnaryOp()) |unary_op| {
         const operand = try self.expectTerm();
@@ -596,6 +706,74 @@ fn parseTerm(self: *Parser) (Parser.Error || NonParseError)!?Node.Index {
         });
     }
 
+    const primary = try self.parsePrimaryExpr() orelse return null;
+    if (self.tokenKind(self.token_index) != .lparen) {
+        return primary;
+    }
+
+    // call expression
+
+    const lparen_token = self.nextToken();
+
+    const scratch_top = self.scratch.items.len;
+    defer self.scratch.shrinkRetainingCapacity(scratch_top);
+
+    try self.scratch.append(self.gpa, primary.toU32());
+
+    var first = true;
+    while (true) : (first = false) {
+        switch (self.tokenKind(self.token_index)) {
+            .rparen => {
+                _ = self.nextToken();
+                break;
+            },
+            .eof => {
+                try self.errors.addMessage(
+                    self.source.spanByToken(self.tokens.get(self.token_index)),
+                    "unclosed argument list",
+                    .{},
+                );
+                try self.errors.addMessage(
+                    self.source.spanByToken(self.tokens.get(lparen_token)),
+                    "opened here",
+                    .{},
+                );
+                try self.errors.finishReport();
+                break;
+            },
+            else => if (!first) {
+                _ = self.expectToken(.comma) catch {};
+            },
+        }
+
+        const arg = self.expectExpr() catch |err| switch (err) {
+            error.ParseError => recovery: {
+                defer if (self.skipUntilAny(&.{ .comma, .semi, .rparen }) == .semi) {
+                    _ = self.nextToken();
+                };
+                break :recovery try self.addRecoveryNode();
+            },
+            else => |e| return e,
+        };
+        try self.scratch.append(self.gpa, arg.toU32());
+    }
+
+    const data: Ast.ExtraRange = .{
+        .begin = @fromBackingInt(@intCast(self.extras.items.len)),
+        .len = @intCast(self.scratch.items.len - scratch_top),
+    };
+
+    try self.extras.appendSlice(self.gpa, @ptrCast(self.scratch.items[scratch_top..]));
+    return try self.addNode(.{
+        .kind = .call,
+        .token = lparen_token,
+        .data = .{ .extra_range = data },
+    });
+}
+
+/// Parse a primary expression: bool literal, integer literal, variable reference or an expression in parentheses.
+/// Does no extra error recovery
+fn parsePrimaryExpr(self: *Parser) (Parser.Error || NonParseError)!?Node.Index {
     return try self.parseSingleTokenNodeAny(&.{ .kw_true, .kw_false }, .bool_literal) orelse
         try self.parseSingleTokenNode(.number, .number) orelse
         try self.parseSingleTokenNode(.ident, .name_ref) orelse
@@ -606,13 +784,15 @@ fn parseTerm(self: *Parser) (Parser.Error || NonParseError)!?Node.Index {
 fn parseParenExpr(self: *Parser) NonParseError!?Node.Index {
     _ = self.eatToken(.lparen) orelse return null;
 
-    const res = self.expectExpr() catch |err|
-        if (err == error.ParseError) {
+    const res = self.expectExpr() catch |err| switch (err) {
+        error.ParseError => {
             defer if (self.skipUntilAny(&.{ .rparen, .semi }) == .rparen) {
                 _ = self.nextToken();
             };
             return try self.addRecoveryNode();
-        } else return @errorCast(err);
+        },
+        else => |e| return e,
+    };
 
     // used instead of `eatToken` only because of its error message
     _ = self.expectToken(.rparen) catch {};

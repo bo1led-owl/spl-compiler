@@ -1,0 +1,6 @@
+{
+  "$schema": "../../schemas/meta.schema.json",
+  "grammar": [ "3" ],
+  "stages": [ "lexer", "parser" ],
+  "exit": { "parser": "nonzero" }
+}
