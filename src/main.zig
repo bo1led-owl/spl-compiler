@@ -153,7 +153,7 @@ fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: cli.Args.Full) u8 {
 
     // sema
 
-    var sema = frontend.Sema.init(gpa, source, tokens, ast, &error_bundle);
+    var sema = frontend.Sema.init(gpa, source, tokens, &ast, &error_bundle);
     defer sema.deinit();
 
     start_time = clock.now(io);
@@ -182,30 +182,31 @@ fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: cli.Args.Full) u8 {
     var context: ir.Context = .init(gpa);
     defer context.deinit();
 
-    const function = codegen: {
-        var codegen = Codegen.init(gpa, source, tokens, ast, &context) catch |err| {
-            std.log.err("failed to initialize code generator: {s}", .{@errorName(err)});
-            return 1;
-        };
+    {
+        var codegen = Codegen.init(gpa, source, tokens, &ast, &context);
         defer codegen.deinit();
 
         start_time = clock.now(io);
-        const res = codegen.run() catch |err| {
+        codegen.run() catch |err| {
             std.log.err("failed to generate code: {s}", .{@errorName(err)});
             return 1;
         };
 
         end_time = clock.now(io);
         if (args.timings) printElapsed("codegen", start_time, end_time);
+    }
 
-        break :codegen res;
-    };
     var stdout_writer = std.Io.File.stdout().writer(io, &buffer);
-    var printer: ir.Printer = .init(&context, &stdout_writer.interface);
-    printer.printFunction(function) catch {
-        std.log.err("failed to print function: {s}", .{@errorName(stdout_writer.err.?)});
-        return 1;
-    };
+    var printer: ir.Printer = .init(&context, &stdout_writer.interface, .default);
+
+    for (0..context.functions.entries.len) |func_index| {
+        const entry = context.functions.entries.get(func_index);
+        printer.printFunction(entry.key, entry.value) catch {
+            std.log.err("failed to print function: {s}", .{@errorName(stdout_writer.err.?)});
+            return 1;
+        };
+    }
+
     stdout_writer.flush() catch {
         std.log.err("failed to print function: {s}", .{@errorName(stdout_writer.err.?)});
         return 1;

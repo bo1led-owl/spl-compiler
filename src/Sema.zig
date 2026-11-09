@@ -9,7 +9,7 @@ const ErrorBundle = @import("ErrorBundle.zig");
 gpa: std.mem.Allocator,
 source: Source,
 tokens: lex.TokenList.Slice,
-ast: Ast,
+ast: *const Ast,
 errors: *ErrorBundle,
 
 /// Defined named entities
@@ -28,7 +28,7 @@ pub fn init(
     gpa: std.mem.Allocator,
     source: Source,
     tokens: lex.TokenList.Slice,
-    ast: Ast,
+    ast: *const Ast,
     errors: *ErrorBundle,
 ) Self {
     return .{
@@ -122,7 +122,7 @@ fn getDeclarationKind(self: Self, decl_info: DeclarationInfo) []const u8 {
                 return if (is_mutable) "variable" else "constant";
             },
             .fn_proto => {
-                const is_extern = Ast.info.fnProto(self.ast, self.tokens, decl_node_index).is_extern;
+                const is_extern = Ast.info.fnProto(self.ast.*, self.tokens, decl_node_index).is_extern;
                 return if (is_extern) "extern function" else "function";
             },
             else => unreachable, // TODO: extend when more entity kinds are added
@@ -167,6 +167,7 @@ fn visitNode(self: *Self, node_index: Ast.Node.Index) ErrorBundle.ReportError!No
                 const proto = switch (self.ast.nodeKind(func)) {
                     .fn_proto => func,
                     .fn_decl => self.ast.nodeData(func).node_and_node.@"0",
+                    .recovery => continue,
                     else => unreachable,
                 };
                 _ = try self.visitNode(proto);
@@ -187,7 +188,7 @@ fn visitNode(self: *Self, node_index: Ast.Node.Index) ErrorBundle.ReportError!No
             return .none;
         },
         .fn_proto => {
-            const info = Ast.info.fnProto(self.ast, self.tokens, node_index);
+            const info = Ast.info.fnProto(self.ast.*, self.tokens, node_index);
             const name = self.source.tokenLiteral(self.tokens.get(info.name_token));
 
             const gop_res = try self.names.getOrPut(self.gpa, name);
@@ -205,7 +206,7 @@ fn visitNode(self: *Self, node_index: Ast.Node.Index) ErrorBundle.ReportError!No
             try self.enterScope();
             defer self.leaveScope();
 
-            const params = Ast.info.fnProto(self.ast, self.tokens, proto).params;
+            const params = Ast.info.fnProto(self.ast.*, self.tokens, proto).params;
             for (params) |param| {
                 const name_token = self.tokens.get(param);
                 const name = self.source.tokenLiteral(name_token);
@@ -269,7 +270,7 @@ fn visitNode(self: *Self, node_index: Ast.Node.Index) ErrorBundle.ReportError!No
                 .none;
         },
         .if_full, .if_simple => {
-            const info = Ast.info.ifAny(self.ast, node_index);
+            const info = Ast.info.ifAny(self.ast.*, node_index);
 
             _ = try self.visitNode(info.cond);
 
@@ -317,7 +318,7 @@ fn visitNode(self: *Self, node_index: Ast.Node.Index) ErrorBundle.ReportError!No
             return .terminator;
         },
         .var_decl => {
-            const info = Ast.info.varDecl(self.ast, node_index);
+            const info = Ast.info.varDecl(self.ast.*, node_index);
             const name = self.source.tokenLiteral(self.tokens.get(info.name_token));
 
             const gop_res = try self.names.getOrPut(self.gpa, name);
@@ -349,7 +350,7 @@ fn visitNode(self: *Self, node_index: Ast.Node.Index) ErrorBundle.ReportError!No
                             return .valid_lvalue_but_constant;
                         },
                         .fn_proto => {
-                            const info = Ast.info.fnProto(self.ast, self.tokens, declaration);
+                            const info = Ast.info.fnProto(self.ast.*, self.tokens, declaration);
                             return .callableWithArgs(@intCast(info.params.len));
                         },
                         else => unreachable, // TODO: extend when more entity kinds are added
@@ -365,7 +366,7 @@ fn visitNode(self: *Self, node_index: Ast.Node.Index) ErrorBundle.ReportError!No
             }
         },
         .call => {
-            const info = Ast.info.call(self.ast, node_index);
+            const info = Ast.info.call(self.ast.*, node_index);
             const callee_info = try self.visitNode(info.callee);
 
             for (info.args) |arg| {
@@ -468,11 +469,11 @@ fn tokenOffsetByNodeIndex(self: Self, node_index: Ast.Node.Index) u32 {
 
 fn spanByNode(self: *Self, node_index: Ast.Node.Index) Source.Span {
     return switch (self.ast.nodeKind(node_index)) {
-        .root => unreachable,
+        .root => .{ .begin = 0, .end = 0 },
         .fn_proto => fn_proto: {
             const first_token = self.tokens.get(self.ast.nodeToken(node_index));
 
-            const info = Ast.info.fnProto(self.ast, self.tokens, node_index);
+            const info = Ast.info.fnProto(self.ast.*, self.tokens, node_index);
 
             const supposed_last_token_idx = if (info.params.len > 0)
                 info.params[info.params.len - 1]
@@ -523,7 +524,7 @@ fn spanByNode(self: *Self, node_index: Ast.Node.Index) Source.Span {
             .end = self.spanByNode(self.ast.nodeData(node_index).node_and_node.@"1").end,
         },
         .if_full, .if_simple => if_span: {
-            const info = Ast.info.ifAny(self.ast, node_index);
+            const info = Ast.info.ifAny(self.ast.*, node_index);
             const last_child = info.else_node.toIndex() orelse info.then_node;
             break :if_span .{
                 .begin = self.tokenOffsetByNodeIndex(node_index),
@@ -538,7 +539,7 @@ fn spanByNode(self: *Self, node_index: Ast.Node.Index) Source.Span {
             };
         },
         .call => call: {
-            const info = Ast.info.call(self.ast, node_index);
+            const info = Ast.info.call(self.ast.*, node_index);
 
             const opening = self.tokenOffsetByNodeIndex(node_index);
             const last_expr_end = if (info.args.len == 0)
