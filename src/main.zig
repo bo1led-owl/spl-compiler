@@ -16,7 +16,7 @@ pub fn main(init: std.process.Init.Minimal) u8 {
         else => struct {
             pub fn allocator(self: @This()) std.mem.Allocator {
                 _ = self;
-                return std.heap.smp_allocator;
+                return std.heap.brk_allocator;
             }
             pub fn deinit(self: @This()) void {
                 _ = self;
@@ -27,10 +27,7 @@ pub fn main(init: std.process.Init.Minimal) u8 {
     const gpa = allocator.allocator();
     defer _ = allocator.deinit();
 
-    var io_impl = std.Io.Threaded.init(gpa, .{
-        .argv0 = .init(init.args),
-        .environ = init.environ,
-    });
+    var io_impl = std.Io.Threaded.init_single_threaded;
     defer io_impl.deinit();
 
     const io = io_impl.io();
@@ -67,11 +64,17 @@ fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: cli.Args.Full) u8 {
     var start_time: std.Io.Timestamp = undefined;
     var end_time: std.Io.Timestamp = undefined;
 
+    // read input
+
+    start_time = clock.now(io);
     const source_text = readFile(io, gpa, args.source_path, std.math.maxInt(u32)) catch |err| {
         std.log.err("failed to read source file: {s}", .{@errorName(err)});
         return 1;
     };
     defer gpa.free(source_text);
+    end_time = clock.now(io);
+
+    if (args.timings) printElapsed("reading", start_time, end_time);
 
     // lexing
 

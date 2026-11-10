@@ -99,7 +99,7 @@ fn gen(self: *Self, node_index: Ast.Node.Index) !GenResult {
         .fn_proto => {
             const info = Ast.info.fnProto(self.ast.*, self.tokens, node_index);
 
-            const param_types = try self.gpa.alloc(ir.types.TypeHandle, info.params.len);
+            const param_types = try self.gpa.alloc(ir.Type.Handle, info.params.len);
             defer self.gpa.free(param_types);
 
             @memset(param_types, .primitive(.int64));
