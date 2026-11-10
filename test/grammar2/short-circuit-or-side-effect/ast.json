@@ -1,0 +1,125 @@
+{
+  "line": 1,
+  "column": 1,
+  "kind": "Program",
+  "elems": [
+  {
+    "line": 1,
+    "column": 1,
+    "kind": "Declare",
+    "mut": "var",
+    "elems": [
+    {
+      "line": 1,
+      "column": 5,
+      "kind": "Ident",
+      "elems": []
+    },
+    {
+      "line": 1,
+      "column": 9,
+      "kind": "IntLiteral",
+      "elems": []
+    }
+    ]
+  },
+  {
+    "line": 2,
+    "column": 1,
+    "kind": "If",
+    "elems": [
+    {
+      "line": 2,
+      "column": 12,
+      "kind": "BinOp",
+      "elems": [
+      {
+        "line": 2,
+        "column": 7,
+        "kind": "BinOp",
+        "elems": [
+        {
+          "line": 2,
+          "column": 5,
+          "kind": "Ident",
+          "elems": []
+        },
+        {
+          "line": 2,
+          "column": 10,
+          "kind": "IntLiteral",
+          "elems": []
+        }
+        ]
+      },
+      {
+        "line": 2,
+        "column": 22,
+        "kind": "BinOp",
+        "elems": [
+        {
+          "line": 2,
+          "column": 18,
+          "kind": "BinOp",
+          "elems": [
+          {
+            "line": 2,
+            "column": 15,
+            "kind": "IntLiteral",
+            "elems": []
+          },
+          {
+            "line": 2,
+            "column": 20,
+            "kind": "Ident",
+            "elems": []
+          }
+          ]
+        },
+        {
+          "line": 2,
+          "column": 24,
+          "kind": "IntLiteral",
+          "elems": []
+        }
+        ]
+      }
+      ]
+    },
+    {
+      "line": 2,
+      "column": 27,
+      "kind": "Block",
+      "elems": [
+      {
+        "line": 3,
+        "column": 3,
+        "kind": "Return",
+        "elems": [
+        {
+          "line": 3,
+          "column": 10,
+          "kind": "IntLiteral",
+          "elems": []
+        }
+        ]
+      }
+      ]
+    }
+    ]
+  },
+  {
+    "line": 5,
+    "column": 1,
+    "kind": "Return",
+    "elems": [
+    {
+      "line": 5,
+      "column": 8,
+      "kind": "IntLiteral",
+      "elems": []
+    }
+    ]
+  }
+  ]
+}
