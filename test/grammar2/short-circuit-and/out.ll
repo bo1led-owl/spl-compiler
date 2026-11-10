@@ -14,21 +14,27 @@ entry:
   %x1 = load i64, ptr %x, align 8
   %cmptmp = icmp eq i64 %x1, 0
   %zexttmp = zext i1 %cmptmp to i64
+  %lbool = icmp ne i64 %zexttmp, 0
+  br i1 %lbool, label %logic.rhs, label %logic.end
+
+logic.rhs:                                        ; preds = %entry
   %y2 = load i64, ptr %y, align 8
   %cmptmp3 = icmp eq i64 %y2, 0
   %zexttmp4 = zext i1 %cmptmp3 to i64
-  %lbool = icmp ne i64 %zexttmp, 0
   %rbool = icmp ne i64 %zexttmp4, 0
-  %andtmp = and i1 %lbool, %rbool
-  %andext = zext i1 %andtmp to i64
-  %ifcond = icmp ne i64 %andext, 0
+  br label %logic.end
+
+logic.end:                                        ; preds = %logic.rhs, %entry
+  %logictmp = phi i1 [ false, %entry ], [ %rbool, %logic.rhs ]
+  %logicext = zext i1 %logictmp to i64
+  %ifcond = icmp ne i64 %logicext, 0
   br i1 %ifcond, label %then, label %ifmerge
 
-then:                                             ; preds = %entry
+then:                                             ; preds = %logic.end
   store i64 1, ptr %r, align 8
   br label %ifmerge
 
-ifmerge:                                          ; preds = %then, %entry
+ifmerge:                                          ; preds = %then, %logic.end
   %r5 = load i64, ptr %r, align 8
   ret i64 %r5
 }
