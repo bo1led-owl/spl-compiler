@@ -603,7 +603,13 @@ fn parseAssignmentOrExpr(self: *Parser) !?Node.Index {
 
     const assignment_token = self.eatAssignmentOp() orelse return lhs;
 
-    const rhs = try self.expectExpr();
+    const rhs = self.expectExpr() catch |err| switch (err) {
+        error.ParseError => recovery: {
+            defer _ = self.skipUntil(.semi);
+            break :recovery try self.addRecoveryNode();
+        },
+        else => |e| return e,
+    };
     return try self.addNode(.{
         .kind = .assign,
         .token = assignment_token,
