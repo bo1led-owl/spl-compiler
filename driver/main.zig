@@ -5,14 +5,23 @@ const cli = @import("cli.zig");
 
 var dump_buffer: [4096]u8 align(std.heap.page_size_min) = undefined;
 
-const use_safe_allocator = builtin.mode == .debug or builtin.mode == .safe;
-var safe_allocator: std.heap.SafeAllocator = .init(std.heap.page_allocator, .{});
-
 pub fn main(init: std.process.Init.Minimal) u8 {
-    const gpa = if (use_safe_allocator) safe_allocator.allocator() else std.heap.smp_allocator;
-    defer if (use_safe_allocator) {
-        _ = safe_allocator.deinit();
+    var allocator = switch (builtin.optimize) {
+        .debug => std.heap.DebugAllocator(.{}){},
+        .safe => std.heap.SafeAllocator.init(std.heap.page_allocator, .{}),
+        else => struct {
+            pub fn allocator(self: @This()) std.mem.Allocator {
+                _ = self;
+                return std.heap.smp_allocator;
+            }
+            pub fn deinit(self: @This()) void {
+                _ = self;
+            }
+        }{},
     };
+
+    const gpa = allocator.allocator();
+    defer _ = allocator.deinit();
 
     var io_impl = std.Io.Threaded.init(gpa, .{
         .argv0 = .init(init.args),
@@ -65,9 +74,12 @@ fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: cli.Args.Full) u8 {
     var lexer = frontend.Lexer.init(source_text);
 
     start_time = clock.now(io);
-    var tokens = lexer.run(gpa) catch |err| {
-        std.log.err("failed to tokenize: {s}", .{@errorName(err)});
-        return 1;
+    var tokens = tokens: {
+        var token_list = lexer.run(gpa) catch |err| {
+            std.log.err("failed to tokenize: {s}", .{@errorName(err)});
+            return 1;
+        };
+        break :tokens token_list.toOwnedSlice();
     };
     defer tokens.deinit(gpa);
     end_time = clock.now(io);
@@ -191,7 +203,7 @@ fn mainArgs(io: std.Io, gpa: std.mem.Allocator, args: cli.Args.Full) u8 {
 
     // linking
 
-    const clang_argv: []const []const u8 = &.{ "clang", llvm_output_path, "-o", args.output_path };
+    const clang_argv: []const []const u8 = &.{ "clang", llvm_output_path, "libruntime/spl_runtime.c", "-o", args.output_path };
 
     start_time = clock.now(io);
     const res = std.process.run(gpa, io, .{ .argv = clang_argv }) catch |err| {
@@ -248,7 +260,7 @@ fn dumpTokensIntoFile(
     io: std.Io,
     dump_path: []const u8,
     source: frontend.Source,
-    tokens: frontend.lex.TokenList,
+    tokens: frontend.lex.TokenList.Slice,
 ) !void {
     const dump_file = try std.Io.Dir.cwd().createFile(io, dump_path, .{});
     defer dump_file.close(io);
@@ -264,7 +276,7 @@ fn dumpTokensIntoFile(
 fn dumpTokens(
     writer: *std.Io.Writer,
     source: frontend.Source,
-    tokens: frontend.lex.TokenList,
+    tokens: frontend.lex.TokenList.Slice,
 ) std.Io.Writer.Error!void {
     var jws = std.json.Stringify{ .writer = writer, .options = .{ .whitespace = .indent_2 } };
 
@@ -287,6 +299,9 @@ fn dumpTokens(
             .kw_continue => "CONTINUE",
             .kw_true => "TRUE",
             .kw_false => "FALSE",
+            .kw_def => "DEF",
+            .kw_extern => "EXTERN",
+            .comma => "COMMA",
             .semi => "SEMI",
             .assign => "ASSIGN",
             .plus => "PLUS",
@@ -349,7 +364,7 @@ fn dumpAstIntoFile(
     io: std.Io,
     dump_path: []const u8,
     source: frontend.Source,
-    tokens: frontend.lex.TokenList,
+    tokens: frontend.lex.TokenList.Slice,
     ast: frontend.Ast,
 ) !void {
     const dump_file = try std.Io.Dir.cwd().createFile(io, dump_path, .{});
@@ -366,21 +381,48 @@ fn dumpAstIntoFile(
 fn dumpAst(
     writer: *std.Io.Writer,
     source: frontend.Source,
-    tokens: frontend.lex.TokenList,
+    tokens: frontend.lex.TokenList.Slice,
     ast: frontend.Ast,
 ) std.Io.Writer.Error!void {
     var jws = std.json.Stringify{ .writer = writer, .options = .{ .whitespace = .indent_2 } };
     try dumpAstNode(&jws, source, tokens, ast, .root);
 }
 
+fn dumpFakeIdent(
+    jws: *std.json.Stringify,
+    source: frontend.Source,
+    tokens: frontend.lex.TokenList.Slice,
+    token_index: frontend.lex.Token.Index,
+) !void {
+    const name_token = tokens.get(token_index);
+    try jws.beginObject();
+
+    try jws.objectField("kind");
+    try jws.write("Ident");
+    try jws.objectField("name");
+    try jws.write(source.tokenLiteral(name_token));
+
+    try jws.objectField("elems");
+    try jws.beginArray();
+    try jws.endArray();
+
+    const name_loc = source.locationFromOffset(name_token.offset);
+    try jws.objectField("line");
+    try jws.write(name_loc.line);
+    try jws.objectField("column");
+    try jws.write(name_loc.column);
+
+    try jws.endObject();
+}
+
 fn dumpAstNode(
     jws: *std.json.Stringify,
     source: frontend.Source,
-    tokens: frontend.lex.TokenList,
+    tokens: frontend.lex.TokenList.Slice,
     ast: frontend.Ast,
     node_index: frontend.Ast.Node.Index,
 ) !void {
-    const node = ast.nodes.get(@backingInt(node_index));
+    const node = ast.nodes.get(node_index.toU32());
 
     try jws.beginObject();
 
@@ -391,6 +433,9 @@ fn dumpAstNode(
         .name_ref => "Ident",
         .bool_literal => "BoolLiteral",
         .number => "IntLiteral",
+        .call => "Call",
+        .fn_decl => "FuncDecl",
+        .fn_proto => if (tokens.items(.kind)[node.token] == .kw_extern) "ExternDecl" else "FuncDecl",
         .@"return" => "Return",
         .unary => "Unary",
         .binary => "BinOp",
@@ -418,6 +463,8 @@ fn dumpAstNode(
         .block => {},
         .@"while" => {},
         .@"continue", .@"break" => {},
+        .call => {},
+        .fn_decl, .fn_proto => {},
         .if_simple, .if_full => {},
         .var_decl => {
             try jws.objectField("mut");
@@ -463,6 +510,32 @@ fn dumpAstNode(
                 try dumpAstNode(jws, source, tokens, ast, @fromBackingInt(i));
             }
         },
+        .call => {
+            const info = frontend.Ast.info.call(ast, node_index);
+
+            try dumpAstNode(jws, source, tokens, ast, info.callee);
+            for (info.args) |arg| {
+                try dumpAstNode(jws, source, tokens, ast, arg);
+            }
+        },
+        .fn_proto => {
+            const proto_info = frontend.Ast.info.fnProto(ast, tokens, node_index);
+
+            try dumpFakeIdent(jws, source, tokens, proto_info.name_token);
+            for (proto_info.params) |param| {
+                try dumpFakeIdent(jws, source, tokens, param);
+            }
+        },
+        .fn_decl => {
+            const proto, const body = node.data.node_and_node;
+            const proto_info = frontend.Ast.info.fnProto(ast, tokens, proto);
+
+            try dumpFakeIdent(jws, source, tokens, proto_info.name_token);
+            for (proto_info.params) |param| {
+                try dumpFakeIdent(jws, source, tokens, param);
+            }
+            try dumpAstNode(jws, source, tokens, ast, body);
+        },
         .block => {
             const body = ast.extractExtras(node.data.extra_range);
             for (body) |i| {
@@ -479,33 +552,13 @@ fn dumpAstNode(
 
             try dumpAstNode(jws, source, tokens, ast, info.cond);
             try dumpAstNode(jws, source, tokens, ast, info.then_node);
-            if (info.else_node.toIndex()) |else_node|
+
+            if (info.else_node.toIndex()) |else_node| {
                 try dumpAstNode(jws, source, tokens, ast, else_node);
+            }
         },
         .var_decl => {
-            {
-                // no `Ident` node in var decl, so we have to make it ourselves
-                const name_token = tokens.get(node.token + 1);
-                try jws.beginObject();
-
-                try jws.objectField("kind");
-                try jws.write("Ident");
-                try jws.objectField("name");
-                try jws.write(source.tokenLiteral(name_token));
-
-                try jws.objectField("elems");
-                try jws.beginArray();
-                try jws.endArray();
-
-                const name_loc = source.locationFromOffset(name_token.offset);
-                try jws.objectField("line");
-                try jws.write(name_loc.line);
-                try jws.objectField("column");
-                try jws.write(name_loc.column);
-
-                try jws.endObject();
-            }
-
+            try dumpFakeIdent(jws, source, tokens, node.token + 1);
             try dumpAstNode(jws, source, tokens, ast, node.data.node);
         },
         .@"return" => {
